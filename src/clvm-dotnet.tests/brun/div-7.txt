@@ -1,0 +1,2 @@
+brun -c '(/ (q . -3) (q . 10))'
+FAIL: div operator with negative operands is deprecated (-3 10)

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <RootNamespace>clvm_dotnet</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MCL.BLS12_381.Native" Version="0.0.5" />
+      <PackageReference Include="MCL.BLS12_381.Net" Version="0.0.4" />
+    </ItemGroup>
+
+</Project>

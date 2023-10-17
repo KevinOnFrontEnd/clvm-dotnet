@@ -1,0 +1,5 @@
+brun --backend=python -c -v '(x)'
+FAIL: clvm raise ()
+
+(x) [()] => (didn't finish)
+

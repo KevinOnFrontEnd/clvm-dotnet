@@ -1,0 +1,3 @@
+brun -c '(q . 0x007eff)'
+cost = 20
+0x007eff
