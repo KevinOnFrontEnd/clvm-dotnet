@@ -10,6 +10,7 @@ This repo is a dotnet port of chia-networks CLVM located at https://github.com/C
 | Costs.py  | :heavy_check_mark: |
 | Casts.py  | :heavy_check_mark: |
 | Core_ops.py  | :heavy_check_mark: |
+| More_ops.py  | ❌ |
 
 
 
