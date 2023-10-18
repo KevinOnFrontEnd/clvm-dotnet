@@ -6,20 +6,24 @@ namespace clvm_dotnet;
 /// </summary>
 public class CLVMObject
 {
-    public byte[]? atom { get; set; }
-    public Tuple<object?,object?>? pair { get; set; }
+    public byte[]? Atom { get; set; }
+    public Tuple<CLVMObject,CLVMObject> Pair { get; set; }
 
     public CLVMObject(dynamic v)
     {
         if (v.GetType() == typeof(Tuple<object, object>))
         {
-            pair = v;
-            atom = null;
+            Pair = v;
+            Atom = null;
         }
         else
         {
-            pair = null;
-            atom = v;
+            Pair = null;
+            Atom = v;
         }
+    }
+    
+    public CLVMObject()
+    {
     }
 }

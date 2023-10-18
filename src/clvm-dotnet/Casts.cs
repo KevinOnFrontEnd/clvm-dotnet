@@ -3,7 +3,7 @@ namespace clvm_dotnet;
 using System;
 using System.Numerics;
 
-public static class casts
+public static class Casts
 {
     public static BigInteger IntFromBytes(byte[] blob)
     {

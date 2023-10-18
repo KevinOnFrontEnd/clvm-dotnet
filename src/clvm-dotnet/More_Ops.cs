@@ -340,7 +340,7 @@ public static class More_Ops
         }
 
         BigInteger cost = Costs.ASHIFT_BASE_COST;
-        cost += (l0 + casts.LimbsForInt(r)) * Costs.ASHIFT_COST_PER_BYTE;
+        cost += (l0 + Casts.LimbsForInt(r)) * Costs.ASHIFT_COST_PER_BYTE;
 
         return (cost, args.To(r));
     }
@@ -377,7 +377,7 @@ public static class More_Ops
         }
 
         BigInteger cost = Costs.LSHIFT_BASE_COST;
-        cost += (l0 + casts.LimbsForInt(r)) * Costs.LSHIFT_COST_PER_BYTE;
+        cost += (l0 + Casts.LimbsForInt(r)) * Costs.LSHIFT_COST_PER_BYTE;
 
         return (cost, args.To(r));
     }

@@ -1,163 +1,311 @@
-namespace clvm_dotnet;
 
-using System;
-using System.Collections.Generic;
+using System.Text;
+using clvm_dotnet;
+
+public class Sexp
+{
+    public static CLVMObject True { get; } = new CLVMObject { Atom = new byte[] { 0x01 } };
+    public static CLVMObject False { get; } = new CLVMObject();
+
+    public static CLVMObject NULL { get; } = new CLVMObject();
+
+    public static bool LooksLikeCLVMObject(object obj)
+    {
+        var type = obj.GetType();
+        var properties = type.GetProperties().Select(p => p.Name).ToList();
+        return properties.Contains("Atom") && properties.Contains("Pair");
+    }
+
+    public static byte[] ConvertAtomToBytes(object v)
+    {
+        if (v is byte[] byteArray)
+        {
+            return byteArray;
+        }
+        else if (v is string str)
+        {
+            return Encoding.UTF8.GetBytes(str);
+        }
+        else if (v is int intValue)
+        {
+            return BitConverter.GetBytes(intValue);
+        }
+        else if (v is null)
+        {
+            return new byte[0];
+        }
+        else if (v is List<object> list)
+        {
+            var result = new List<byte>();
+            foreach (var item in list)
+            {
+                result.AddRange(ConvertAtomToBytes(item));
+            }
+            return result.ToArray();
+        }
+
+        throw new ArgumentException($"Can't cast {v.GetType()} ({v}) to bytes");
+    }
+
+    public static CLVMObject ToSexpType(dynamic v)
+    {
+        var stack = new List<dynamic>();
+        var ops = new List<Tuple<int, int>>(); // Tuple of (op, target)
+
+        stack.Add(v);
+        ops.Add(new Tuple<int, int>(0, -1)); // Initial operation to convert
+
+        while (ops.Count > 0)
+        {
+            var (op, target) = ops.Last();
+            ops.RemoveAt(ops.Count - 1);
+
+            if (op == 0) // Convert value
+            {
+                if (Sexp.LooksLikeCLVMObject(stack.Last()))
+                {
+                    continue;
+                }
+
+                var value = stack.Last();
+                stack.RemoveAt(stack.Count - 1);
+
+                if (value is Tuple<object, object> tuple)
+                {
+                    if (tuple.Item2 is not null && tuple.Item1 is not null)
+                    {
+                        var newSexp = new CLVMObject
+                        {
+                            Pair = new Tuple<CLVMObject, CLVMObject>(
+                                new CLVMObject { Atom = ConvertAtomToBytes(tuple.Item1) },
+                                new CLVMObject { Atom = ConvertAtomToBytes(tuple.Item2) }
+                            )
+                        };
+
+                        target = stack.Count;
+                        stack.Add(newSexp);
+
+                        if (!LooksLikeCLVMObject(tuple.Item2))
+                        {
+                            stack.Add(tuple.Item2);
+                            ops.Add(new Tuple<int, int>(2, target)); // Set right
+                            ops.Add(new Tuple<int, int>(0, -1));    // Convert
+                        }
+
+                        if (!LooksLikeCLVMObject(tuple.Item1))
+                        {
+                            stack.Add(tuple.Item1);
+                            ops.Add(new Tuple<int, int>(1, target)); // Set left
+                            ops.Add(new Tuple<int, int>(0, -1));    // Convert
+                        }
+
+                        continue;
+                    }
+                }
+
+                if (value is List<object> list)
+                {
+                    target = stack.Count;
+                    stack.Add(new CLVMObject { Atom = new byte[0] });
+
+                    foreach (var item in list)
+                    {
+                        stack.Add(item);
+                        ops.Add(new Tuple<int, int>(3, target)); // Prepend list
+
+                        if (!LooksLikeCLVMObject(item))
+                        {
+                            ops.Add(new Tuple<int, int>(0, -1)); // Convert
+                        }
+                    }
+
+                    continue;
+                }
+
+                stack.Add(new CLVMObject() { Atom = ConvertAtomToBytes(value) });
+                continue;
+            }
+
+            if (op == 1) // Set left
+            {
+                stack[target].Pair = new Tuple<CLVMObject, CLVMObject>(new CLVMObject { Atom = ConvertAtomToBytes(stack.Last()) }, stack[target].Pair.Item2);
+                continue;
+            }
+
+            if (op == 2) // Set right
+            {
+                stack[target].Pair = new Tuple<CLVMObject, CLVMObject>(stack[target].Pair.Item1, new CLVMObject { Atom = ConvertAtomToBytes(stack.Last()) });
+                continue;
+            }
+
+            if (op == 3) // Prepend list
+            {
+                stack[target] = new CLVMObject { Pair = new Tuple<CLVMObject, CLVMObject>(new CLVMObject { Atom = ConvertAtomToBytes(stack.Last()) }, stack[target]) };
+                continue;
+            }
+        }
+
+        // There's exactly one item left at this point
+        if (stack.Count != 1)
+        {
+            throw new ArgumentException("Internal error");
+        }
+
+        // stack[0] implements the CLVM object protocol and can be wrapped by an SExp
+        return stack[0] as CLVMObject;
+    }
+}
 
 public class SExp
 {
-    // Constants for true, false, and null
-    public SExp True = new SExp(new CLVMObject(new byte[] { 1 }));
-    public  SExp False = SExp.__null__ = new SExp(new CLVMObject(new byte[] { }));
-    private  SExp __null__;
+    public byte[] Atom { get; set; }
+    public Tuple<SExp, SExp> Pair { get; set; }
 
-    // The underlying object implementing the CLVM object protocol
-    public byte[] atom { get; private set; }
-
-    // This is a tuple of the underlying CLVMObject-like objects.
-    public Tuple<object?, object?>? pair { get; private set; }
-
-    public SExp(CLVMObject obj)
+    public SExp(object obj)
     {
-        atom = obj.atom;
-        pair = obj.pair;
-    }
-
-    // This returns a tuple of two SExp objects or null
-    public Tuple<SExp, SExp> as_pair()
-    {
-        if (pair == null)
+        var clvmObject = obj as CLVMObject;
+        if (clvmObject != null)
         {
-            return null;
+            Atom = clvmObject.Atom;
+            Pair = clvmObject.Pair != null ? new Tuple<SExp, SExp>(new SExp(clvmObject.Pair.Item1), new SExp(clvmObject.Pair.Item2)) : null;
         }
-        return new Tuple<SExp, SExp>(new SExp((CLVMObject)pair.Item1), new SExp((CLVMObject)pair.Item2));
     }
 
-    // Deprecated, same as the atom property
-    public byte[] as_atom()
+    public Tuple<SExp, SExp> AsPair()
     {
-        return atom;
-    }
-
-    public bool listp()
-    {
-        return pair != null;
-    }
-
-    public bool nullp()
-    {
-        return atom != null && atom.Length == 0;
-    }
-
-    public int as_int()
-    {
-        return BitConverter.ToInt32(atom.Reverse().ToArray(), 0);
-    }
-
-    public byte[] as_bin()
-    {
-        MemoryStream stream = new MemoryStream();
-        serialize.SExpToStream(this, stream);
-        return stream.ToArray();
-    }
-
-    public static SExp to(object v)
-    {
-        if (v is SExp)
+        if (Pair != null)
         {
-            return (SExp)v;
+            return new Tuple<SExp, SExp>(new SExp(Pair.Item1), new SExp(Pair.Item2));
+        }
+        return null;
+    }
+
+    public object AsAtom()
+    {
+        return Atom;
+    }
+
+    public bool Listp()
+    {
+        return Pair != null;
+    }
+
+    public bool Nullp()
+    {
+        return Atom != null && Atom.Length == 0;
+    }
+
+    public int AsInt()
+    {
+        return BitConverter.ToInt32(Atom, 0);
+    }
+
+    public byte[] AsBin()
+    {
+        using (var stream = new MemoryStream())
+        {
+            Serialize.SExpFromStream(stream, null);
+            return stream.ToArray();
+        }
+    }
+
+    public static SExp To(object v)
+    {
+        var vSexp = v as SExp;
+        if (vSexp != null)
+        {
+            return vSexp;
         }
 
-        if (HelperFunctions.LooksLikeCLVMObject(v))
+        if (Sexp.LooksLikeCLVMObject(v))
         {
-            return new SExp((CLVMObject)v);
+            return new SExp(v);
         }
 
-        // This will lazily convert elements
         return new SExp(HelperFunctions.ToSexpType(v));
     }
 
-    public SExp cons(SExp right)
+    public SExp Cons(SExp right)
     {
-        return to(new Tuple<SExp, SExp>(this, right));
+        return To(new Tuple<SExp, SExp>(this, right));
     }
 
     public SExp First()
     {
-        if (pair != null)
+        if (Pair != null)
         {
-            return new SExp((CLVMObject)pair.Item1);
+            return new SExp(Pair.Item1);
         }
-        throw new EvalError("first of non-cons", this);
+        throw new EvalError("First of non-cons", this);
     }
 
     public SExp Rest()
     {
-        if (pair != null)
+        if (Pair != null)
         {
-            return new SExp((CLVMObject)pair.Item2);
+            return new SExp(Pair.Item2);
         }
-        throw new EvalError("rest of non-cons", this);
+        throw new EvalError("Rest of non-cons", this);
     }
 
-    public static SExp _null()
+    public static SExp Null()
     {
-        return __null__;
+        return null;
     }
 
-    public IEnumerable<SExp> as_iter()
+    public IEnumerable<SExp> AsIter()
     {
-        SExp v = this;
-        while (!v.nullp())
+        var v = this;
+        while (!v.Nullp())
         {
             yield return v.First();
             v = v.Rest();
         }
     }
 
-    public bool Equals(object other)
+    public override bool Equals(object other)
     {
         try
         {
-            other = to(other);
-            Stack<Tuple<SExp, SExp>> to_compare_stack = new Stack<Tuple<SExp, SExp>>();
-            to_compare_stack.Push(new Tuple<SExp, SExp>(this, (SExp)other));
-            while (to_compare_stack.Count > 0)
+            var otherSexp = To(other);
+            var toCompareStack = new Stack<Tuple<SExp, SExp>>();
+            toCompareStack.Push(new Tuple<SExp, SExp>(this, otherSexp));
+
+            while (toCompareStack.Count > 0)
             {
-                var tuple = to_compare_stack.Pop();
-                SExp s1 = tuple.Item1;
-                SExp s2 = tuple.Item2;
-                Tuple<SExp, SExp> p1 = s1.as_pair();
+                var (s1, s2) = toCompareStack.Pop();
+                var p1 = s1.AsPair();
                 if (p1 != null)
                 {
-                    Tuple<SExp, SExp> p2 = s2.as_pair();
+                    var p2 = s2.AsPair();
                     if (p2 != null)
                     {
-                        to_compare_stack.Push(new Tuple<SExp, SExp>(p1.Item1, p2.Item1));
-                        to_compare_stack.Push(new Tuple<SExp, SExp>(p1.Item2, p2.Item2));
+                        toCompareStack.Push(new Tuple<SExp, SExp>(p1.Item1, p2.Item1));
+                        toCompareStack.Push(new Tuple<SExp, SExp>(p1.Item2, p2.Item2));
                     }
                     else
                     {
                         return false;
                     }
                 }
-                else if (s2.as_pair() != null || !atom.SequenceEqual(s2.atom))
+                else if (s2.AsPair() != null || !Equals(s1.AsAtom(), s2.AsAtom()))
                 {
                     return false;
                 }
             }
             return true;
         }
-        catch (Exception)
+        catch (ArgumentException)
         {
             return false;
         }
     }
 
-    public int list_len()
+    public int ListLen()
     {
-        SExp v = this;
-        int size = 0;
-        while (v.listp())
+        var v = this;
+        var size = 0;
+        while (v.Listp())
         {
             size++;
             v = v.Rest();
@@ -165,13 +313,19 @@ public class SExp
         return size;
     }
 
-    public object as_python(dynamic sexp)
+    public object AsPython()
     {
-        return as_python(this);
+        // Define your as_python function or implementation here
+        return null;
     }
 
     public override string ToString()
     {
-        return $"{this.GetType().Name}({this})";
+        return BitConverter.ToString(AsBin()).Replace("-", "");
+    }
+
+    public override int GetHashCode()
+    {
+        return ToString().GetHashCode();
     }
 }
