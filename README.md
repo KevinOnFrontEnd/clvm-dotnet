@@ -13,6 +13,10 @@ This repo is a dotnet port of chia-networks CLVM located at https://github.com/C
 | More_ops.py  | ❌ |
 | Op_Utils.py  | ❌ |
 | Operators.py  | ❌ |
+| Serialize.py  | ❌ |
+| SExp.py  | Partially ported |
+| As_Python.py  | ❌ |
+
 
 
 
