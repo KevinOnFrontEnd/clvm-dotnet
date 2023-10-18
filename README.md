@@ -14,7 +14,7 @@ This repo is a dotnet port of chia-networks CLVM located at https://github.com/C
 | Op_Utils.py  | :heavy_check_mark:  |
 | Operators.py  | ❌ |
 | Serialize.py  | ❌ |
-| SExp.py  | Partially ported |
+| SExp.py  | :heavy_check_mark: |
 | As_Python.py  | ❌ |
 | All Tests  | ❌ |
 
