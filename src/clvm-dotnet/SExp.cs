@@ -14,7 +14,7 @@ public class SExp
     public byte[] atom { get; private set; }
 
     // This is a tuple of the underlying CLVMObject-like objects.
-    public Tuple<object, object> pair { get; private set; }
+    public Tuple<object?, object?>? pair { get; private set; }
 
     public SExp(CLVMObject obj)
     {
