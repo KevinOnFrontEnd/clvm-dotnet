@@ -5,5 +5,9 @@ This repo is a dotnet port of chia-networks CLVM located at https://github.com/C
 # Progress
 | python classe   | Migrated |
 | -------- | ------- |
-| CLVMObject.py  | [x]    |
+| CLVMObject.py  | :heavy_check_mark: |
+| EvalError.py  | :heavy_check_mark: |
+| Costs.py  | :heavy_check_mark: |
+
+
 
