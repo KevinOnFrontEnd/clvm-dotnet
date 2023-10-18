@@ -11,7 +11,7 @@ public static class More_Ops
 
     public static CostResult MallocCost(int cost, SExp atom)
     {
-        int newCost = cost + atom.as_atom().Length * MALLOC_COST_PER_BYTE;
+        int newCost = cost + atom.AsAtom().Length * MALLOC_COST_PER_BYTE;
         return new CostResult { Cost = newCost, Atom = atom };
     }
     
@@ -21,9 +21,9 @@ public static class More_Ops
         int argLen = 0;
         using (SHA256 sha256 = SHA256.Create())
         {
-            foreach (SExp arg in args.as_iter())
+            foreach (SExp arg in args.AsIter())
             {
-                byte[] atom = arg.as_atom();
+                byte[] atom = arg.AsAtom();
                 if (atom == null)
                 {
                     throw new EvalError("sha256 on list", arg);
@@ -43,15 +43,15 @@ public static class More_Ops
     
     public static IEnumerable<(int, int)> ArgsAsInts(string opName, SExp args)
     {
-        foreach (SExp arg in args.as_iter())
+        foreach (SExp arg in args.AsIter())
         {
-            if (arg.pair != null)
+            if (arg.Pair != null)
             {
                 throw new EvalError($"{opName} requires int args", arg);
             }
 
-            int intValue = arg.as_int();
-            int atomLength = arg.as_atom().Length;
+            int intValue = arg.AsInt();
+            int atomLength = arg.AsAtom().Length;
 
             yield return (intValue, atomLength);
         }
@@ -59,19 +59,19 @@ public static class More_Ops
     
     public static IEnumerable<int> ArgsAsInt32(string opName, SExp args)
     {
-        foreach (SExp arg in args.as_iter())
+        foreach (SExp arg in args.AsIter())
         {
             if (arg != null )
             {
                 throw new EvalError($"{opName} requires int32 args", arg);
             }
 
-            if (arg.as_atom().Length > 4)
+            if (arg.AsAtom().Length > 4)
             {
                 throw new EvalError($"{opName} requires int32 args (with no leading zeros)", arg);
             }
 
-            yield return arg.as_int();
+            yield return arg.AsInt();
         }
     }
     
@@ -88,9 +88,9 @@ public static class More_Ops
     
     public static IEnumerable<SExp> ArgsAsBools(string opName, SExp args)
     {
-        foreach (var arg in args.as_iter())
+        foreach (var arg in args.AsIter())
         {
-            byte[] v = arg.as_atom();
+            byte[] v = arg.AsAtom();
             if (v.Length == 0)
             {
                 yield return args.False;
@@ -104,7 +104,7 @@ public static class More_Ops
     
     public (BigInteger, SExp) MallocCost(BigInteger cost, SExp atom)
     {
-        return (cost + atom.atom.Length * Costs.MALLOC_COST_PER_BYTE = 10, atom);
+        return (cost + atom.Atom.Length * Costs.MALLOC_COST_PER_BYTE = 10, atom);
     }
     
     public static List<SExp> ArgsAsBoolList(string opName, SExp args, int count)
@@ -243,34 +243,34 @@ public static class More_Ops
 
     public (BigInteger, SExp) OpStrlen(SExp args)
     {
-        if (args.list_len() != 1)
+        if (args.ListLen() != 1)
         {
             throw new EvalError("strlen takes exactly 1 argument", args);
         }
         var a0 = args.First();
-        if (a0.pair != null)
+        if (a0.Pair != null)
         {
             throw new EvalError("strlen on list", a0);
         }
-        int size = a0.as_atom().Length;
+        int size = a0.AsAtom().Length;
         BigInteger cost = Costs.STRLEN_BASE_COST + size * Costs.STRLEN_COST_PER_BYTE;
         return MallocCost(cost, args.To(size));
     }
 
     public (BigInteger, SExp) OpSubstr(SExp args)
     {
-        int argCount = args.list_len();
+        int argCount = args.ListLen();
         if (argCount != 2 && argCount != 3)
         {
             throw new EvalError("substr takes exactly 2 or 3 arguments", args);
         }
         var a0 = args.First();
-        if (a0.pair != null)
+        if (a0.Pair != null)
         {
             throw new EvalError("substr on list", a0);
         }
 
-        var s0 = a0.as_atom();
+        var s0 = a0.AsAtom();
 
         int i1, i2;
         if (argCount == 2)
@@ -298,13 +298,13 @@ public static class More_Ops
     {
         BigInteger cost = Costs.CONCAT_BASE_COST;
         var s = new MemoryStream();
-        foreach (var arg in args.as_iter())
+        foreach (var arg in args.AsIter())
         {
-            if (arg.pair)
+            if (arg.Pair)
             {
                 throw new EvalError("concat on list", arg);
             }
-            var atom = arg.as_atom();
+            var atom = arg.AsAtom();
             s.Write(atom, 0, atom.Length);
             cost += Costs.CONCAT_COST_PER_ARG;
         }
@@ -361,7 +361,7 @@ public static class More_Ops
         }
 
         // We actually want i0 to be an unsigned int
-        var a0 = args.First().as_atom();
+        var a0 = args.First().AsAtom();
         var i0Bytes = a0.Reverse().ToArray(); // Reverse bytes for little-endian representation
         var i0 = new BigInteger(i0Bytes);
 
@@ -456,19 +456,19 @@ public static class More_Ops
 
     public (int, SExp) OpSoftfork(SExp args)
     {
-        if (args.list_len() < 1)
+        if (args.ListLen() < 1)
         {
             throw new EvalError("softfork takes at least 1 argument", args);
         }
 
         SExp a = args.First();
     
-        if (a.pair != null)
+        if (a.Pair != null)
         {
             throw new EvalError("softfork requires int args", a);
         }
 
-        int cost = a.as_int();
+        int cost = a.AsInt();
     
         if (cost < 1)
         {

@@ -122,16 +122,16 @@ public class Serialize
         valStack.Push(AtomFromStream(stream, b, toSexp));
     }
 
-    private static void OpCons(Stack<Action<Stack<Action<Stack<Action<Stream, Func<byte[], CLVMObject>>>>>>> opStack, Stack<CLVMObject> valStack, Stream stream, Func<byte[], CLVMObject> toSexp)
+    private static void OpCons(Stack<Action<Stream, Func<byte[], CLVMObject>>> opStack, Stack<CLVMObject> valStack, Stream stream, Func<byte[], CLVMObject> toSexp)
     {
-        var right = valStack.Pop();
-        var left = valStack.Pop();
+        var right = valStack.Pop().Atom!;
+        var left = valStack.Pop().Atom!;
         valStack.Push(toSexp(new byte[] { left, right }));
     }
 
     public static CLVMObject SExpFromStream(Stream stream, Func<byte[], CLVMObject> toSexp)
     {
-        var opStack = new Stack<Action<Stack<Action<Stack<Action<Stream, Func<byte[], CLVMObject>>>>>>>();
+        var opStack = new Stack<Action<Stream, Func<byte[], CLVMObject>>>();
         var valStack = new Stack<CLVMObject>();
 
         while (opStack.Count > 0)

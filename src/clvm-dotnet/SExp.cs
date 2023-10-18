@@ -180,7 +180,7 @@ public class SExp
         return null;
     }
 
-    public object AsAtom()
+    public byte[] AsAtom()
     {
         return Atom;
     }
