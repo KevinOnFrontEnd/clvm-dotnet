@@ -26,4 +26,9 @@ public class CLVMObject
     public CLVMObject()
     {
     }
+
+    public byte[] AsAtom()
+    {
+        return Atom;
+    }
 }

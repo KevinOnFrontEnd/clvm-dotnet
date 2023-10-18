@@ -315,7 +315,6 @@ public class SExp
 
     public object AsPython()
     {
-        // Define your as_python function or implementation here
         return null;
     }
 
