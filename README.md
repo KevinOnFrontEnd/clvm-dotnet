@@ -1,5 +1,7 @@
 This repo is a dotnet port of chia-networks CLVM located at https://github.com/Chia-Network/clvm
 
+![Build & Test](https://github.com/KevinOnFrontEnd/clvm-dotnet/actions/workflows/build_and_test.yml/badge.svg)
+
 **This repo is not currently in a working state - see below for progress of port**
 
 # Progress
