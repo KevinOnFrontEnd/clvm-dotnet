@@ -75,9 +75,9 @@ public static class More_Ops
         }
     }
     
-    public static List<int> ArgsAsIntList(string opName, dynamic args, int count)
+    public static List<BigInteger> ArgsAsIntList(string opName, dynamic args, int count)
     {
-        List<int> intList = new List<int>(ArgsAsInts(opName, args));
+        List<BigInteger> intList = new List<BigInteger>(ArgsAsInts(opName, args));
         if (intList.Count != count)
         {
             string plural = count != 1 ? "s" : "";
@@ -86,7 +86,7 @@ public static class More_Ops
         return intList;
     }
     
-    public static IEnumerable<SExp> ArgsAsBools(string opName, SExp args)
+    public static IEnumerable<CLVMObject> ArgsAsBools(string opName, SExp args)
     {
         foreach (var arg in args.AsIter())
         {
@@ -104,9 +104,9 @@ public static class More_Ops
     
     public static Tuple<BigInteger, SExp> MallocCost(BigInteger cost, SExp atom) => (cost + atom.Atom.Length * Costs.MALLOC_COST_PER_BYTE = 10, atom);
 
-    public static List<SExp> ArgsAsBoolList(string opName, SExp args, int count)
+    public static List<CLVMObject> ArgsAsBoolList(string opName, SExp args, int count)
     {
-        List<SExp> boolList = ArgsAsBools(opName, args).ToList();
+        List<CLVMObject> boolList = ArgsAsBools(opName, args).ToList();
         if (boolList.Count != count)
         {
             string plural = count != 1 ? "s" : "";
@@ -199,10 +199,11 @@ public static class More_Ops
     public (BigInteger, SExp) OpPubkeyForExp(SExp args)
     {
         var (i0, l0) = ArgsAsIntList("pubkey_for_exp", args, 1)[0];
-        i0 %= 0x73EDA753299D7D483339D80809A1D80553BDA402FFFE5BFEFFFFFFFF00000001;
-        PrivateKey exponent = PrivateKey.FromBytes(i0.ToByteArray());
+        i0 %= BigInteger.Parse("0x73EDA753299D7D483339D80809A1D80553BDA402FFFE5BFEFFFFFFFF00000001");
+        Exponent exponent = PrivateKey.FromBytes(i0.ToByteArray());
         try
         {
+            G1.Generator.ToBytes();
             SExp r = args.To(exponent.GetG1().ToByteArray());
             BigInteger cost = Costs.PUBKEY_BASE_COST;
             cost += l0 * Costs.PUBKEY_COST_PER_BYTE;
