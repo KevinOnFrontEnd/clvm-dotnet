@@ -91,7 +91,7 @@ public class SExp
         return size;
     }
     
-    public SExp To(dynamic v)
+    public static SExp To(dynamic v)
     {
         if (v is SExp se)
         {

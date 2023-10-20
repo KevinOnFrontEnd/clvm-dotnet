@@ -101,7 +101,7 @@ public class OperatorDict : Dictionary<byte[], Func<CLVMObject, Tuple<int, CLVMO
         }
     }
 
-    private static Tuple<int, CLVMObject> DefaultUnknownOp(byte[] op, CLVMObject args)
+    public static Tuple<int, CLVMObject> DefaultUnknownOp(byte[] op, CLVMObject args)
     {
         if (op.Length == 0 || BitConverter.ToUInt16(op, 0) == 0xFFFF)
         {
