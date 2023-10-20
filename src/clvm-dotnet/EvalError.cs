@@ -9,4 +9,8 @@ public class EvalError : Exception
     {
         SExpression = sexp;
     }
+    
+    public EvalError(string message) : base(message)
+    {
+    }
 }
