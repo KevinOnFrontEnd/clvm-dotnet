@@ -1,3 +1,4 @@
+using System.Numerics;
 using System.Text;
 using clvm_dotnet;
 
@@ -90,7 +91,7 @@ public class SExp
         return size;
     }
     
-    public static SExp To(dynamic v)
+    public SExp To(dynamic v)
     {
         if (v is SExp se)
         {
@@ -103,6 +104,19 @@ public class SExp
         }
 
         return new SExp(HelperFunctions.ToSexpType(v));
+    }
+    
+    public BigInteger AsInt()
+    {
+        if (Atom != null)
+        {
+            return Casts.IntFromBytes(Atom!);
+        }
+        else
+        {
+            // Handle the case where atom is null (or empty)
+            throw new InvalidOperationException("The atom property is null or empty.");
+        }
     }
 
     public IEnumerable<SExp> AsIter()
