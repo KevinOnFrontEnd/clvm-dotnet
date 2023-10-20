@@ -10,9 +10,12 @@ public class OperatorDict : Dictionary<byte[], Func<CLVMObject, Tuple<int, CLVMO
     public byte[] ApplyAtom { get; set; } = new byte[0];
     public Func<byte[], CLVMObject, Tuple<int, CLVMObject>> UnknownOpHandler { get; set; } = DefaultUnknownOp;
 
-    public OperatorDict() { }
+    public OperatorDict()
+    {
+    }
 
-    public OperatorDict(Dictionary<byte[], Func<CLVMObject, Tuple<int, CLVMObject>>> dict, byte[] quote = null, byte[] apply = null, Func<byte[], CLVMObject, Tuple<int, CLVMObject>> unknownOpHandler = null)
+    public OperatorDict(Dictionary<byte[], Func<CLVMObject, Tuple<int, CLVMObject>>> dict, byte[] quote = null,
+        byte[] apply = null, Func<byte[], CLVMObject, Tuple<int, CLVMObject>> unknownOpHandler = null)
         : base(dict)
     {
         if (quote != null) QuoteAtom = quote;
@@ -32,15 +35,10 @@ public class OperatorDict : Dictionary<byte[], Func<CLVMObject, Tuple<int, CLVMO
         }
     }
     
-    private static readonly Dictionary<byte[], string> KEYWORD_FROM_ATOM = new Dictionary<byte[], string>
-    {
-        // Define your atom mappings here
-    };
-
     private static readonly Dictionary<string, byte[]> KEYWORD_TO_ATOM = KEYWORD_FROM_ATOM
         .ToDictionary(kv => kv.Value.Trim(), kv => kv.Key);
 
-    
+
     // Initialize KEYWORDS as a list of strings
     public static List<string> keywordsList = new List<string>
     {
@@ -70,7 +68,7 @@ public class OperatorDict : Dictionary<byte[], Func<CLVMObject, Tuple<int, CLVMO
     public static string[] KEYWORDS = keywordsList
         .SelectMany(s => s.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
         .ToArray();
-    
+
     public static Dictionary<string, string> OP_REWRITE = new Dictionary<string, string>
     {
         { "+", "add" },
@@ -87,7 +85,7 @@ public class OperatorDict : Dictionary<byte[], Func<CLVMObject, Tuple<int, CLVMO
         { ">", "gr" },
         { ">s", "gr_bytes" }
     };
-    
+
     private static IEnumerable<int> ArgsLen(string opName, IEnumerable<byte[]> args)
     {
         foreach (var arg in args)
@@ -109,8 +107,20 @@ public class OperatorDict : Dictionary<byte[], Func<CLVMObject, Tuple<int, CLVMO
         }
 
         var costFunction = (op[0] & 0b11000000) >> 6;
-        var costMultiplier = BitConverter.ToUInt32(op, 0) + 1;
+        
+        // Remove the last byte from the op array
+        byte[] opWithoutLastByte = op.Take(op.Length - 1).ToArray();
 
+        // Convert the opWithoutLastByte to an integer using big-endian byte order
+        if (BitConverter.IsLittleEndian)
+        {
+            Array.Reverse(opWithoutLastByte);
+        }
+
+        byte[] paddedArray = new byte[4];
+        opWithoutLastByte.CopyTo(paddedArray, 0);
+        
+        int costMultiplier = BitConverter.ToInt32(paddedArray, 0) + 1;
         int cost;
         if (costFunction == 0)
         {
@@ -125,6 +135,7 @@ public class OperatorDict : Dictionary<byte[], Func<CLVMObject, Tuple<int, CLVMO
                 argSize += length;
                 cost += Costs.ARITH_COST_PER_ARG;
             }
+
             cost += argSize * Costs.ARITH_COST_PER_BYTE;
         }
         else if (costFunction == 2)
@@ -132,16 +143,15 @@ public class OperatorDict : Dictionary<byte[], Func<CLVMObject, Tuple<int, CLVMO
             cost = Costs.MUL_BASE_COST;
             var operands = ArgsLen("unknown op", args as IEnumerable<byte[]>).GetEnumerator();
 
-                var vs = operands.MoveNext() ? operands.Current : 0;
-                while (operands.MoveNext())
-                {
-                    var rs = operands.Current;
-                    cost += Costs.MUL_COST_PER_OP;
-                    cost += (rs + vs) * Costs.MUL_LINEAR_COST_PER_BYTE;
-                    cost += (rs * vs) / Costs.MUL_SQUARE_COST_PER_BYTE_DIVIDER;
-                    vs += rs;
-                }
-            
+            var vs = operands.MoveNext() ? operands.Current : 0;
+            while (operands.MoveNext())
+            {
+                var rs = operands.Current;
+                cost += Costs.MUL_COST_PER_OP;
+                cost += (rs + vs) * Costs.MUL_LINEAR_COST_PER_BYTE;
+                cost += (rs * vs) / Costs.MUL_SQUARE_COST_PER_BYTE_DIVIDER;
+                vs += rs;
+            }
         }
         else if (costFunction == 3)
         {
@@ -152,6 +162,7 @@ public class OperatorDict : Dictionary<byte[], Func<CLVMObject, Tuple<int, CLVMO
                 cost += Costs.CONCAT_COST_PER_ARG;
                 length += arg.Length;
             }
+
             cost += length * Costs.CONCAT_COST_PER_BYTE;
         }
         else
@@ -167,6 +178,11 @@ public class OperatorDict : Dictionary<byte[], Func<CLVMObject, Tuple<int, CLVMO
 
         return new Tuple<int, CLVMObject>(cost, null);
     }
+    
+    public static Dictionary<byte[], string> KEYWORD_FROM_ATOM = Enumerable.Range(0, KEYWORDS.Length)
+        .ToDictionary(k => HelperFunctions.ConvertAtomToBytes((Int32)k), v => KEYWORDS[v]);
+    
+    public static byte[] QUOTE_ATOM = KEYWORD_TO_ATOM["q"];
+    public static byte[]  APPLY_ATOM = KEYWORD_TO_ATOM["a"];
+    
 }
-
-

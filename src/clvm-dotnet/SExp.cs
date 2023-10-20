@@ -20,7 +20,7 @@ public class SExp
 {
      public static CLVMObject True { get; } = new CLVMObject { Atom = new byte[] { 0x01 } };
      public static CLVMObject False { get; } = new CLVMObject();
-     public static CLVMObject NULL { get; } = new CLVMObject();
+     public static CLVMObject NULL { get; } = null;
 
      public byte[]? Atom { get; set; }
     public Tuple<dynamic, dynamic>? Pair { get; set; }
