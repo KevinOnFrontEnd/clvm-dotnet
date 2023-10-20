@@ -17,13 +17,11 @@ using clvm_dotnet;
 /// </summary>
 public class SExp
 {
-//     public static CLVMObject True { get; } = new CLVMObject { Atom = new byte[] { 0x01 } };
-//     public static CLVMObject False { get; } = new CLVMObject();
-//
-//     public static CLVMObject NULL { get; } = new CLVMObject();
-//
+     public static CLVMObject True { get; } = new CLVMObject { Atom = new byte[] { 0x01 } };
+     public static CLVMObject False { get; } = new CLVMObject();
+     public static CLVMObject NULL { get; } = new CLVMObject();
 
-    public byte[]? Atom { get; set; }
+     public byte[]? Atom { get; set; }
     public Tuple<dynamic, dynamic>? Pair { get; set; }
 
     public SExp(CLVMObject obj)
@@ -31,7 +29,7 @@ public class SExp
         Atom = obj.Atom;
         Pair = obj.Pair;
     }
-    
+
     public Tuple<SExp, SExp>? AsPair()
     {
         var pair = this.Pair;
@@ -39,6 +37,7 @@ public class SExp
         {
             return null;
         }
+
         return Tuple.Create(new SExp(pair?.Item1), new SExp(pair?.Item2));
     }
 
@@ -46,7 +45,7 @@ public class SExp
     {
         return Atom;
     }
-    
+
     public SExp Cons(SExp right)
     {
         return To(new Tuple<dynamic, dynamic>(this, right));
@@ -58,6 +57,7 @@ public class SExp
         {
             return Pair.Item1;
         }
+
         throw new EvalError("first of non-cons", this);
     }
 
@@ -67,9 +67,29 @@ public class SExp
         {
             return Pair.Item2;
         }
+
         throw new EvalError("rest of non-cons", this);
     }
 
+    public bool Listp()
+    {
+        return Pair != null;
+    }
+    
+    public int ListLength()
+    {
+        SExp v = this;
+        int size = 0;
+
+        while (v.Listp())
+        {
+            size++;
+            v = v.Rest();
+        }
+
+        return size;
+    }
+    
     public static SExp To(dynamic v)
     {
         if (v is SExp se)
@@ -77,14 +97,14 @@ public class SExp
             return se;
         }
 
-        if (LooksLikeCLVMObject(v))
+        if (HelperFunctions.LooksLikeCLVMObject(v))
         {
             return new SExp(v);
         }
 
         return new SExp(HelperFunctions.ToSexpType(v));
     }
-    
+
     public IEnumerable<SExp> AsIter()
     {
         var v = this;
@@ -94,24 +114,148 @@ public class SExp
             v = v.Rest();
         }
     }
-    
+
     public bool Nullp()
     {
         byte[]? v = Atom;
         return v is { Length: 0 };
     }
 
+    public byte[] AsBin()
+    {
+        using (MemoryStream stream = new MemoryStream())
+        {
+            Serialize.SexpToStream(this, stream);
+            return stream.ToArray();
+        }
+    }
+
     public override string ToString()
     {
         return BitConverter.ToString(AsBin()).Replace("-", "");
     }
-    
 
-    public static bool LooksLikeCLVMObject(object obj)
+    public SExp ToSexpType(dynamic v)
     {
-        var type = obj.GetType();
-        var properties = type.GetProperties().Select(p => p.Name).ToList();
-        return properties.Contains("Atom") && properties.Contains("Pair");
+        Stack<dynamic> stack = new Stack<dynamic>();
+        var stackList = stack.ToArray();
+        Stack<Tuple<int, int>> ops = new Stack<Tuple<int, int>>();
+        ops.Push(new Tuple<int, int>(0, -1)); // convert
+
+        while (ops.Count > 0)
+        {
+            Tuple<int, int> opTarget = ops.Pop();
+            int op = opTarget.Item1;
+            int target = opTarget.Item2;
+
+            // Convert value
+            if (op == 0)
+            {
+                if (HelperFunctions.LooksLikeCLVMObject(stack.Peek()))
+                {
+                    continue;
+                }
+
+                dynamic value = stack.Pop();
+
+                if (value is Tuple<dynamic, dynamic> tupleValue)
+                {
+                    object left = tupleValue.Item1;
+                    object right = tupleValue.Item2;
+
+                    if (left == null || right == null)
+                    {
+                        throw new InvalidOperationException("Tuple elements cannot be null.");
+                    }
+
+                    if (left is dynamic && right is dynamic)
+                    {
+                        Tuple<dynamic, dynamic> tuple = Tuple.Create((dynamic)left, (dynamic)right);
+                        target = stack.Count;
+                        stack.Push(tuple);
+
+                        if (!HelperFunctions.LooksLikeCLVMObject((dynamic)right))
+                        {
+                            stack.Push((dynamic)right);
+                            ops.Push(Tuple.Create(2, target)); // set right
+                            ops.Push(Tuple.Create(0, -1)); // convert
+                        }
+
+                        if (!HelperFunctions.LooksLikeCLVMObject((dynamic)left))
+                        {
+                            stack.Push((dynamic)left);
+                            ops.Push(Tuple.Create(1, target)); // set left
+                            ops.Push(Tuple.Create(0, -1)); // convert
+                        }
+
+                        continue;
+                    }
+                }
+                else if (value is List<dynamic> listValue)
+                {
+                    target = stack.Count;
+                    stack.Push(new CLVMObject(NULL));
+
+                    foreach (var item in listValue)
+                    {
+                        stack.Push(item);
+                        ops.Push(Tuple.Create(3, target)); // prepend list
+
+                        // We only need to convert if it's not already the right type
+                        if (!HelperFunctions.LooksLikeCLVMObject(item))
+                        {
+                            ops.Push(Tuple.Create(0, -1)); // convert
+                        }
+                    }
+
+                    continue;
+                }
+
+                stack.Push(new CLVMObject(ConvertAtomToBytes(value)));
+                continue;
+            }
+
+            if (op == 1) // set left
+            {
+                
+                if (stackList[target] is CLVMObject clvmObject)
+                {
+                    clvmObject.Pair = new (stack.Pop(), clvmObject.Pair.Item2);
+                }
+
+                continue;
+            }
+
+            if (op == 2) // set right
+            {
+                if (stackList[target] is CLVMObject clvmObject)
+                {
+
+                    clvmObject.Pair = new(clvmObject.Pair.Item1, new CLVMObject(stack.Pop()));
+                }
+
+                continue;
+            }
+
+            if (op == 3) // prepend list
+            {
+                if (stackList[target] is CLVMObject clvmObject)
+                {
+                    clvmObject.Pair = new (stack.Pop(), clvmObject.Pair);
+                }
+
+                continue;
+            }
+        }
+
+        // There's exactly one item left at this point
+        if (stack.Count != 1)
+        {
+            throw new InvalidOperationException("Internal error.");
+        }
+
+        // stack[0] implements the CLVM object protocol and can be wrapped by an SExp
+        return new SExp(stack.Pop());
     }
 
     public static byte[] ConvertAtomToBytes(object v)

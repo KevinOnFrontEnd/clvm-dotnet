@@ -20,7 +20,7 @@ public class Serialize
 
     const byte CONS_BOX_MARKER = 0xFF;
 
-    public IEnumerable<byte> SexpToByteIterator(SExp sexp)
+    public static IEnumerable<byte> SexpToByteIterator(SExp sexp)
     {
         Stack<SExp> todoStack = new Stack<SExp>();
         todoStack.Push(sexp);
@@ -223,7 +223,7 @@ public class Serialize
         }
     }
     
-    public void SexpToStream(SExp sexp, Stream stream)
+    public static void SexpToStream(SExp sexp, Stream stream)
     {
         using (BinaryWriter writer = new BinaryWriter(stream))
         {
@@ -234,7 +234,7 @@ public class Serialize
         }
     }
     
-    public IEnumerable<byte> AtomToByteIterator(byte[] asAtom)
+    public static IEnumerable<byte> AtomToByteIterator(byte[] asAtom)
     {
         int size = asAtom.Length;
 
