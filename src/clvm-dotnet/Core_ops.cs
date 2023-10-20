@@ -48,14 +48,14 @@ public class Core_ops
         return new Tuple<int, SExp>(Costs.REST_COST, args.First().Rest());
     }
 
-    public static Tuple<int, SExp> OpListp(SExp args)
+    public static Tuple<int, CLVMObject> OpListp(SExp args)
     {
         if (args.ListLength() != 1)
         {
             throw new EvalError("l takes exactly 1 argument", args);
         }
 
-        return new Tuple<int, SExp>(Costs.LISTP_COST, args.First().Listp() ? SExp.True : SExp.False);
+        return new Tuple<int, CLVMObject>(Costs.LISTP_COST, args.First().Listp() ?  SExp.True : SExp.False);
     }
 
     public static Tuple<int, SExp> OpRaise(SExp args)
@@ -70,7 +70,7 @@ public class Core_ops
         }
     }
 
-    public static Tuple<int, SExp> OpEq(SExp args)
+    public static Tuple<int, CLVMObject> OpEq(SExp args)
     {
         if (args.ListLength() != 2)
         {
@@ -91,6 +91,6 @@ public class Core_ops
         int cost = Costs.EQ_BASE_COST;
         cost += (b0.Length + b1.Length) * Costs.EQ_COST_PER_BYTE;
 
-        return new Tuple<int, SExp>(cost, b0.Equals(b1) ? SExp.True : SExp.False);
+        return new Tuple<int, CLVMObject>(cost, b0.Equals(b1) ? SExp.True : SExp.False);
     }
 }
