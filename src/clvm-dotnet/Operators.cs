@@ -184,5 +184,4 @@ public class OperatorDict : Dictionary<byte[], Func<CLVMObject, Tuple<int, CLVMO
     
     public static byte[] QUOTE_ATOM = KEYWORD_TO_ATOM["q"];
     public static byte[]  APPLY_ATOM = KEYWORD_TO_ATOM["a"];
-    
 }

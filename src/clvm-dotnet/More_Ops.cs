@@ -1,19 +1,19 @@
-// using System.Numerics;
-// using System.Security.Cryptography;
-// using MCL.BLS12_381.Net;
-//
-// namespace clvm_dotnet;
-//
-// public static class More_Ops
-// {
-//     private const int MALLOC_COST_PER_BYTE = 1;
-//     private const int SHA256_BASE_COST = 1; // Define other constants as needed.
-//
-//     public static CostResult MallocCost(int cost, SExp atom)
-//     {
-//         int newCost = cost + atom.AsAtom().Length * MALLOC_COST_PER_BYTE;
-//         return new CostResult { Cost = newCost, Atom = atom };
-//     }
+using System.Numerics;
+using System.Security.Cryptography;
+using MCL.BLS12_381.Net;
+
+namespace clvm_dotnet;
+
+public static class More_Ops
+{
+    private const int MALLOC_COST_PER_BYTE = 1;
+    private const int SHA256_BASE_COST = 1; // Define other constants as needed.
+
+    public static CostResult MallocCost(int cost, SExp atom)
+    {
+        int newCost = cost + atom.AsAtom().Length * MALLOC_COST_PER_BYTE;
+        return new CostResult { Cost = newCost, Atom = atom };
+    }
 //     
 //     public static CostResult OpSha256(SExp args)
 //     {
@@ -479,9 +479,10 @@
 // }
 //
 //
-// public class CostResult
-// {
-//     public int Cost { get; set; }
-//     public SExp Atom { get; set; }
-// }
-//
+    public class CostResult
+    {
+        public int Cost { get; set; }
+        public SExp Atom { get; set; }
+    }
+
+}
