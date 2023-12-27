@@ -7,11 +7,11 @@ namespace clvm_dotnet;
 public class CLVMObject
 {
     public byte[]? Atom { get; set; }
-    public Tuple<CLVMObject,CLVMObject> Pair { get; set; }
+    public Tuple<dynamic,dynamic> Pair { get; set; }
 
     public CLVMObject(dynamic v)
     {
-        if (v.GetType() == typeof(Tuple<object, object>))
+        if (v.GetType() == typeof(Tuple<dynamic, dynamic>))
         {
             Pair = v;
             Atom = null;

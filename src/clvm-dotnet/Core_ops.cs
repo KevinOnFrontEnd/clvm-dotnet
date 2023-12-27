@@ -4,7 +4,7 @@ public class Core_ops
 {
     public static Tuple<int, SExp> OpIf(SExp args)
     {
-        if (args.ListLen() != 3)
+        if (args.ListLength() != 3)
         {
             throw new EvalError("i takes exactly 3 arguments", args);
         }
@@ -20,17 +20,17 @@ public class Core_ops
 
     public static Tuple<int, SExp> OpCons(SExp args)
     {
-        if (args.ListLen() != 2)
+        if (args.ListLength() != 2)
         {
             throw new EvalError("c takes exactly 2 arguments", args);
         }
 
-        return new Tuple<int, SExp>(Costs.CONS_COST, args.First().cons(args.Rest().First()));
+        return new Tuple<int, SExp>(Costs.CONS_COST, args.First().Cons(args.Rest().First()));
     }
 
     public static Tuple<int, SExp> OpFirst(SExp args)
     {
-        if (args.ListLen() != 1)
+        if (args.ListLength() != 1)
         {
             throw new EvalError("f takes exactly 1 argument", args);
         }
@@ -40,7 +40,7 @@ public class Core_ops
 
     public static Tuple<int, SExp> OpRest(SExp args)
     {
-        if (args.ListLen() != 1)
+        if (args.ListLength() != 1)
         {
             throw new EvalError("r takes exactly 1 argument", args);
         }
@@ -48,19 +48,19 @@ public class Core_ops
         return new Tuple<int, SExp>(Costs.REST_COST, args.First().Rest());
     }
 
-    public static Tuple<int, SExp> OpListp(SExp args)
+    public static Tuple<int, CLVMObject> OpListp(SExp args)
     {
-        if (args.ListLen() != 1)
+        if (args.ListLength() != 1)
         {
             throw new EvalError("l takes exactly 1 argument", args);
         }
 
-        return new Tuple<int, SExp>(Costs.LISTP_COST, args.First().Listp() ? Sexp.True : Sexp.False);
+        return new Tuple<int, CLVMObject>(Costs.LISTP_COST, args.First().Listp() ?  SExp.True : SExp.False);
     }
 
     public static Tuple<int, SExp> OpRaise(SExp args)
     {
-        if (args.ListLen() == 1 && !args.First().Listp())
+        if (args.ListLength() == 1 && !args.First().Listp())
         {
             throw new EvalError("clvm raise", args.First());
         }
@@ -70,9 +70,9 @@ public class Core_ops
         }
     }
 
-    public static Tuple<int, SExp> OpEq(SExp args)
+    public static Tuple<int, CLVMObject> OpEq(SExp args)
     {
-        if (args.ListLen() != 2)
+        if (args.ListLength() != 2)
         {
             throw new EvalError("= takes exactly 2 arguments", args);
         }
@@ -91,6 +91,6 @@ public class Core_ops
         int cost = Costs.EQ_BASE_COST;
         cost += (b0.Length + b1.Length) * Costs.EQ_COST_PER_BYTE;
 
-        return new Tuple<int, SExp>(cost, b0.Equals(b1) ? Sexp.True : Sexp.False);
+        return new Tuple<int, CLVMObject>(cost, b0.Equals(b1) ? SExp.True : SExp.False);
     }
 }
