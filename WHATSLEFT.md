@@ -3,7 +3,7 @@ This has been pretty much a straight port from the chia clvm repo, with converti
 
 | Code | Description | Who is working on it |
 | -------- | ------- |
-| More_Options | he bulk of the implementation needs completing. |  |
-| | | |
+| More_Options | the bulk of the implementation needs completing. |  |
+| All tests | tests | |
 | | | |
 
