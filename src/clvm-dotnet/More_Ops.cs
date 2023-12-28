@@ -9,10 +9,10 @@ public static class More_Ops
     private const int MALLOC_COST_PER_BYTE = 1;
     private const int SHA256_BASE_COST = 1; // Define other constants as needed.
 
-    public static CostResult MallocCost(BigInteger cost, SExp atom)
+    public static Tuple<BigInteger, SExp>  MallocCost(BigInteger cost, SExp atom)
     {
         BigInteger newCost = cost + atom.AsAtom().Length * MALLOC_COST_PER_BYTE;
-        return new CostResult { Cost = newCost, Atom = atom };
+        return Tuple.Create(newCost,atom);
     }
     
      // public static CostResult OpSha256(SExp args)
@@ -129,22 +129,22 @@ public static class More_Ops
          return MallocCost(cost, args.To(total));
      }
 //     
-//     public (BigInteger, SExp) OpDivmod(SExp args)
-//     {
-//         BigInteger cost = Costs.DIV_BASE_COST;
-//         var (i0, l0) = ArgsAsIntList("divmod", args, 2)[0];
-//         var (i1, l1) = ArgsAsIntList("divmod", args, 2)[1];
-//         if (i1 == 0)
-//         {
-//             throw new EvalError("divmod with 0", args.To(i0));
-//         }
-//         cost += (l0 + l1) * Costs.DIV_COST_PER_BYTE;
-//         BigInteger q = BigInteger.DivRem(i0, i1, out BigInteger r);
-//         SExp q1 = args.To(q);
-//         SExp r1 = args.To(r);
-//         cost += (q1.Atom.Length + r1.Atom.Length) * Costs.MALLOC_COST_PER_BYTE;
-//         return (cost, args.To(new List<SExp> { q1, r1 }));
-//     }
+     public (BigInteger, SExp) OpDivmod(SExp args)
+     {
+         BigInteger cost = Costs.DIV_BASE_COST;
+         var (i0, l0) = ArgsAsIntList("divmod", args, 2)[0];
+         var (i1, l1) = ArgsAsIntList("divmod", args, 2)[1];
+         if (i1 == 0)
+         {
+             throw new EvalError("divmod with 0", args.To(i0));
+         }
+         cost += (l0 + l1) * Costs.DIV_COST_PER_BYTE;
+         BigInteger q = BigInteger.DivRem(i0, i1, out BigInteger r);
+         SExp q1 = args.To(q);
+         SExp r1 = args.To(r);
+         cost += (q1.Atom.Length + r1.Atom.Length) * Costs.MALLOC_COST_PER_BYTE;
+         return (cost, args.To(new List<SExp> { q1, r1 }));
+     }
 //
 //     public (BigInteger, SExp) OpDiv(SExp args)
 //     {
@@ -474,14 +474,5 @@ public static class More_Ops
     //
     //     return (cost, args.False);
     // }
-
-}
-//
-//
-    public class CostResult
-    {
-        public BigInteger Cost { get; set; }
-        public SExp Atom { get; set; }
-    }
 
 }
