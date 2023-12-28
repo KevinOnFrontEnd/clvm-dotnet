@@ -87,33 +87,32 @@ public static class More_Ops
          return intList;
      }
      
-     // public static IEnumerable<CLVMObject> ArgsAsBools(string opName, SExp args)
-     // {
-     //     foreach (var arg in args.AsIter())
-     //     {
-     //         byte[] v = arg.AsAtom();
-     //         if (v.Length == 0)
-     //         {
-     //             yield return args.False;
-     //         }
-     //         else
-     //         {
-     //             yield return args.True;
-     //         }
-     //     }
-     // }
+     public static IEnumerable<CLVMObject> ArgsAsBools(string opName, SExp args)
+     {
+         foreach (var arg in args.AsIter())
+         {
+             byte[] v = arg.AsAtom();
+             if (v.Length == 0)
+             {
+                 yield return SExp.False;
+             }
+             else
+             {
+                 yield return SExp.True;
+             }
+         }
+     }
      
-     
-//     public static List<CLVMObject> ArgsAsBoolList(string opName, SExp args, int count)
-//     {
-//         List<CLVMObject> boolList = ArgsAsBools(opName, args).ToList();
-//         if (boolList.Count != count)
-//         {
-//             string plural = count != 1 ? "s" : "";
-//             throw new EvalError($"{opName} takes exactly {count} argument{plural}", args);
-//         }
-//         return boolList;
-//     }
+     public static List<CLVMObject> ArgsAsBoolList(string opName, SExp args, int count)
+     {
+         List<CLVMObject> boolList = ArgsAsBools(opName, args).ToList();
+         if (boolList.Count != count)
+         {
+             string plural = count != 1 ? "s" : "";
+             throw new EvalError($"{opName} takes exactly {count} argument{plural}", args);
+         }
+         return boolList;
+     }
 
      public static Tuple<BigInteger,SExp> OpAdd(SExp args)
      {
@@ -443,15 +442,15 @@ public static class More_Ops
 //         return (cost, args.To(result ? args.True : args.False));
 //     }
 //
-//     public (int, SExp) OpAll(dynamic args)
-//     {
-//         List<bool> boolList = ArgsAsBoolList("all", args, 1);
-//         int cost = Costs.BOOL_BASE_COST + boolList.Count * Costs.BOOL_COST_PER_ARG;
-//         bool result = boolList.All(v => v);
-//         return (cost, args.To(result ? args.True : args.False));
-//     }
-//
-//
+     // public (int, SExp) OpAll(dynamic args)
+     // {
+     //     List<bool> boolList = ArgsAsBoolList("all", args, 1);
+     //     int cost = Costs.BOOL_BASE_COST + boolList.Count * Costs.BOOL_COST_PER_ARG;
+     //     bool result = boolList.All(v => v);
+     //     return (cost, args.To(result ? args.True : args.False));
+     // }
+
+
     // public (BigInteger, SExp) OpSoftfork(SExp args)
     // {
     //     if (args.ListLength() < 1)
