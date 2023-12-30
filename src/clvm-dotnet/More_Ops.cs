@@ -128,7 +128,7 @@ public static class More_Ops
          cost += argSize * Costs.ARITH_COST_PER_BYTE;
          return MallocCost(cost, SExp.To(total));
      }
-//     
+    
      // public (BigInteger, SExp) OpDivmod(SExp args)
      // {
      //     BigInteger cost = Costs.DIV_BASE_COST;

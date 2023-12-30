@@ -31,15 +31,20 @@ public class SExp
         Pair = obj.Pair;
     }
 
+    public SExp()
+    {
+        
+    }
+
     public Tuple<SExp, SExp>? AsPair()
     {
-        var pair = this.Pair;
-        if (pair == null)
+        if (Pair == null)
         {
             return null;
         }
-
-        return Tuple.Create(new SExp(pair?.Item1), new SExp(pair?.Item2));
+        var left = Pair.Item1 is SExp ? Pair.Item1 : new SExp (Pair.Item1);
+        var right = Pair.Item2 is SExp ? Pair.Item2 : new SExp(Pair.Item2);
+        return Tuple.Create<SExp,SExp>(left,right);
     }
 
     public byte[]? AsAtom()

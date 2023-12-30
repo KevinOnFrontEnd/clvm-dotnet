@@ -7,20 +7,12 @@ using Xunit;
 
 public class SExpTests
 {
-    /// <summary>
-    /// I believe there is a bug in Sexp.To()
-    ///
-    /// I've compared both the tree that is generated in c# and the python counterpart, and they look the same.
-    /// Disabling until the bug is fixed.
-    /// </summary>
-    [Fact(Skip = "Skpping until the ValidateSExp() method is completed")]
+    [Fact]
     public void test_case_1()
     {
         var sexp = SExp.To("foo");
         var t1 = SExp.To(new object[] { 1, sexp });
-        
-        //TODO: NOT WORKING AS EXPECTED
-        //ValidateSExp(t1);
+        ValidateSExp(t1);
     }
     
     /// <summary>
@@ -56,13 +48,13 @@ public class SExpTests
         Assert.Equal(expectedOutput, result);
     }
 
-    // [Fact]
-    // public void int_conversions()
-    // {
-    //     SExp a = SExp.To(1337);
-    //     byte[] expected = new byte[] { 0x5, 0x39 };
-    //     Assert.Equal(expected, a.AsAtom());
-    // }
+    [Fact]
+    public void int_conversions()
+    {
+        SExp a = SExp.To(1337);
+        byte[] expected = new byte[] { 0x5, 0x39 };
+        Assert.Equal(expected, a.AsAtom());
+    }
     
     // [Fact]
     // public void TestNoneBytesConversions()
@@ -135,7 +127,7 @@ public class SExpTests
         return ret;
     }
 
-    public static void ValidateSExp(SExp sexp)
+    private static void ValidateSExp(SExp sexp)
     {
         Stack<SExp> validateStack = new Stack<SExp>();
         validateStack.Push(sexp);
@@ -151,19 +143,19 @@ public class SExpTests
 
             if (v.Pair != null)
             {
-                if (!(v.Pair is Tuple<SExp,SExp>))
+                if (v.Pair.GetType() != typeof(Tuple<object,object>))
                 {
                     throw new InvalidOperationException("v.pair is not a Tuple");
                 }
 
-                Tuple<object, object> pair = v.Pair;
+                Tuple<dynamic, dynamic> pair = v.Pair;
 
                 if (!HelperFunctions.LooksLikeCLVMObject(pair.Item1) || !HelperFunctions.LooksLikeCLVMObject(pair.Item2))
                 {
                     throw new InvalidOperationException("One or both elements do not look like CLVM objects");
                 }
 
-                Tuple<dynamic, dynamic> sPair = v.AsPair();
+                var sPair = v.AsPair();
                 validateStack.Push(sPair.Item1);
                 validateStack.Push(sPair.Item2);
             }

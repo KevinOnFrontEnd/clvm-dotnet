@@ -150,7 +150,8 @@ public static class HelperFunctions
         if (v is int intValue)
         {
             Console.WriteLine("Atom is Int");
-            return BitConverter.GetBytes(intValue);
+            var s = Casts.IntToBytes(intValue);
+            return s;
         }
 
         if (v is null)
