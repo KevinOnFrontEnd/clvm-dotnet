@@ -91,18 +91,21 @@ public class SExp
         return size;
     }
     
-    public SExp To(dynamic v)
+    public static SExp To(dynamic v)
     {
         if (v is SExp se)
         {
+            Console.WriteLine("looks like sexp type to()");
             return se;
         }
 
         if (HelperFunctions.LooksLikeCLVMObject(v))
         {
+            Console.WriteLine("clvm object");
             return new SExp(v);
         }
 
+        Console.WriteLine("looks like sexp type to()");
         return new SExp(HelperFunctions.ToSexpType(v));
     }
     
@@ -155,9 +158,11 @@ public class SExp
         var stackList = stack.ToArray();
         Stack<Tuple<int, int>> ops = new Stack<Tuple<int, int>>();
         ops.Push(new Tuple<int, int>(0, -1)); // convert
-
+        int opIteration = 0;
         while (ops.Count > 0)
         {
+            opIteration += 1;
+            Console.WriteLine($"op iteration: {opIteration}");
             Tuple<int, int> opTarget = ops.Pop();
             int op = opTarget.Item1;
             int target = opTarget.Item2;
@@ -165,6 +170,7 @@ public class SExp
             // Convert value
             if (op == 0)
             {
+                Console.Write("op0");
                 if (HelperFunctions.LooksLikeCLVMObject(stack.Peek()))
                 {
                     continue;
@@ -280,14 +286,17 @@ public class SExp
         }
         else if (v is string str)
         {
+            Console.WriteLine("is string");
             return Encoding.UTF8.GetBytes(str);
         }
         else if (v is int intValue)
         {
+            Console.WriteLine("is int");
             return BitConverter.GetBytes(intValue);
         }
         else if (v is null)
         {
+            Console.WriteLine("is null");
             return new byte[0];
         }
         else if (v is List<object> list)

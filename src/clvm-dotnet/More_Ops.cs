@@ -126,25 +126,25 @@ public static class More_Ops
              cost += Costs.ARITH_COST_PER_ARG;
          }
          cost += argSize * Costs.ARITH_COST_PER_BYTE;
-         return MallocCost(cost, args.To(total));
+         return MallocCost(cost, SExp.To(total));
      }
 //     
-     public (BigInteger, SExp) OpDivmod(SExp args)
-     {
-         BigInteger cost = Costs.DIV_BASE_COST;
-         var (i0, l0) = ArgsAsIntList("divmod", args, 2)[0];
-         var (i1, l1) = ArgsAsIntList("divmod", args, 2)[1];
-         if (i1 == 0)
-         {
-             throw new EvalError("divmod with 0", args.To(i0));
-         }
-         cost += (l0 + l1) * Costs.DIV_COST_PER_BYTE;
-         BigInteger q = BigInteger.DivRem(i0, i1, out BigInteger r);
-         SExp q1 = args.To(q);
-         SExp r1 = args.To(r);
-         cost += (q1.Atom.Length + r1.Atom.Length) * Costs.MALLOC_COST_PER_BYTE;
-         return (cost, args.To(new List<SExp> { q1, r1 }));
-     }
+     // public (BigInteger, SExp) OpDivmod(SExp args)
+     // {
+     //     BigInteger cost = Costs.DIV_BASE_COST;
+     //     var (i0, l0) = ArgsAsIntList("divmod", args, 2)[0];
+     //     var (i1, l1) = ArgsAsIntList("divmod", args, 2)[1];
+     //     if (i1 == 0)
+     //     {
+     //         throw new EvalError("divmod with 0", args.To(i0));
+     //     }
+     //     cost += (l0 + l1) * Costs.DIV_COST_PER_BYTE;
+     //     BigInteger q = BigInteger.DivRem(i0, i1, out BigInteger r);
+     //     SExp q1 = args.To(q);
+     //     SExp r1 = args.To(r);
+     //     cost += (q1.Atom.Length + r1.Atom.Length) * Costs.MALLOC_COST_PER_BYTE;
+     //     return (cost, args.To(new List<SExp> { q1, r1 }));
+     // }
 //
 //     public (BigInteger, SExp) OpDiv(SExp args)
 //     {

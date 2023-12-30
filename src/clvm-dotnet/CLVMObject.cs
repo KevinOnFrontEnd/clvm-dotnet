@@ -6,20 +6,31 @@ namespace clvm_dotnet;
 /// </summary>
 public class CLVMObject
 {
-    public byte[]? Atom { get; set; }
-    public Tuple<dynamic,dynamic> Pair { get; set; }
+    public byte[] Atom { get;  set; }
+    public Tuple<object, object> Pair { get;  set; }
 
-    public CLVMObject(dynamic v)
+    public CLVMObject(object v)
     {
-        if (v.GetType() == typeof(Tuple<dynamic, dynamic>))
+        Console.WriteLine("initiating CLVMObject class");
+        if (v is CLVMObject clvmObj)
         {
-            Pair = v;
+            Atom = clvmObj.Atom;
+            Pair = clvmObj.Pair;
+        }
+        else if (v is Tuple<object, object> tuple)
+        {
+            if (tuple.Item1 == null || tuple.Item2 == null)
+            {
+                throw new ArgumentException("Tuples must not contain null values.");
+            }
+
+            Pair = tuple;
             Atom = null;
         }
         else
         {
+            Atom = HelperFunctions.ConvertAtomToBytes(v); // Implement your conversion logic
             Pair = null;
-            Atom = v;
         }
     }
     
