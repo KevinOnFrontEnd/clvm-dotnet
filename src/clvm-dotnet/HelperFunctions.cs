@@ -205,4 +205,12 @@ public static class HelperFunctions
 
         return false;
     }
+    
+    public static byte MSBMask(byte inputByte)
+    {
+        inputByte |= (byte)(inputByte >> 1);
+        inputByte |= (byte)(inputByte >> 2);
+        inputByte |= (byte)(inputByte >> 4);
+        return (byte)((inputByte + 1) >> 1);
+    }
 }
