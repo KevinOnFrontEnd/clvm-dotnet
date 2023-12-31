@@ -56,13 +56,13 @@ public class SExpTests
         Assert.Equal(expected, a.AsAtom());
     }
     
-    // [Fact]
-    // public void TestNoneBytesConversions()
-    // {
-    //     SExp a = SExp.To(null);
-    //     byte[] expected = new byte[0];
-    //     Assert.Equal(expected, a.AsAtom());
-    // }
+    [Fact]
+    public void TestNoneBytesConversions()
+    {
+        SExp a = SExp.To(null);
+        byte[] expected = Array.Empty<byte>();
+        Assert.Equal(expected, a.AsAtom());
+    }
 
     [Fact]
     public void empty_list_conversions()

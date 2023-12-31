@@ -25,7 +25,7 @@ public class SExp
      public byte[]? Atom { get; set; }
     public Tuple<dynamic, dynamic>? Pair { get; set; }
 
-    public SExp(CLVMObject obj)
+    public SExp(CLVMObject? obj)
     {
         Atom = obj.Atom;
         Pair = obj.Pair;
@@ -96,7 +96,7 @@ public class SExp
         return size;
     }
     
-    public static SExp To(dynamic v)
+    public static SExp To(dynamic? v)
     {
         if (v is SExp se)
         {
@@ -157,9 +157,56 @@ public class SExp
         return BitConverter.ToString(AsBin()).Replace("-", "");
     }
 
+    public bool Equals(dynamic other)
+    {
+        return true;
+    }
+
+    // Console.WriteLine("eq is being called");
+    //     try
+    //     {
+    //         other = SExp.To(other);
+    //         Stack<Tuple<dynamic, dynamic>> toCompareStack = new Stack<Tuple<dym, CastableType>>();
+    //         toCompareStack.Push(new Tuple<YourClass, CastableType>(this, other));
+    //
+    //         while (toCompareStack.Count > 0)
+    //         {
+    //             Tuple<YourClass, CastableType> pair = toCompareStack.Pop();
+    //             YourClass s1 = pair.Item1;
+    //             CastableType s2 = pair.Item2;
+    //
+    //             Tuple<YourClass, YourClass> p1 = s1.AsPair();
+    //             if (p1 != null)
+    //             {
+    //                 Tuple<CastableType, CastableType> p2 = s2.AsPair();
+    //                 if (p2 != null)
+    //                 {
+    //                     toCompareStack.Push(new Tuple<YourClass, CastableType>(p1.Item1, p2.Item1));
+    //                     toCompareStack.Push(new Tuple<YourClass, CastableType>(p1.Item2, p2.Item2));
+    //                 }
+    //                 else
+    //                 {
+    //                     return false;
+    //                 }
+    //             }
+    //             else if (s2.AsPair() != null || !s1.AsAtom().Equals(s2.AsAtom()))
+    //             {
+    //                 return false;
+    //             }
+    //         }
+    //
+    //         return true;
+    //     }
+    //     catch (ArgumentException)
+    //     {
+    //         return false;
+    //     }
+    // }
+    
+    
     public SExp ToSexpType(dynamic v)
     {
-        Stack<dynamic> stack = new Stack<dynamic>();
+        Stack<dynamic?> stack = new Stack<dynamic?>();
         var stackList = stack.ToArray();
         Stack<Tuple<int, int>> ops = new Stack<Tuple<int, int>>();
         ops.Push(new Tuple<int, int>(0, -1)); // convert
@@ -181,7 +228,7 @@ public class SExp
                     continue;
                 }
 
-                dynamic value = stack.Pop();
+                dynamic? value = stack.Pop();
 
                 if (value is Tuple<dynamic, dynamic> tupleValue)
                 {

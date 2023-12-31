@@ -10,7 +10,7 @@ public static class HelperFunctions
 {
     private static byte[] nullBytes = new byte[0];
 
-    public static dynamic ToSexpType(dynamic? v)
+    public static dynamic? ToSexpType(dynamic? v)
     {
         List<object> stack = new List<object> { v };
         List<(int op, int target)> ops = new List<(int op, int target)> { (0, -1) }; // convert
@@ -175,28 +175,31 @@ public static class HelperFunctions
         throw new ArgumentException($"Can't cast {v.GetType()} ({v}) to bytes");
     }
 
-    public static bool LooksLikeCLVMObject(object o)
+    public static bool LooksLikeCLVMObject(object? o)
     {
-        Type type = o.GetType();
-        PropertyInfo[] properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-        bool hasAtom = false;
-        bool hasPair = false;
-
-        foreach (PropertyInfo property in properties)
+        if (o != null)
         {
-            if (property.Name == "Atom")
-            {
-                hasAtom = true;
-            }
-            else if (property.Name == "Pair")
-            {
-                hasPair = true;
-            }
+            Type type = o.GetType();
+            PropertyInfo[] properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
-            if (hasAtom && hasPair)
+            bool hasAtom = false;
+            bool hasPair = false;
+
+            foreach (PropertyInfo property in properties)
             {
-                return true;
+                if (property.Name == "Atom")
+                {
+                    hasAtom = true;
+                }
+                else if (property.Name == "Pair")
+                {
+                    hasPair = true;
+                }
+
+                if (hasAtom && hasPair)
+                {
+                    return true;
+                }
             }
         }
 
