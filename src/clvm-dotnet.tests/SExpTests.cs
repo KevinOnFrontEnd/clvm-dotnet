@@ -21,13 +21,18 @@ public class SExpTests
     ///
     /// https://github.com/Chia-Network/clvm/blob/main/clvm/SExp.py#L209
     /// </summary>
-    [Fact(Skip = "Skipping until we can mimick the equality check that the python repo does")]
+    [Fact]
     public void TestWrapSExp()
     {
-        SExp sexp = SExp.To(1);
+        Console.WriteLine("\ntesting test wrap sexp");
+        Console.WriteLine("converting 1 to sexp");
+        
+        var sexp = SExp.To(1);
         CLVMObject o = new CLVMObject(sexp);
         byte[] expected = new byte[] { 1 };
-        Assert.Equal(expected, o.Atom);
+        
+        Console.WriteLine("Asserting equal");
+        Assert.True(o.Atom.Equals(expected));
     }
     
     [Fact]
@@ -35,7 +40,7 @@ public class SExpTests
     {
         SExp a = SExp.To(new object[] { 1, 2, 3 });
         string expectedOutput = "(1 (2 (3 () )))";
-        string result = PrintTree(a);
+        string result = PrintTree(a);       
         Assert.Equal(expectedOutput, result);
     }
 

@@ -6,12 +6,12 @@ namespace clvm_dotnet;
 /// </summary>
 public class CLVMObject
 {
-    public byte[] Atom { get;  set; }
+    public dynamic? Atom { get;  set; }
     public Tuple<object, object> Pair { get;  set; }
 
     public CLVMObject(object v)
     {
-        Console.WriteLine("initiating CLVMObject class");
+        Console.WriteLine("\ninitiating CLVMObject class");
         if (v is CLVMObject clvmObj)
         {
             Atom = clvmObj.Atom;
@@ -29,13 +29,14 @@ public class CLVMObject
         }
         else
         {
-            Atom = HelperFunctions.ConvertAtomToBytes(v); // Implement your conversion logic
+            Atom = v;
             Pair = null;
         }
     }
     
     public CLVMObject()
     {
+        Console.WriteLine("\ninitiating CLVMObject class");
     }
 
     public byte[] AsAtom()

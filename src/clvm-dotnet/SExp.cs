@@ -40,10 +40,14 @@ public class SExp
     {
         if (Pair == null)
         {
+            Console.WriteLine("self.pair is null");
             return null;
         }
         var left = Pair.Item1 is SExp ? Pair.Item1 : new SExp (Pair.Item1);
         var right = Pair.Item2 is SExp ? Pair.Item2 : new SExp(Pair.Item2);
+        
+        Console.WriteLine($"type of pair[0]: {left}");
+        Console.WriteLine($"type of pair[1]: {right}");
         return Tuple.Create<SExp,SExp>(left,right);
     }
 
@@ -98,9 +102,11 @@ public class SExp
     
     public static SExp To(dynamic? v)
     {
+        Console.WriteLine("\nnot sure why this is being called");
+        
         if (v is SExp se)
         {
-            Console.WriteLine("looks like sexp type to()");
+            Console.WriteLine("instance of sexp");
             return se;
         }
 
@@ -110,7 +116,7 @@ public class SExp
             return new SExp(v);
         }
 
-        Console.WriteLine("looks like sexp type to()");
+        Console.WriteLine($"looks like sexp type to() {v}");
         return new SExp(HelperFunctions.ToSexpType(v));
     }
     
@@ -159,50 +165,48 @@ public class SExp
 
     public bool Equals(dynamic other)
     {
-        return true;
+        try
+        {
+            var thisob = this;
+            var otherObj = SExp.To(other);
+            Stack<(SExp, SExp)> toCompareStack = new Stack<(SExp, SExp)>();
+            toCompareStack.Push((this, otherObj));
+            
+            
+
+            while (toCompareStack.Count > 0)
+            {
+                var (s1,s2)  = toCompareStack.Pop();
+                var p1 = s1.AsPair();
+
+                if (p1 != null)
+                {
+                    var p2 = s2.AsPair();
+
+                    if (p2 != null)
+                    {
+                        toCompareStack.Push((p1.Item1, p2.Item1));
+                        toCompareStack.Push((p1.Item2, p2.Item2));
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else if (s2.AsPair() != null || !s1.AsAtom().SequenceEqual(s2.AsAtom()))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 
-    // Console.WriteLine("eq is being called");
-    //     try
-    //     {
-    //         other = SExp.To(other);
-    //         Stack<Tuple<dynamic, dynamic>> toCompareStack = new Stack<Tuple<dym, CastableType>>();
-    //         toCompareStack.Push(new Tuple<YourClass, CastableType>(this, other));
-    //
-    //         while (toCompareStack.Count > 0)
-    //         {
-    //             Tuple<YourClass, CastableType> pair = toCompareStack.Pop();
-    //             YourClass s1 = pair.Item1;
-    //             CastableType s2 = pair.Item2;
-    //
-    //             Tuple<YourClass, YourClass> p1 = s1.AsPair();
-    //             if (p1 != null)
-    //             {
-    //                 Tuple<CastableType, CastableType> p2 = s2.AsPair();
-    //                 if (p2 != null)
-    //                 {
-    //                     toCompareStack.Push(new Tuple<YourClass, CastableType>(p1.Item1, p2.Item1));
-    //                     toCompareStack.Push(new Tuple<YourClass, CastableType>(p1.Item2, p2.Item2));
-    //                 }
-    //                 else
-    //                 {
-    //                     return false;
-    //                 }
-    //             }
-    //             else if (s2.AsPair() != null || !s1.AsAtom().Equals(s2.AsAtom()))
-    //             {
-    //                 return false;
-    //             }
-    //         }
-    //
-    //         return true;
-    //     }
-    //     catch (ArgumentException)
-    //     {
-    //         return false;
-    //     }
-    // }
-    
     
     public SExp ToSexpType(dynamic v)
     {
