@@ -18,79 +18,78 @@
 public class Serialize
 {
     const byte MAX_SINGLE_BYTE = 0x7F;
+    
 
     const byte CONS_BOX_MARKER = 0xFF;
 
     const byte EMPTY_BYTE = 0x00;
 
-    public static IEnumerable<byte> SexpToByteIterator(SExp sexp)
+
+    public static object SexpFromStream(Stream f)
     {
-        Stack<SExp> todoStack = new Stack<SExp>();
-        todoStack.Push(sexp);
-
-        while (todoStack.Count > 0)
+        var opStack = new Stack<Action>();
+        Stack<dynamic> valStack = new Stack<dynamic>();
+        opStack.Push(() => OpReadSexp(opStack,valStack, f));
+        while (opStack.Count > 0)
         {
-            sexp = todoStack.Pop();
-            Tuple<SExp, SExp> pair = sexp.AsPair();
+            var func = opStack.Pop();
+            func();
+        }
 
-            if (pair != null)
-            {
-                yield return CONS_BOX_MARKER;
-                todoStack.Push(pair.Item1);
-                todoStack.Push(pair.Item2);
-            }
-            else
-            {
-                foreach (byte atomByte in AtomToByteIterator(sexp.AsAtom()))
-                {
-                    yield return atomByte;
-                }
-            }
+        var s = valStack.Pop();
+        var t = s();
+        return SExp.To(t);
+    }
+
+    public static void OpReadSexp(Stack<Action> opStack, Stack<dynamic> valStack, Stream stream)
+    {
+        BinaryReader reader = new BinaryReader(stream);
+        byte b = 0;
+
+        if (reader.BaseStream.Length == 0)
+            throw new Exception("Bad encoding");
+        
+        if (reader.BaseStream.Length > 0 && reader.BaseStream.Position < reader.BaseStream.Length)
+            b = reader.ReadByte();
+
+        if (b == CONS_BOX_MARKER)
+        {
+            // Push operations to construct a cons pair
+            opStack.Push(() => OpCons(opStack, valStack));
+            opStack.Push(() => OpReadSexp(opStack, valStack, stream));
+            opStack.Push(() => OpReadSexp(opStack, valStack, stream));
+        }
+        else
+        {
+            //Push an operation to consume the atom and add it to valStack
+            opStack.Push(() => AtomFromStream(reader, b));
         }
     }
 
-    public void OpCons(Stack<Action> opStack, Stack<SExp> valStack, Func<dynamic, SExp> toSexp)
+    public static void OpCons(Stack<Action> opStack, Stack<dynamic> valStack)
     {
         if (valStack.Count < 2)
         {
             throw new InvalidOperationException("Not enough values on val_stack to perform cons operation.");
         }
 
-        SExp right = valStack.Pop();
-        SExp left = valStack.Pop();
-
-        valStack.Push(toSexp(new Tuple<dynamic, dynamic>(left, right)));
+        var right = valStack.Pop();
+        var left = valStack.Pop();
+        var leftObj = left();
+        var rightObj = right();
+        valStack.Push(SExp.To(new Tuple<dynamic, dynamic>(leftObj, rightObj)));
     }
 
-    public void OpReadSexp(Stack<Action> opStack, Stack<SExp> valStack, Stream stream, Func<dynamic, SExp> toSexp)
+    public static SExp AtomFromStream(BinaryReader reader, byte b)
     {
-        BinaryReader reader = new BinaryReader(stream);
-        byte b = reader.ReadByte();
-
-        if (b == CONS_BOX_MARKER)
+        if (b == 0x80)
         {
-            // Push operations to construct a cons pair
-            opStack.Push(() => OpReadSexp(opStack, valStack, stream, toSexp));
-            opStack.Push(() => OpReadSexp(opStack, valStack, stream, toSexp));
-            opStack.Push(() => OpCons(opStack, valStack, toSexp));
-        }
-        else
-        {
-            // Push an operation to consume the atom and add it to valStack
-            opStack.Push(() => AtomFromStream(reader, b, toSexp));
-        }
-    }
-
-    public SExp AtomFromStream(BinaryReader reader, byte b, Func<byte[], SExp> toSexp)
-    {
-        if (b == EMPTY_BYTE)
-        {
-            return toSexp(new byte[0]);
+            return SExp.To(new byte[0]);
         }
 
         if (b <= MAX_SINGLE_BYTE)
         {
-            return toSexp(new byte[] { b });
+            return SExp.To(new byte[] { b });
         }
 
         int bitCount = 0;
@@ -110,7 +109,7 @@ public class Serialize
             byte[] llBytes = reader.ReadBytes(bitCount - 1);
             if (llBytes.Length != bitCount - 1)
             {
-                throw new InvalidOperationException("bad encoding");
+                throw new InvalidOperationException("Bad encoding - AtomFromStream");
             }
 
             sizeBlob = ConcatBytes(sizeBlob, llBytes);
@@ -126,12 +125,39 @@ public class Serialize
         byte[] blob = reader.ReadBytes((int)size);
         if (blob.Length != (int)size)
         {
-            throw new InvalidOperationException("bad encoding");
+            throw new InvalidOperationException("Bad encoding");
         }
 
-        return toSexp(blob);
+        return SExp.To(blob);
     }
 
+    public static IEnumerable<byte> SexpToByteIterator(SExp sexp)
+    {
+        Stack<SExp> todoStack = new Stack<SExp>();
+        todoStack.Push(sexp);
+
+        while (todoStack.Count > 0)
+        {
+            sexp = todoStack.Pop();
+            Tuple<SExp, SExp> pair = sexp.AsPair();
+
+            if (pair != null)
+            {
+                yield return CONS_BOX_MARKER;
+                todoStack.Push(pair.Item1);
+                todoStack.Push(pair.Item2);
+            }
+            else
+            {
+                var atom = sexp.AsAtom();
+                foreach (byte atomByte in AtomToByteIterator(atom))
+                {
+                    yield return atomByte;
+                }
+            }
+        }
+    }
+    
     public static Tuple<byte[], int> OpConsumeSexp(Stream stream)
     {
         byte[] blob = new byte[1];
@@ -139,7 +165,7 @@ public class Serialize
 
         if (bytesRead == 0)
         {
-            throw new ArgumentException("Bad encoding");
+            throw new Exception("Bad encoding");
         }
 
         byte b = blob[0];
@@ -155,13 +181,72 @@ public class Serialize
         }
     }
 
-    private static byte[] ConsumeAtom(Stream stream, byte b)
+    public static byte[] ConsumeAtom(Stream stream, byte b)
     {
-        // Implement the '_consume_atom' method here to read and process the atom.
-        // You will need to define your own logic for this.
-        throw new NotImplementedException();
+        if (b == 0x80)
+        {
+            return new byte[] { b };
+        }
+        if (b <= MAX_SINGLE_BYTE)
+        {
+            return new byte[] { b };
+        }
+
+        int bitCount = 0;
+        byte bitMask = 0x80;
+        byte ll = b;
+
+        while ((ll & bitMask) != 0)
+        {
+            bitCount++;
+            ll &= (byte)~bitMask;
+            bitMask >>= 1;
+        }
+
+        byte[] sizeBlob = new byte[] { ll };
+
+        if (bitCount > 1)
+        {
+            byte[] llBytes = new byte[bitCount - 1];
+            int bytesRead = stream.Read(llBytes, 0, llBytes.Length);
+
+            if (bytesRead != bitCount - 1)
+            {
+                throw new InvalidOperationException("Bad encoding - ConsumeAtom");
+            }
+
+            sizeBlob = CombineArrays(sizeBlob, llBytes);
+        }
+
+        ulong size = BitConverter.ToUInt64(sizeBlob, 0);
+
+        if (size >= 0x400000000)
+        {
+            throw new InvalidOperationException("Blob too large");
+        }
+
+        byte[] blob = new byte[(int)size];
+        int bytesReadBlob = stream.Read(blob, 0, blob.Length);
+
+        if (bytesReadBlob != blob.Length)
+        {
+            throw new InvalidOperationException("Bad encoding");
+        }
+
+        byte[] result = new byte[] { b };
+        result = CombineArrays(result, sizeBlob, 1);
+        result = CombineArrays(result, blob, 0);
+
+        return result;
     }
 
+    public static byte[] CombineArrays(byte[] array1, byte[] array2, int array2StartIndex = 0)
+    {
+        byte[] result = new byte[array1.Length + array2.Length - array2StartIndex];
+        Buffer.BlockCopy(array1, 0, result, 0, array1.Length);
+        Buffer.BlockCopy(array2, array2StartIndex, result, array1.Length, array2.Length - array2StartIndex);
+        return result;
+    }
 
     public byte[] ConsumeAtom(BinaryReader reader, byte b)
     {
@@ -193,7 +278,7 @@ public class Serialize
             byte[] llBytes = reader.ReadBytes(bitCount - 1);
             if (llBytes.Length != bitCount - 1)
             {
-                throw new InvalidOperationException("bad encoding");
+                throw new InvalidOperationException("Bad encoding");
             }
 
             sizeBlob = ConcatBytes(sizeBlob, llBytes);
@@ -209,7 +294,7 @@ public class Serialize
         byte[] blob = reader.ReadBytes((int)size);
         if (blob.Length != (int)size)
         {
-            throw new InvalidOperationException("bad encoding");
+            throw new InvalidOperationException("Bad encoding");
         }
 
         byte[] result = new byte[] { b };
@@ -232,36 +317,25 @@ public class Serialize
         Buffer.BlockCopy(source, startIndex, result, 0, result.Length);
         return result;
     }
-
+    
     public static byte[] SexpBufferFromStream(Stream stream)
     {
-        using (BinaryReader reader = new BinaryReader(stream))
+        MemoryStream ret = new MemoryStream();
+        int depth = 1;
+
+        while (depth > 0)
         {
-            using (MemoryStream ret = new MemoryStream())
-            {
-                int depth = 1;
-                while (depth > 0)
-                {
-                    depth--;
-
-                    // Read a byte from the stream
-                    byte currentByte = reader.ReadByte();
-
-                    if (currentByte != EMPTY_BYTE)
-                        ret.WriteByte(currentByte);
-
-                    // Check if it's the marker for a pair (adjust as needed)
-                    if (currentByte == CONS_BOX_MARKER)
-                    {
-                        depth++;
-                    }
-                }
-
-                return ret.ToArray();
-            }
+            depth--;
+            byte[] buf;
+            int d;
+            (buf, d) = OpConsumeSexp(stream);
+            depth += d;
+            ret.Write(buf, 0, buf.Length);
         }
-    }
 
+        return ret.ToArray();
+    }
+    
     public static void SexpToStream(SExp sexp, Stream stream)
     {
         using (BinaryWriter writer = new BinaryWriter(stream))
@@ -279,7 +353,7 @@ public class Serialize
 
         if (size == 0)
         {
-            yield return EMPTY_BYTE;
+            yield return 0x80;
             yield break;
         }
 
@@ -291,7 +365,7 @@ public class Serialize
 
         if (size < 0x40)
         {
-            yield return (byte)(0x80 | size);
+            yield return (byte)(EMPTY_BYTE | size);
         }
         else if (size < 0x2000)
         {
