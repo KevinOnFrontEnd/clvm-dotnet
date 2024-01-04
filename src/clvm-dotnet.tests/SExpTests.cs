@@ -77,6 +77,21 @@ public class SExpTests
         Assert.Equal(expected, a.AsAtom());
     }
 
+    [Theory]
+    [InlineData(new byte[]{  }, new int[] {0})] 
+    // [InlineData(new byte[] { 4, 5, 6 }, new byte[] {8,8})] 
+    // [InlineData(new byte[] { 8, 9 }, new byte[]  {256,256})]  
+    // [InlineData(new byte[] { 8, 9 }, new byte[]   {512,512,512})]  
+    // [InlineData(new byte[] { 8, 9 }, new byte[]  {1024,1024,1024,1024})]  
+    // [InlineData(new byte[] { 8, 9 }, new List<int>  {2048,248,2048,2048,2048})]  
+    public void sexp_AsBinIsInCorrectOrder(byte[] expected, int[] sexp_list)
+    {
+        SExp v = SExp.To(sexp_list);
+        var bytes = v.AsBin();
+        Assert.Equal(expected, bytes );
+    }
+
+    
     #region test helpers that should probably go into SExp object
 
     private string PrintLeaves(SExp tree)

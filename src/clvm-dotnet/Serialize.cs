@@ -14,81 +14,91 @@
 // 1000 0000 -> 0 bytes : nil
 // 0000 0000 -> 1 byte : zero (b'\x00')
 
+using System.Numerics;
+using clvm_dotnet;
+
 /// </summary>
 public class Serialize
 {
     const byte MAX_SINGLE_BYTE = 0x7F;
-    
+
 
     const byte CONS_BOX_MARKER = 0xFF;
 
     const byte EMPTY_BYTE = 0x00;
 
+    public delegate void SerializeOperatorDelegate(Stack<SerializeOperatorDelegate> opStack, Stack<dynamic> valStack, Stream stream, Type to_sexp);
 
     public static object SexpFromStream(Stream f)
     {
-        var opStack = new Stack<Action>();
-        Stack<dynamic> valStack = new Stack<dynamic>();
-        opStack.Push(() => OpReadSexp(opStack,valStack, f));
+        Stack<SerializeOperatorDelegate> opStack = new Stack<SerializeOperatorDelegate>();
+        opStack.Push(OpReadSexp);
+        var valStack = new Stack<dynamic>();
+
         while (opStack.Count > 0)
         {
             var func = opStack.Pop();
-            func();
+            func(opStack, valStack, f, typeof(CLVMObject));
         }
 
-        var s = valStack.Pop();
-        var t = s();
-        return SExp.To(t);
+        var val = valStack.Pop();
+        return SExp.To(val);
     }
 
-    public static void OpReadSexp(Stack<Action> opStack, Stack<dynamic> valStack, Stream stream)
+    public static void OpReadSexp(Stack<SerializeOperatorDelegate> opStack, Stack<dynamic> valStack, Stream stream, Type to_sexp )
     {
         BinaryReader reader = new BinaryReader(stream);
         byte b = 0;
+        var blob = Array.Empty<byte>();
 
         if (reader.BaseStream.Length == 0)
             throw new Exception("Bad encoding");
-        
-        if (reader.BaseStream.Length > 0 && reader.BaseStream.Position < reader.BaseStream.Length)
-            b = reader.ReadByte();
+
+        if (reader.BaseStream.Position < reader.BaseStream.Length)
+            blob = reader.ReadBytes(1);
+
+        b = blob[0];
 
         if (b == CONS_BOX_MARKER)
         {
-            // Push operations to construct a cons pair
-            opStack.Push(() => OpCons(opStack, valStack));
-            opStack.Push(() => OpReadSexp(opStack, valStack, stream));
-            opStack.Push(() => OpReadSexp(opStack, valStack, stream));
+            //Push operations to construct a cons pair
+             opStack.Push(OpCons);
+             opStack.Push(OpReadSexp);
+             opStack.Push(OpReadSexp);
+             return;
         }
-        else
-        {
-            //Push an operation to consume the atom and add it to valStack
-            opStack.Push(() => AtomFromStream(reader, b));
-        }
+
+        //Push an operation to consume the atom and add it to valStack
+        var atom = AtomFromStream(reader, b, to_sexp);
+        valStack.Push(atom);
     }
 
-    public static void OpCons(Stack<Action> opStack, Stack<dynamic> valStack)
+    public static void OpCons(Stack<SerializeOperatorDelegate> opStack, Stack<dynamic> valStack, Stream stream, Type to_sexp)
     {
         if (valStack.Count < 2)
         {
             throw new InvalidOperationException("Not enough values on val_stack to perform cons operation.");
         }
-
         var right = valStack.Pop();
         var left = valStack.Pop();
-        var leftObj = left();
-        var rightObj = right();
-        valStack.Push(SExp.To(new Tuple<dynamic, dynamic>(leftObj, rightObj)));
+        valStack.Push(SExp.To(new Tuple<dynamic, dynamic>(left, right)));
     }
 
-    public static SExp AtomFromStream(BinaryReader reader, byte b)
+    public static dynamic AtomFromStream(BinaryReader reader, byte b, Type to_sexp)
     {
         if (b == 0x80)
         {
+            if (to_sexp == typeof(CLVMObject))
+                return new CLVMObject(new byte[0]);
+            
             return SExp.To(new byte[0]);
         }
 
         if (b <= MAX_SINGLE_BYTE)
         {
+            if (to_sexp == typeof(CLVMObject))
+                return new CLVMObject(new byte[] { b });
+            
             return SExp.To(new byte[] { b });
         }
 
@@ -133,23 +143,24 @@ public class Serialize
 
     public static IEnumerable<byte> SexpToByteIterator(SExp sexp)
     {
-        Stack<SExp> todoStack = new Stack<SExp>();
+        Stack<dynamic> todoStack = new Stack<dynamic>();
         todoStack.Push(sexp);
 
         while (todoStack.Count > 0)
         {
-            sexp = todoStack.Pop();
-            Tuple<SExp, SExp> pair = sexp.AsPair();
+            var p = todoStack.Pop();
+            Tuple<dynamic, dynamic>? pair = p.Pair;
 
             if (pair != null)
             {
-                yield return CONS_BOX_MARKER;
-                todoStack.Push(pair.Item1);
                 todoStack.Push(pair.Item2);
+                todoStack.Push(pair.Item1);
+ 
+                yield return CONS_BOX_MARKER;
             }
             else
             {
-                var atom = sexp.AsAtom();
+                var atom = p.AsAtom();
                 foreach (byte atomByte in AtomToByteIterator(atom))
                 {
                     yield return atomByte;
@@ -157,7 +168,7 @@ public class Serialize
             }
         }
     }
-    
+
     public static Tuple<byte[], int> OpConsumeSexp(Stream stream)
     {
         byte[] blob = new byte[1];
@@ -187,6 +198,7 @@ public class Serialize
         {
             return new byte[] { b };
         }
+
         if (b <= MAX_SINGLE_BYTE)
         {
             return new byte[] { b };
@@ -317,7 +329,7 @@ public class Serialize
         Buffer.BlockCopy(source, startIndex, result, 0, result.Length);
         return result;
     }
-    
+
     public static byte[] SexpBufferFromStream(Stream stream)
     {
         MemoryStream ret = new MemoryStream();
@@ -335,7 +347,7 @@ public class Serialize
 
         return ret.ToArray();
     }
-    
+
     public static void SexpToStream(SExp sexp, Stream stream)
     {
         using (BinaryWriter writer = new BinaryWriter(stream))
@@ -349,7 +361,7 @@ public class Serialize
 
     public static IEnumerable<byte> AtomToByteIterator(byte[] asAtom)
     {
-        int size = asAtom.Length;
+        BigInteger size = asAtom.Length;
 
         if (size == 0)
         {

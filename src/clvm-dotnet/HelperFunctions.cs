@@ -12,7 +12,7 @@ public static class HelperFunctions
 
     public static dynamic? ToSexpType(dynamic? v)
     {
-        List<object> stack = new List<object> { v };
+        List<dynamic> stack = new List<dynamic>(){v};
         List<(int op, int target)> ops = new List<(int op, int target)> { (0, -1) }; // convert
         int opIteration = 0;
         
@@ -33,7 +33,7 @@ public static class HelperFunctions
                     continue;
                 }
 
-                object value = stack[stack.Count - 1];
+                dynamic value = stack[stack.Count - 1];
                 stack.RemoveAt(stack.Count - 1);
 
                 if (value is Tuple<object, object> tuple)
@@ -57,15 +57,15 @@ public static class HelperFunctions
                     continue;
                 }
 
-                if (value is Object[] list)
+                if (value.GetType().IsGenericType && value.GetType().GetGenericTypeDefinition() == typeof(List<>) )
                 {
                     Console.WriteLine("v is a list");
                     target = stack.Count;
                     Console.WriteLine($"length of stack is {target}");
                     stack.Add(new CLVMObject(nullBytes));
-                    Console.WriteLine($"length of list is {list.Length}");
+                    Console.WriteLine($"length of list is {value.Count}");
                     int iteration = 0;
-                    foreach (object item in list)
+                    foreach (object item in value)
                     {
                         iteration += 1;
                         
@@ -92,7 +92,7 @@ public static class HelperFunctions
             if (op == 1) // set left
             {
                 Console.WriteLine("op1");
-                var leftValue = (CLVMObject)stack[stack.Count-1];
+                var leftValue = new CLVMObject(stack[stack.Count-1]);
                 stack.RemoveAt(stack.Count-1);
                 var currentPair = ((Tuple<CLVMObject, CLVMObject>)stack[target]);
                 stack[target] = new Tuple<CLVMObject, CLVMObject>(leftValue, currentPair.Item2);
@@ -102,7 +102,7 @@ public static class HelperFunctions
             if (op == 2) // set right
             {
                 Console.WriteLine("op2");
-                var rightValue = (CLVMObject)stack[stack.Count-1];
+                var rightValue = new CLVMObject(stack[stack.Count-1]);
                 stack.RemoveAt(stack.Count-1);
                 var currentPair = ((Tuple<CLVMObject, CLVMObject>)stack[target]);
                 stack[target] = new Tuple<CLVMObject, CLVMObject>(currentPair.Item1, rightValue);
@@ -114,7 +114,7 @@ public static class HelperFunctions
                 Console.WriteLine("op3");
                 var item = stack[stack.Count-1];
                 stack.RemoveAt(stack.Count-1);
-                var newValue = new Tuple<object, object>(
+                var newValue = new Tuple<dynamic, dynamic>(
                     item,
                     stack[target]
                 );
@@ -130,7 +130,7 @@ public static class HelperFunctions
         }
 
         // stack[0] implements the CLVM object protocol and can be wrapped by an SExp
-        return (CLVMObject)stack[0];
+        return stack[0];
     }
 
     public static byte[] ConvertAtomToBytes(dynamic? v)
@@ -140,6 +140,13 @@ public static class HelperFunctions
             Console.WriteLine("Atom is bytes");
             return bytes;
         }
+        
+        // if (v is int[] intBytes)
+        // {
+        //     Console.WriteLine("Atom is bytes");
+        //     var s = Casts.IntToBytes(intBytes);
+        //     return s;
+        // }
 
         if (v is string str)
         {
@@ -160,7 +167,7 @@ public static class HelperFunctions
             return Array.Empty<byte>();
         }
 
-        if (v is IList list && list.Count == 0)
+        if (v is List<int> list && v.Count == 0)
         {
             Console.WriteLine("Atom is empty list");
             return Array.Empty<byte>();

@@ -17,22 +17,31 @@ public static class Casts
 
     public static byte[] IntToBytes(BigInteger v)
     {
-        int byteCount = (int)((v.GetBitLength() + 7) >> 3);
-        if (v == 0)
-        {
-            return Array.Empty<byte>();
-        }
-        byte[] result = v.ToByteArray(isBigEndian: true);
+        byte[] byteArray = v.ToByteArray();
         
-        // Ensure the returned byte array is minimal
-        while (result.Length > 1 && (result[0] == 0xFF && (result[1] & 0x80) != 0 || result[0] == 0))
+        if (BitConverter.IsLittleEndian)
         {
-            byte[] trimmedResult = new byte[result.Length - 1];
-            Array.Copy(result, 1, trimmedResult, 0, trimmedResult.Length);
-            result = trimmedResult;
+            byteArray = byteArray.Reverse().ToArray();
         }
-        
-        return result;
+
+        while (byteArray.Length > 1 && (byteArray[0] == 0xFF || byteArray[0] == 0x00))
+        {
+            byteArray = byteArray.Skip(1).ToArray();
+        }
+
+        if (!v.IsZero)
+        {
+            if (byteArray[0] >= 0x80)
+            {
+                byteArray = new byte[] { 0 }.Concat(byteArray).ToArray();
+            }
+        }
+        else
+        {
+            byteArray = new byte[0];
+        }
+
+        return byteArray;
     }
 
     public static int LimbsForInt(BigInteger v)
