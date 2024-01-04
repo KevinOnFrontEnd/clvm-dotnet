@@ -194,8 +194,8 @@ public class SerializeTests
     [Fact]
     public void TestZero()
     {
-        byte[] inputBytes = new byte[] { 0x00 };
-        SExp v = SExp.To(inputBytes);
+        byte b = 0x00;
+        SExp v = SExp.To(b);
         byte[] vAsBin = v.AsBin();
         byte[] expectedBytes = new byte[] { 0x00 };
         Assert.Equal(expectedBytes, vAsBin);
@@ -214,11 +214,11 @@ public class SerializeTests
     [Fact]
      public void TestShortLists()
      {
-         for (int _ = 8; _ < 16; _ += 8)
+         for (int _ = 8; _ < 36; _ += 8)
          {
              for (int size = 1; size < 5; size++)
              {
-                 CheckSerde(Enumerable.Repeat(_, size).ToList());
+                 CheckSerde(Enumerable.Repeat(_, size).ToArray());
              }
          }
      }   

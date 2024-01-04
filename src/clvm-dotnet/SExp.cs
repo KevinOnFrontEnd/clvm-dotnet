@@ -2,8 +2,6 @@ using System.Numerics;
 using System.Text;
 using clvm_dotnet;
 
-
-/// <summary>
 //  SExp provides higher level API on top of any object implementing the CLVM
 //  object protocol.
 //  The tree of values is not a tree of SExp objects, it's a tree of CLVMObject
@@ -15,13 +13,11 @@ using clvm_dotnet;
 //  2. "pair" which is either None or a tuple of exactly two elements. Both
 // elements implementing the CLVM object protocol.
 // Exactly one of "atom" and "pair" must be None.
-/// </summary>
 public class SExp
 {
      public static CLVMObject True { get; } = new CLVMObject { Atom = new byte[] { 0x01 } };
      public static CLVMObject False { get; } = new CLVMObject();
      public static CLVMObject NULL { get; } = null;
-
      public byte[]? Atom { get; set; }
     public Tuple<dynamic, dynamic>? Pair { get; set; }
 
@@ -33,21 +29,16 @@ public class SExp
 
     public SExp()
     {
-        
     }
 
     public Tuple<SExp, SExp>? AsPair()
     {
         if (Pair == null)
         {
-            Console.WriteLine("self.pair is null");
             return null;
         }
         var left = Pair.Item1 is SExp ? Pair.Item1 : new SExp (Pair.Item1);
         var right = Pair.Item2 is SExp ? Pair.Item2 : new SExp(Pair.Item2);
-        
-        Console.WriteLine($"type of pair[0]: {left}");
-        Console.WriteLine($"type of pair[1]: {right}");
         return Tuple.Create<SExp,SExp>(left,right);
     }
 
@@ -102,21 +93,16 @@ public class SExp
     
     public static SExp To(dynamic? v)
     {
-        Console.WriteLine("\nnot sure why this is being called");
-        
         if (v is SExp se)
         {
-            Console.WriteLine("instance of sexp");
             return se;
         }
 
         if (HelperFunctions.LooksLikeCLVMObject(v))
         {
-            Console.WriteLine("clvm object");
             return new SExp(v);
         }
-
-        Console.WriteLine($"looks like sexp type to() {v}");
+        
         return new SExp(HelperFunctions.ToSexpType(v));
     }
     
@@ -172,8 +158,6 @@ public class SExp
             Stack<(SExp, SExp)> toCompareStack = new Stack<(SExp, SExp)>();
             toCompareStack.Push((this, otherObj));
             
-            
-
             while (toCompareStack.Count > 0)
             {
                 var (s1,s2)  = toCompareStack.Pop();
@@ -206,7 +190,6 @@ public class SExp
             return false;
         }
     }
-
     
     public SExp ToSexpType(dynamic v)
     {
@@ -218,7 +201,6 @@ public class SExp
         while (ops.Count > 0)
         {
             opIteration += 1;
-            Console.WriteLine($"op iteration: {opIteration}");
             Tuple<int, int> opTarget = ops.Pop();
             int op = opTarget.Item1;
             int target = opTarget.Item2;
@@ -226,14 +208,11 @@ public class SExp
             // Convert value
             if (op == 0)
             {
-                Console.Write("op0");
                 if (HelperFunctions.LooksLikeCLVMObject(stack.Peek()))
                 {
                     continue;
                 }
-
                 dynamic? value = stack.Pop();
-
                 if (value is Tuple<dynamic, dynamic> tupleValue)
                 {
                     object left = tupleValue.Item1;
@@ -263,7 +242,6 @@ public class SExp
                             ops.Push(Tuple.Create(1, target)); // set left
                             ops.Push(Tuple.Create(0, -1)); // convert
                         }
-
                         continue;
                     }
                 }
@@ -283,17 +261,14 @@ public class SExp
                             ops.Push(Tuple.Create(0, -1)); // convert
                         }
                     }
-
                     continue;
                 }
-
                 stack.Push(new CLVMObject(ConvertAtomToBytes(value)));
                 continue;
             }
 
             if (op == 1) // set left
             {
-                
                 if (stackList[target] is CLVMObject clvmObject)
                 {
                     clvmObject.Pair = new (stack.Pop(), clvmObject.Pair.Item2);
@@ -309,7 +284,6 @@ public class SExp
 
                     clvmObject.Pair = new(clvmObject.Pair.Item1, new CLVMObject(stack.Pop()));
                 }
-
                 continue;
             }
 
@@ -319,7 +293,6 @@ public class SExp
                 {
                     clvmObject.Pair = new (stack.Pop(), clvmObject.Pair);
                 }
-
                 continue;
             }
         }
@@ -342,17 +315,14 @@ public class SExp
         }
         else if (v is string str)
         {
-            Console.WriteLine("is string");
             return Encoding.UTF8.GetBytes(str);
         }
         else if (v is int intValue)
         {
-            Console.WriteLine("is int");
             return BitConverter.GetBytes(intValue);
         }
         else if (v is null)
         {
-            Console.WriteLine("is null");
             return new byte[0];
         }
         else if (v is List<object> list)
@@ -362,10 +332,8 @@ public class SExp
             {
                 result.AddRange(ConvertAtomToBytes(item));
             }
-
             return result.ToArray();
         }
-
         throw new ArgumentException($"Can't cast {v.GetType()} ({v}) to bytes");
     }
 }

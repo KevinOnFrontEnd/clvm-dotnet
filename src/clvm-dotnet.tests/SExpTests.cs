@@ -10,29 +10,17 @@ public class SExpTests
     [Fact]
     public void test_case_1()
     {
-        var sexp = SExp.To("foo");
-        var t1 = SExp.To(new object[] { 1, sexp });
+        var sexp = SExp.To(Encoding.UTF8.GetBytes("foo"));
+        var t1 = SExp.To(new dynamic[] { 1, sexp });
         ValidateSExp(t1);
     }
-    
-    /// <summary>
-    /// The python clvm has an _eq_ that attempts to cast a sexp type to the type its being compared to.
-    /// This remains incomplete until we implement and equals method that tries to do the same.
-    ///
-    /// https://github.com/Chia-Network/clvm/blob/main/clvm/SExp.py#L209
-    /// </summary>
+
     [Fact]
     public void TestWrapSExp()
     {
-        Console.WriteLine("\ntesting test wrap sexp");
-        Console.WriteLine("converting 1 to sexp");
-        
         var sexp = SExp.To(1);
         CLVMObject o = new CLVMObject(sexp);
-        byte[] expected = new byte[] { 1 };
-        
-        Console.WriteLine("Asserting equal");
-        Assert.True(o.Atom.Equals(expected));
+        Assert.True(o.Atom.Equals(1));
     }
     
     [Fact]
@@ -62,7 +50,7 @@ public class SExpTests
     }
     
     [Fact]
-    public void TestNoneBytesConversions()
+    public void TestNullConversions()
     {
         SExp a = SExp.To(null);
         byte[] expected = Array.Empty<byte>();
@@ -78,13 +66,14 @@ public class SExpTests
     }
 
     [Theory]
-    [InlineData(new byte[]{  }, new int[] {0})] 
-    // [InlineData(new byte[] { 4, 5, 6 }, new byte[] {8,8})] 
-    // [InlineData(new byte[] { 8, 9 }, new byte[]  {256,256})]  
+    [InlineData(new byte[]{ 0xFF, 0x80, 0x80  }, new int[] {0})] 
+    [InlineData(new byte[]{ 0xFF, 0x01, 0x80  }, new int[] {1})] 
+    [InlineData(new byte[] { 0xFF, 0x08, 0xFF, 0x08, 0x80}, new int[] {8,8})]
+    //[InlineData(new byte[] { 0xFF, 0x82, 0x01, 0x00, 0xFF, 0x82, 0x01, 0x00, 0x80 }, new int[]  {256,256})]  
     // [InlineData(new byte[] { 8, 9 }, new byte[]   {512,512,512})]  
     // [InlineData(new byte[] { 8, 9 }, new byte[]  {1024,1024,1024,1024})]  
     // [InlineData(new byte[] { 8, 9 }, new List<int>  {2048,248,2048,2048,2048})]  
-    public void sexp_AsBinIsInCorrectOrder(byte[] expected, int[] sexp_list)
+    public void sexp_AsBinIsCorrectOrder(byte[] expected, dynamic  sexp_list)
     {
         SExp v = SExp.To(sexp_list);
         var bytes = v.AsBin();
@@ -93,7 +82,6 @@ public class SExpTests
 
     
     #region test helpers that should probably go into SExp object
-
     private string PrintLeaves(SExp tree)
     {
         var a = tree.AsAtom();
@@ -119,7 +107,7 @@ public class SExpTests
         return ret;
     }
 
-    public string PrintTree(SExp tree)
+    private string PrintTree(SExp tree)
     {
         var a = tree.AsAtom();
         if (a != null)

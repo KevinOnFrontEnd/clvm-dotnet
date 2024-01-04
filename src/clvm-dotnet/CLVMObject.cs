@@ -11,7 +11,6 @@ public class CLVMObject
 
     public CLVMObject(object v)
     {
-        Console.WriteLine("\ninitiating CLVMObject class");
         if (v is CLVMObject clvmObj)
         {
             Atom = clvmObj.Atom;
@@ -36,7 +35,6 @@ public class CLVMObject
     
     public CLVMObject()
     {
-        Console.WriteLine("\ninitiating CLVMObject class");
     }
 
     public byte[] AsAtom()

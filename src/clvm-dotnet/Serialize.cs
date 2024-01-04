@@ -27,7 +27,8 @@ public class Serialize
 
     const byte EMPTY_BYTE = 0x00;
 
-    public delegate void SerializeOperatorDelegate(Stack<SerializeOperatorDelegate> opStack, Stack<dynamic> valStack, Stream stream, Type to_sexp);
+    public delegate void SerializeOperatorDelegate(Stack<SerializeOperatorDelegate> opStack, Stack<dynamic> valStack,
+        Stream stream, Type to_sexp);
 
     public static object SexpFromStream(Stream f)
     {
@@ -45,7 +46,8 @@ public class Serialize
         return SExp.To(val);
     }
 
-    public static void OpReadSexp(Stack<SerializeOperatorDelegate> opStack, Stack<dynamic> valStack, Stream stream, Type to_sexp )
+    public static void OpReadSexp(Stack<SerializeOperatorDelegate> opStack, Stack<dynamic> valStack, Stream stream,
+        Type to_sexp)
     {
         BinaryReader reader = new BinaryReader(stream);
         byte b = 0;
@@ -62,10 +64,10 @@ public class Serialize
         if (b == CONS_BOX_MARKER)
         {
             //Push operations to construct a cons pair
-             opStack.Push(OpCons);
-             opStack.Push(OpReadSexp);
-             opStack.Push(OpReadSexp);
-             return;
+            opStack.Push(OpCons);
+            opStack.Push(OpReadSexp);
+            opStack.Push(OpReadSexp);
+            return;
         }
 
         //Push an operation to consume the atom and add it to valStack
@@ -73,15 +75,22 @@ public class Serialize
         valStack.Push(atom);
     }
 
-    public static void OpCons(Stack<SerializeOperatorDelegate> opStack, Stack<dynamic> valStack, Stream stream, Type to_sexp)
+    public static void OpCons(Stack<SerializeOperatorDelegate> opStack, Stack<dynamic> valStack, Stream stream,
+        Type to_sexp)
     {
         if (valStack.Count < 2)
         {
             throw new InvalidOperationException("Not enough values on val_stack to perform cons operation.");
         }
+
         var right = valStack.Pop();
         var left = valStack.Pop();
-        valStack.Push(SExp.To(new Tuple<dynamic, dynamic>(left, right)));
+
+        if (to_sexp == typeof(CLVMObject))
+        {
+            var obj = new CLVMObject(new Tuple<dynamic, dynamic>(left, right));
+            valStack.Push(obj);
+        }
     }
 
     public static dynamic AtomFromStream(BinaryReader reader, byte b, Type to_sexp)
@@ -90,7 +99,7 @@ public class Serialize
         {
             if (to_sexp == typeof(CLVMObject))
                 return new CLVMObject(new byte[0]);
-            
+
             return SExp.To(new byte[0]);
         }
 
@@ -98,7 +107,7 @@ public class Serialize
         {
             if (to_sexp == typeof(CLVMObject))
                 return new CLVMObject(new byte[] { b });
-            
+
             return SExp.To(new byte[] { b });
         }
 
@@ -155,7 +164,7 @@ public class Serialize
             {
                 todoStack.Push(pair.Item2);
                 todoStack.Push(pair.Item1);
- 
+
                 yield return CONS_BOX_MARKER;
             }
             else
