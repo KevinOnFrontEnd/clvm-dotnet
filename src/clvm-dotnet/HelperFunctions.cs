@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Reflection;
 using System.Text;
 
@@ -7,98 +5,100 @@ namespace clvm_dotnet;
 
 public static class HelperFunctions
 {
-    public static readonly byte[] NULL = Array.Empty<byte>();
-    
-    public static dynamic ToSexpType(dynamic v)
-    {
-        var stack = new Stack<dynamic>();
-        var ops = new Stack<(int, int?)>();
-        ops.Push((0, null));  // convert
+    private static byte[] nullBytes = new byte[0];
 
+    public static dynamic? ToSexpType(dynamic? v)
+    {
+        List<dynamic> stack = new List<dynamic>(){v};
+        List<(int op, int target)> ops = new List<(int op, int target)> { (0, -1) }; // convert
+        int opIteration = 0;
+        
         while (ops.Count > 0)
         {
-            var (op, target) = ops.Pop();
-
+            opIteration += 1;
+            
+            var (op, target) = ops[ops.Count - 1];
+            ops.RemoveAt(ops.Count - 1);
+            
             // Convert value
             if (op == 0)
             {
-                if (LooksLikeCLVMObject(stack.Peek()))
+                if (LooksLikeCLVMObject(stack[stack.Count - 1]))
                 {
                     continue;
                 }
 
-                var value = stack.Pop();
+                dynamic value = stack[stack.Count - 1];
+                stack.RemoveAt(stack.Count - 1);
 
                 if (value is Tuple<object, object> tuple)
                 {
-                    if (tuple.Item1 != null && tuple.Item2 != null)
+                    if (tuple.Item2 != null)
                     {
-                        target = stack.Count;
-                        stack.Push(new CLVMObject(new Tuple<CLVMObject, CLVMObject>(
-                            new CLVMObject(tuple.Item1), new CLVMObject(tuple.Item2))));
-
-                        if (!LooksLikeCLVMObject(tuple.Item2))
-                        {
-                            stack.Push(tuple.Item2);
-                            ops.Push((2, target));  // set right
-                            ops.Push((0, null));    // convert
-                        }
-
-                        if (!LooksLikeCLVMObject(tuple.Item1))
-                        {
-                            stack.Push(tuple.Item1);
-                            ops.Push((1, target));  // set left
-                            ops.Push((0, null));    // convert
-                        }
-
-                        continue;
+                        stack.Add(tuple.Item2);
+                        ops.Add((2, target)); // set right
+                        ops.Add((0, -1)); // convert
                     }
-                }
 
-                if (value is List<object> list)
+                    if (tuple.Item1 != null)
+                    {
+                        stack.Add(tuple.Item1);
+                        ops.Add((1, target)); // set left
+                        ops.Add((0, -1)); // convert
+                    }
+                    continue;
+                }
+                
+                if (value != null && value.GetType().IsArray)
                 {
                     target = stack.Count;
-                    stack.Push(new CLVMObject(NULL));
-
-                    foreach (var item in list)
+                    stack.Add(new CLVMObject(nullBytes));
+                    int iteration = 0;
+                    foreach (object item in value)
                     {
-                        stack.Push(item);
-                        ops.Push((3, target));  // prepend list
-
+                        iteration += 1;
+                        stack.Add(item);
+                        ops.Add((3, target)); // prepend list
                         // We only need to convert if it's not already the right type
                         if (!LooksLikeCLVMObject(item))
                         {
-                            ops.Push((0, null));  // convert
+                            ops.Add((0, -1)); // convert
                         }
                     }
-
                     continue;
                 }
-
-                stack.Push(new CLVMObject(ConvertAtomToBytes(value)));
+                var atomBytes = ConvertAtomToBytes(value);
+                stack.Add(new CLVMObject(atomBytes));
                 continue;
             }
 
-            if (op == 1)  // set left
+            if (op == 1) // set left
             {
-                var left = new CLVMObject(stack.Pop());
-                stack.Push(new CLVMObject(new Tuple<CLVMObject, CLVMObject>(
-                    left, ((Tuple<CLVMObject, CLVMObject>)stack.Peek().Value).Item2)));
+                var leftValue = new CLVMObject(stack[stack.Count-1]);
+                stack.RemoveAt(stack.Count-1);
+                var currentPair = ((Tuple<CLVMObject, CLVMObject>)stack[target]);
+                stack[target] = new Tuple<CLVMObject, CLVMObject>(leftValue, currentPair.Item2);
                 continue;
             }
 
-            if (op == 2)  // set right
+            if (op == 2) // set right
             {
-                var right = new CLVMObject(stack.Pop());
-                stack.Push(new CLVMObject(new Tuple<CLVMObject, CLVMObject>(
-                    ((Tuple<CLVMObject, CLVMObject>)stack.Peek().Value).Item1, right)));
+                var rightValue = new CLVMObject(stack[stack.Count-1]);
+                stack.RemoveAt(stack.Count-1);
+                var currentPair = ((Tuple<CLVMObject, CLVMObject>)stack[target]);
+                stack[target] = new Tuple<CLVMObject, CLVMObject>(currentPair.Item1, rightValue);
                 continue;
             }
 
-            if (op == 3)  // prepend list
+            if (op == 3) // prepend list
             {
-                stack.Push(new CLVMObject(new Tuple<CLVMObject, CLVMObject>(
-                    new CLVMObject(stack.Pop()), ((Tuple<CLVMObject, CLVMObject>)stack.Peek().Value).Item2)));
+                var item = stack[stack.Count-1];
+                stack.RemoveAt(stack.Count-1);
+                var newValue = new Tuple<dynamic, dynamic>(
+                    item,
+                    stack[target]
+                );
+                stack[target] = new CLVMObject(newValue);
                 continue;
             }
         }
@@ -109,65 +109,83 @@ public static class HelperFunctions
             throw new ArgumentException("Internal error");
         }
 
-        // stack[0] implements the CLVM object protocol and can be wrapped by a SExp
-        return stack.Pop();
+        // stack[0] implements the CLVM object protocol and can be wrapped by an SExp
+        return stack[0];
     }
-    
-    
-    public static byte[] ConvertAtomToBytes(object v)
+
+    public static byte[] ConvertAtomToBytes(dynamic? v)
     {
         if (v is byte[] bytes)
         {
             return bytes;
         }
+        
         if (v is string str)
         {
             return Encoding.UTF8.GetBytes(str);
         }
+
         if (v is int intValue)
         {
-            return BitConverter.GetBytes(intValue);
+            var s = Casts.IntToBytes(intValue);
+            return s;
         }
+
         if (v is null)
         {
             return Array.Empty<byte>();
         }
-        if (v is IList list && list.Count == 0)
+
+        if (v is object [] list &&  list.Length == 0)
         {
             return Array.Empty<byte>();
         }
+
         if (v is IConvertible convertible)
         {
             byte byteValue = convertible.ToByte(System.Globalization.CultureInfo.InvariantCulture);
             return new byte[] { byteValue };
         }
+
         throw new ArgumentException($"Can't cast {v.GetType()} ({v}) to bytes");
     }
-    
-    public static bool LooksLikeCLVMObject(object o)
+
+    public static bool LooksLikeCLVMObject(object? o)
     {
-        Type type = o.GetType();
-        PropertyInfo[] properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-        bool hasAtom = false;
-        bool hasPair = false;
-
-        foreach (PropertyInfo property in properties)
+        if (o != null)
         {
-            if (property.Name == "atom")
-            {
-                hasAtom = true;
-            }
-            else if (property.Name == "pair")
-            {
-                hasPair = true;
-            }
+            Type type = o.GetType();
+            PropertyInfo[] properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
-            if (hasAtom && hasPair)
+            bool hasAtom = false;
+            bool hasPair = false;
+
+            foreach (PropertyInfo property in properties)
             {
-                return true;
+                if (property.Name == "Atom")
+                {
+                    hasAtom = true;
+                }
+                if (property.Name == "Pair")
+                {
+                    hasPair = true;
+                }
+
+                if (hasAtom && hasPair)
+                {
+                    return true;
+                }
             }
         }
+
         return false;
+    }
+    
+    public static byte MSBMask(byte inputByte)
+    {
+        inputByte |= (byte)(inputByte >> 1);
+        inputByte |= (byte)(inputByte >> 2);
+        inputByte |= (byte)(inputByte >> 4);
+        return (byte)((inputByte + 1) >> 1);
     }
 }

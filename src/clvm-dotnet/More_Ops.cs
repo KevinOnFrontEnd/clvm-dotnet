@@ -9,143 +9,142 @@ public static class More_Ops
     private const int MALLOC_COST_PER_BYTE = 1;
     private const int SHA256_BASE_COST = 1; // Define other constants as needed.
 
-    public static CostResult MallocCost(int cost, SExp atom)
+    public static Tuple<BigInteger, SExp>  MallocCost(BigInteger cost, SExp atom)
     {
-        int newCost = cost + atom.AsAtom().Length * MALLOC_COST_PER_BYTE;
-        return new CostResult { Cost = newCost, Atom = atom };
+        BigInteger newCost = cost + atom.AsAtom().Length * MALLOC_COST_PER_BYTE;
+        return Tuple.Create(newCost,atom);
     }
-//     
-//     public static CostResult OpSha256(SExp args)
-//     {
-//         int cost = SHA256_BASE_COST;
-//         int argLen = 0;
-//         using (SHA256 sha256 = SHA256.Create())
-//         {
-//             foreach (SExp arg in args.AsIter())
-//             {
-//                 byte[] atom = arg.AsAtom();
-//                 if (atom == null)
-//                 {
-//                     throw new EvalError("sha256 on list", arg);
-//                 }
-//                 argLen += atom.Length;
-//                 cost += Costs.SHA256_COST_PER_ARG;
-//                 sha256.TransformBlock(atom, 0, atom.Length, null, 0);
-//             }
-//
-//             sha256.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
-//             byte[] result = sha256.Hash;
-//             cost += argLen * Costs.SHA256_COST_PER_BYTE;
-//
-//             return new CostResult { Cost = cost, Atom = args.to(result) };
-//         }
-//     }
-//     
-//     public static IEnumerable<(int, int)> ArgsAsInts(string opName, SExp args)
-//     {
-//         foreach (SExp arg in args.AsIter())
-//         {
-//             if (arg.Pair != null)
-//             {
-//                 throw new EvalError($"{opName} requires int args", arg);
-//             }
-//
-//             int intValue = arg.AsInt();
-//             int atomLength = arg.AsAtom().Length;
-//
-//             yield return (intValue, atomLength);
-//         }
-//     }
-//     
-//     public static IEnumerable<int> ArgsAsInt32(string opName, SExp args)
-//     {
-//         foreach (SExp arg in args.AsIter())
-//         {
-//             if (arg != null )
-//             {
-//                 throw new EvalError($"{opName} requires int32 args", arg);
-//             }
-//
-//             if (arg.AsAtom().Length > 4)
-//             {
-//                 throw new EvalError($"{opName} requires int32 args (with no leading zeros)", arg);
-//             }
-//
-//             yield return arg.AsInt();
-//         }
-//     }
-//     
-//     public static List<BigInteger> ArgsAsIntList(string opName, dynamic args, int count)
-//     {
-//         List<BigInteger> intList = new List<BigInteger>(ArgsAsInts(opName, args));
-//         if (intList.Count != count)
-//         {
-//             string plural = count != 1 ? "s" : "";
-//             throw new EvalError($"{opName} takes exactly {count} argument{plural}", args);
-//         }
-//         return intList;
-//     }
-//     
-//     public static IEnumerable<CLVMObject> ArgsAsBools(string opName, SExp args)
-//     {
-//         foreach (var arg in args.AsIter())
-//         {
-//             byte[] v = arg.AsAtom();
-//             if (v.Length == 0)
-//             {
-//                 yield return args.False;
-//             }
-//             else
-//             {
-//                 yield return args.True;
-//             }
-//         }
-//     }
-//     
-//     public static Tuple<BigInteger, SExp> MallocCost(BigInteger cost, SExp atom) => (cost + atom.Atom.Length * Costs.MALLOC_COST_PER_BYTE = 10, atom);
-//
-//     public static List<CLVMObject> ArgsAsBoolList(string opName, SExp args, int count)
-//     {
-//         List<CLVMObject> boolList = ArgsAsBools(opName, args).ToList();
-//         if (boolList.Count != count)
-//         {
-//             string plural = count != 1 ? "s" : "";
-//             throw new EvalError($"{opName} takes exactly {count} argument{plural}", args);
-//         }
-//         return boolList;
-//     }
-//
-//     public static Tuple<BigInteger,SExp > OpAdd(SExp args)
-//     {
-//         BigInteger total = 0;
-//         BigInteger cost = Costs.ARITH_BASE_COST;
-//         BigInteger argSize = 0;
-//         foreach ((int r, int l) in ArgsAsInts("+", args))
-//         {
-//             total += r;
-//             argSize += l;
-//             cost += Costs.ARITH_COST_PER_ARG;
-//         }
-//         cost += argSize * Costs.ARITH_COST_PER_BYTE;
-//         return MallocCost(cost, args.To(total));
-//     }
-//     
-//     public (BigInteger, SExp) OpDivmod(SExp args)
-//     {
-//         BigInteger cost = Costs.DIV_BASE_COST;
-//         var (i0, l0) = ArgsAsIntList("divmod", args, 2)[0];
-//         var (i1, l1) = ArgsAsIntList("divmod", args, 2)[1];
-//         if (i1 == 0)
-//         {
-//             throw new EvalError("divmod with 0", args.To(i0));
-//         }
-//         cost += (l0 + l1) * Costs.DIV_COST_PER_BYTE;
-//         BigInteger q = BigInteger.DivRem(i0, i1, out BigInteger r);
-//         SExp q1 = args.To(q);
-//         SExp r1 = args.To(r);
-//         cost += (q1.Atom.Length + r1.Atom.Length) * Costs.MALLOC_COST_PER_BYTE;
-//         return (cost, args.To(new List<SExp> { q1, r1 }));
-//     }
+    
+     // public static CostResult OpSha256(SExp args)
+     // {
+     //     int cost = SHA256_BASE_COST;
+     //     int argLen = 0;
+     //     using (SHA256 sha256 = SHA256.Create())
+     //     {
+     //         foreach (SExp arg in args.AsIter())
+     //         {
+     //             byte[] atom = arg.AsAtom();
+     //             if (atom == null)
+     //             {
+     //                 throw new EvalError("sha256 on list", arg);
+     //             }
+     //             argLen += atom.Length;
+     //             cost += Costs.SHA256_COST_PER_ARG;
+     //             sha256.TransformBlock(atom, 0, atom.Length, null, 0);
+     //         }
+     //
+     //         sha256.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+     //         byte[] result = sha256.Hash;
+     //         cost += argLen * Costs.SHA256_COST_PER_BYTE;
+     //
+     //         return new CostResult { Cost = cost, Atom = args.AsAtom(result) };
+     //     }
+     // }
+     
+     
+     public static IEnumerable<(BigInteger, int)> ArgsAsInts(string opName, SExp args)
+     {
+         foreach (SExp arg in args.AsIter())
+         {
+             if (arg.Pair != null)
+             {
+                 throw new EvalError($"{opName} requires int args", arg);
+             }
+
+             BigInteger intValue = arg.AsInt();
+             int atomLength = arg.AsAtom().Length;
+
+             yield return (intValue, atomLength);
+         }
+     }
+     
+     public static IEnumerable<BigInteger> ArgsAsInt32(string opName, SExp args)
+     {
+         foreach (SExp arg in args.AsIter())
+         {
+             if (arg != null )
+             {
+                 throw new EvalError($"{opName} requires int32 args", arg);
+             }
+
+             if (arg.AsAtom().Length > 4)
+             {
+                 throw new EvalError($"{opName} requires int32 args (with no leading zeros)", arg);
+             }
+
+             yield return arg.AsInt();
+         }
+     }
+     
+     public static List<BigInteger> ArgsAsIntList(string opName, dynamic args, int count)
+     {
+         List<BigInteger> intList = new List<BigInteger>(ArgsAsInts(opName, args));
+         if (intList.Count != count)
+         {
+             string plural = count != 1 ? "s" : "";
+             throw new EvalError($"{opName} takes exactly {count} argument{plural}", args);
+         }
+         return intList;
+     }
+     
+     public static IEnumerable<CLVMObject> ArgsAsBools(string opName, SExp args)
+     {
+         foreach (var arg in args.AsIter())
+         {
+             byte[] v = arg.AsAtom();
+             if (v.Length == 0)
+             {
+                 yield return SExp.False;
+             }
+             else
+             {
+                 yield return SExp.True;
+             }
+         }
+     }
+     
+     public static List<CLVMObject> ArgsAsBoolList(string opName, SExp args, int count)
+     {
+         List<CLVMObject> boolList = ArgsAsBools(opName, args).ToList();
+         if (boolList.Count != count)
+         {
+             string plural = count != 1 ? "s" : "";
+             throw new EvalError($"{opName} takes exactly {count} argument{plural}", args);
+         }
+         return boolList;
+     }
+
+     public static Tuple<BigInteger,SExp> OpAdd(SExp args)
+     {
+         BigInteger total = 0;
+         BigInteger cost = Costs.ARITH_BASE_COST;
+         BigInteger argSize = 0;
+         foreach ((BigInteger r, BigInteger l) in ArgsAsInts("+", args))
+         {
+             total += r;
+             argSize += l;
+             cost += Costs.ARITH_COST_PER_ARG;
+         }
+         cost += argSize * Costs.ARITH_COST_PER_BYTE;
+         return MallocCost(cost, SExp.To(total));
+     }
+    
+     // public (BigInteger, SExp) OpDivmod(SExp args)
+     // {
+     //     BigInteger cost = Costs.DIV_BASE_COST;
+     //     var (i0, l0) = ArgsAsIntList("divmod", args, 2)[0];
+     //     var (i1, l1) = ArgsAsIntList("divmod", args, 2)[1];
+     //     if (i1 == 0)
+     //     {
+     //         throw new EvalError("divmod with 0", args.To(i0));
+     //     }
+     //     cost += (l0 + l1) * Costs.DIV_COST_PER_BYTE;
+     //     BigInteger q = BigInteger.DivRem(i0, i1, out BigInteger r);
+     //     SExp q1 = args.To(q);
+     //     SExp r1 = args.To(r);
+     //     cost += (q1.Atom.Length + r1.Atom.Length) * Costs.MALLOC_COST_PER_BYTE;
+     //     return (cost, args.To(new List<SExp> { q1, r1 }));
+     // }
 //
 //     public (BigInteger, SExp) OpDiv(SExp args)
 //     {
@@ -443,46 +442,37 @@ public static class More_Ops
 //         return (cost, args.To(result ? args.True : args.False));
 //     }
 //
-//     public (int, SExp) OpAll(dynamic args)
-//     {
-//         List<bool> boolList = ArgsAsBoolList("all", args, 1);
-//         int cost = Costs.BOOL_BASE_COST + boolList.Count * Costs.BOOL_COST_PER_ARG;
-//         bool result = boolList.All(v => v);
-//         return (cost, args.To(result ? args.True : args.False));
-//     }
-//
-//
-//     public (BigInteger, SExp) OpSoftfork(SExp args)
-//     {
-//         if (args.ListLength() < 1)
-//         {
-//             throw new EvalError("softfork takes at least 1 argument", args);
-//         }
-//
-//         SExp a = args.First();
-//     
-//         if (a.Pair != null)
-//         {
-//             throw new EvalError("softfork requires int args", a);
-//         }
-//
-//         var cost = a.AsInt();
-//     
-//         if (cost < 1)
-//         {
-//             throw new EvalError("cost must be > 0", args);
-//         }
-//
-//         return (cost, args.False);
-//     }
-//
-// }
-//
-//
-    public class CostResult
-    {
-        public int Cost { get; set; }
-        public SExp Atom { get; set; }
-    }
+     // public (int, SExp) OpAll(dynamic args)
+     // {
+     //     List<bool> boolList = ArgsAsBoolList("all", args, 1);
+     //     int cost = Costs.BOOL_BASE_COST + boolList.Count * Costs.BOOL_COST_PER_ARG;
+     //     bool result = boolList.All(v => v);
+     //     return (cost, args.To(result ? args.True : args.False));
+     // }
+
+
+    // public (BigInteger, SExp) OpSoftfork(SExp args)
+    // {
+    //     if (args.ListLength() < 1)
+    //     {
+    //         throw new EvalError("softfork takes at least 1 argument", args);
+    //     }
+    //
+    //     SExp a = args.First();
+    //
+    //     if (a.Pair != null)
+    //     {
+    //         throw new EvalError("softfork requires int args", a);
+    //     }
+    //
+    //     var cost = a.AsInt();
+    //
+    //     if (cost < 1)
+    //     {
+    //         throw new EvalError("cost must be > 0", args);
+    //     }
+    //
+    //     return (cost, args.False);
+    // }
 
 }
