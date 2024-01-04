@@ -46,6 +46,6 @@ public static class Casts
 
     public static int LimbsForInt(BigInteger v)
     {
-        return (int)((v.GetBitLength() + 7) >> 3);
+        return IntToBytes(v).Length;
     }
 }
