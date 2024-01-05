@@ -10,7 +10,7 @@ namespace CLVMDotNet.Tests.Serialize
         public void AtomFromStreamEmptyString()
         {
             byte b = 0x80;
-            var sexp = CLVM.Serialize.AtomFromStream(null, b, typeof(CLVMObject));
+            var sexp = CLVM.Serialize.AtomFromStream(null, b, typeof(CLVM.CLVMObject));
             Assert.Equal(Array.Empty<byte>(), sexp.Atom);
         }
 
@@ -19,7 +19,7 @@ namespace CLVMDotNet.Tests.Serialize
         {
             byte b = 0x7F;
             byte[] byteArray = new byte[] { 0x7F };
-            var sexp = CLVM.Serialize.AtomFromStream(null, b, typeof(CLVMObject));
+            var sexp = CLVM.Serialize.AtomFromStream(null, b, typeof(CLVM.CLVMObject));
             Assert.Equal(byteArray, sexp.Atom);
         }
     }
