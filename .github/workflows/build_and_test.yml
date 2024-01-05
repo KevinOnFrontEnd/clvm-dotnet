@@ -17,7 +17,7 @@ permissions:
 
 
 jobs:
-  Build & Test:
+  Build:
     runs-on: ubuntu-latest
     environment: Build & Test
     steps:
