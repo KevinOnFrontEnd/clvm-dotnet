@@ -20,7 +20,7 @@ jobs:
         dotnet-version: 7.0.x
     - name: Restore dependencies
       run: dotnet restore
-      workingDirectory: CLVMDotNet
+      working-directory: CLVMDotNet
     - name: Build
       run: dotnet build --no-restore
       working-directory: CLVMDotNet
