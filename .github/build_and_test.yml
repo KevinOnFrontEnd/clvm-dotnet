@@ -22,10 +22,10 @@ jobs:
         dotnet-version: 7.0.x
     - name: Restore dependencies
       run: dotnet restore
-      working-directory: src
+      working-directory: CLVMDotNet
     - name: Build
       run: dotnet build --no-restore
-      working-directory: src
+      working-directory: CLVMDotNet
     - name: Test
-      working-directory: src
+      working-directory: CLVMDotNet
       run: dotnet test --no-build --verbosity normal
