@@ -7,7 +7,7 @@ namespace clvm_dotnet;
 public class CLVMObject
 {
     public dynamic? Atom { get;  set; }
-    public Tuple<object, object> Pair { get;  set; }
+    public Tuple<object, object>? Pair { get;  set; }
 
     public CLVMObject(object v)
     {

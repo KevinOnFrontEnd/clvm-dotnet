@@ -27,4 +27,11 @@
       <ProjectReference Include="..\clvm-dotnet\clvm-dotnet.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Content\" />
+      <Folder Include="CoreOps\" />
+      <Folder Include="MoreOps\" />
+      <Folder Include="OpUtils\" />
+    </ItemGroup>
+
 </Project>

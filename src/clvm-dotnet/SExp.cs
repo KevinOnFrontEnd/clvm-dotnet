@@ -1,6 +1,5 @@
 using System.Numerics;
 using System.Text;
-using clvm_dotnet;
 
 //  SExp provides higher level API on top of any object implementing the CLVM
 //  object protocol.
@@ -13,12 +12,14 @@ using clvm_dotnet;
 //  2. "pair" which is either None or a tuple of exactly two elements. Both
 // elements implementing the CLVM object protocol.
 // Exactly one of "atom" and "pair" must be None.
+namespace clvm_dotnet;
+
 public class SExp
 {
-     public static CLVMObject True { get; } = new CLVMObject { Atom = new byte[] { 0x01 } };
-     public static CLVMObject False { get; } = new CLVMObject();
-     public static CLVMObject NULL { get; } = null;
-     public byte[]? Atom { get; set; }
+    public static CLVMObject True { get; } = new CLVMObject { Atom = new byte[] { 0x01 } };
+    public static CLVMObject False { get; } = new CLVMObject();
+    public static CLVMObject NULL { get; } = null;
+    public byte[]? Atom { get; set; }
     public Tuple<dynamic, dynamic>? Pair { get; set; }
 
     public SExp(CLVMObject? obj)

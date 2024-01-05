@@ -15,7 +15,8 @@
 // 0000 0000 -> 1 byte : zero (b'\x00')
 
 using System.Numerics;
-using clvm_dotnet;
+
+namespace clvm_dotnet;
 
 /// </summary>
 public class Serialize

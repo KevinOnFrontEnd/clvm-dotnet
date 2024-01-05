@@ -1,7 +1,9 @@
 using Xunit;
+using clvm = clvm_dotnet;
 
-namespace clvm_dotnet.tests;
+namespace clvm_dotnet.tests.HelperFunctions;
 
+[Trait("HelperFunctions", "MSBMask")]
 public class BitMaskTests
 {
     [Theory]
@@ -19,6 +21,6 @@ public class BitMaskTests
     [InlineData(0x80, 0xFF)]
     public void TestMsbMask(byte expectedbyte, byte MSB)
     {
-        Assert.Equal(expectedbyte, HelperFunctions.MSBMask(MSB));
+        Assert.Equal(expectedbyte, clvm.HelperFunctions.MSBMask(MSB));
     }
 }

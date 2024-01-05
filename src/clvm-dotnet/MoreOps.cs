@@ -4,7 +4,7 @@ using MCL.BLS12_381.Net;
 
 namespace clvm_dotnet;
 
-public static class More_Ops
+public static class MoreOps
 {
     private const int MALLOC_COST_PER_BYTE = 1;
     private const int SHA256_BASE_COST = 1; // Define other constants as needed.

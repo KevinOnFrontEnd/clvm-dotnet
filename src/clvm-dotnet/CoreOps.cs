@@ -1,6 +1,6 @@
 namespace clvm_dotnet;
 
-public class Core_ops
+public class CoreOps
 {
     public static Tuple<int, SExp> OpIf(SExp args)
     {

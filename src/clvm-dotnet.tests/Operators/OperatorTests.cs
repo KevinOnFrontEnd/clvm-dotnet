@@ -1,19 +1,18 @@
-using System.Numerics;
 using Xunit;
+using clvm = clvm_dotnet;
 
 namespace clvm_dotnet.tests;
 
 public class OperatorTests
 {
-    private bool handlerCalled = false;
-    
-    private Tuple<int, SExp> UnknownHandler(byte[] name, SExp args)
-    {
-        handlerCalled = true;
-        Assert.Equal(new byte[] { 0xff, 0xff, (byte)(0x1337 & 0xFF) }, name);
-        Assert.Equal(SExp.To((Int32)1337), args);
-        return Tuple.Create(42, SExp.To(new byte[] { 0x66, 0x6f, 0x6f, 0x62, 0x61, 0x72 }));
-    }
+    // private bool handlerCalled = false;
+    // private Tuple<int, SExp> UnknownHandler(byte[] name, SExp args)
+    // {
+    //     handlerCalled = true;
+    //     Assert.Equal(new byte[] { 0xff, 0xff, (byte)(0x1337 & 0xFF) }, name);
+    //     Assert.Equal(SExp.To((Int32)1337), args);
+    //     return Tuple.Create(42, SExp.To(new byte[] { 0x66, 0x6f, 0x6f, 0x62, 0x61, 0x72 }));
+    // }
 
      // [Fact]
      // public void TestUnknownOp()
@@ -61,7 +60,7 @@ public class OperatorTests
          foreach (var suffix in new byte[][] { new byte[] { 0x3f }, new byte[] { 0x0f }, new byte[] { 0x00 }, new byte[] { 0x2c } })
          {
              // the cost is unchanged by the last byte
-             Assert.Equal(OperatorDict.DefaultUnknownOp(new byte[] { 0x3c }.Concat(suffix).ToArray(), SExp.NULL), Tuple.Create(61, SExp.NULL));
+             Assert.Equal(OperatorDict.DefaultUnknownOp(new byte[] { 0x3c }.Concat(suffix).ToArray(), clvm.SExp.NULL), Tuple.Create(61, clvm.SExp.NULL));
          }
      }
 }
