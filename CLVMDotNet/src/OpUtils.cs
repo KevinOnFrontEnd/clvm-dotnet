@@ -1,46 +1,48 @@
 using System.Reflection;
 
-namespace CLVMDotNet;
-
-public static class OpUtils
+namespace CLVMDotNet
 {
-    public static Dictionary<string, Func<object, object>> OperatorsForDict(
-        Dictionary<string, dynamic> keywordToAtom, 
-        Dictionary<string, Func<object, object>> opDict,
-        Dictionary<string, string> opNameLookup = null)
+
+    public static class OpUtils
     {
-        Dictionary<string, Func<dynamic, dynamic>> result = new Dictionary<string, Func<dynamic, dynamic>>();
-
-        foreach (string op in keywordToAtom.Keys)
+        public static Dictionary<string, Func<object, object>> OperatorsForDict(
+            Dictionary<string, dynamic> keywordToAtom,
+            Dictionary<string, Func<object, object>> opDict,
+            Dictionary<string, string> opNameLookup = null)
         {
-            string opName = opNameLookup != null && opNameLookup.ContainsKey(op)
-                ? opNameLookup[op]
-                : "op_" + op;
+            Dictionary<string, Func<dynamic, dynamic>> result = new Dictionary<string, Func<dynamic, dynamic>>();
 
-            if (opDict.TryGetValue(opName, out Func<object, object> opFunc))
+            foreach (string op in keywordToAtom.Keys)
             {
-                result[keywordToAtom[op]] = opFunc;
+                string opName = opNameLookup != null && opNameLookup.ContainsKey(op)
+                    ? opNameLookup[op]
+                    : "op_" + op;
+
+                if (opDict.TryGetValue(opName, out Func<object, object> opFunc))
+                {
+                    result[keywordToAtom[op]] = opFunc;
+                }
             }
+
+            return result;
         }
 
-        return result;
-    }
-
-    public static Dictionary<string, Func<object, object>> OperatorsForModule(
-        Dictionary<string, object> keywordToAtom, 
-        object mod, 
-        Dictionary<string, string> opNameLookup = null)
-    {
-        Dictionary<string, Func<object, object>> modDict = new Dictionary<string, Func<object, object>>();
-
-        // Get all public static methods from the module
-        foreach (var methodInfo in mod.GetType().GetMethods(BindingFlags.Public | BindingFlags.Static))
+        public static Dictionary<string, Func<object, object>> OperatorsForModule(
+            Dictionary<string, object> keywordToAtom,
+            object mod,
+            Dictionary<string, string> opNameLookup = null)
         {
-            modDict[methodInfo.Name] = (Func<object, object>)Delegate.CreateDelegate(
-                typeof(Func<object, object>), 
-                methodInfo);
-        }
+            Dictionary<string, Func<object, object>> modDict = new Dictionary<string, Func<object, object>>();
 
-        return OperatorsForDict(keywordToAtom, modDict, opNameLookup);
+            // Get all public static methods from the module
+            foreach (var methodInfo in mod.GetType().GetMethods(BindingFlags.Public | BindingFlags.Static))
+            {
+                modDict[methodInfo.Name] = (Func<object, object>)Delegate.CreateDelegate(
+                    typeof(Func<object, object>),
+                    methodInfo);
+            }
+
+            return OperatorsForDict(keywordToAtom, modDict, opNameLookup);
+        }
     }
 }
