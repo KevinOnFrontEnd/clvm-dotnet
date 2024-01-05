@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace clvm_dotnet;
 
-public static class Op_Utils
+public static class OpUtils
 {
     public static Dictionary<string, Func<object, object>> OperatorsForDict(
         Dictionary<string, dynamic> keywordToAtom, 

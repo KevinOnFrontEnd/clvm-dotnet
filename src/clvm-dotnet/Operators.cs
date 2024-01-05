@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using clvm_dotnet;
-
+namespace clvm_dotnet;
 
 public class OperatorDict : Dictionary<byte[], Func<CLVMObject, Tuple<int, CLVMObject>>>
 {
