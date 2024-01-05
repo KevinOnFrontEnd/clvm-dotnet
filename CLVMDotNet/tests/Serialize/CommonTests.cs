@@ -6,7 +6,7 @@ namespace CLVMDotNet.Tests.Serialize
     [Trait("Serialize", "Common")]
     public class CommonTests
     {
-        public static void CheckSerde(dynamic s)
+        public static void CheckSerde(int[] s)
         {
             var v = CLVM.SExp.To(s);
             var b = v.AsBin();
