@@ -19,7 +19,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: build
+    environment: Build & Test
     steps:
     - uses: actions/checkout@v3
     - name: Setup .NET
@@ -40,7 +40,7 @@ jobs:
       uses: dorny/test-reporter@v1
       if: success() || failure()
       with: 
-        name: TestResults
+        name: Test Results
         path: 'TestResults.trx'
         reporter: dotnet-trx
         working-directory: 'CLVMDotNet/tests/TestResults'
