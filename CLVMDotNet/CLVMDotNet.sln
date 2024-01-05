@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CLVMDotNet", "src\CLVMDotNet.csproj", "{866CB206-8F4C-435C-BB07-5BCF158B2215}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CLVMDotNet.Tests", "tests\CLVMDotNet.Tests.csproj", "{06B05FF5-B8BA-4B71-B6AA-888D8A0DE971}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{866CB206-8F4C-435C-BB07-5BCF158B2215}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{866CB206-8F4C-435C-BB07-5BCF158B2215}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{866CB206-8F4C-435C-BB07-5BCF158B2215}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{866CB206-8F4C-435C-BB07-5BCF158B2215}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06B05FF5-B8BA-4B71-B6AA-888D8A0DE971}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06B05FF5-B8BA-4B71-B6AA-888D8A0DE971}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06B05FF5-B8BA-4B71-B6AA-888D8A0DE971}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06B05FF5-B8BA-4B71-B6AA-888D8A0DE971}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
