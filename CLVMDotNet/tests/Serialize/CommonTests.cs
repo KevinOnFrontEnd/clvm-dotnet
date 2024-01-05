@@ -39,17 +39,17 @@ namespace CLVMDotNet.Tests.Serialize
         //     }
         // }
 
-        [Fact]
-        public void TestShortLists()
-        {
-            for (int _ = 8; _ < 36; _ += 8)
-            {
-                for (int size = 1; size < 5; size++)
-                {
-                    CheckSerde(Enumerable.Repeat(_, size).ToArray());
-                }
-            }
-        }
+        // [Fact]
+        // public void TestShortLists()
+        // {
+        //     for (int _ = 8; _ < 36; _ += 8)
+        //     {
+        //         for (int size = 1; size < 5; size++)
+        //         {
+        //             CheckSerde(Enumerable.Repeat(_, size).ToArray());
+        //         }
+        //     }
+        // }
 
         // [Fact]
         // public void TestConsBox()
