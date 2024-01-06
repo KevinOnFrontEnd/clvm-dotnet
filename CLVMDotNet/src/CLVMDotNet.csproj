@@ -6,4 +6,8 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="chia.dotnet.bls" Version="0.9.0" />
+    </ItemGroup>
+
 </Project>
