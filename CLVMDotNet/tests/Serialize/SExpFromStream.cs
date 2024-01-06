@@ -19,7 +19,7 @@ namespace CLVMDotNet.Tests.Serialize
             {
                 CLVM.Serialize.SexpFromStream(new MemoryStream(bytesIn));
             });
-            Assert.Contains("Destination array is not long enough to copy all the items in the collection",
+            Assert.Contains("The array starting from the specified index is not long enough to read a value of the specified type",
                 error1.Message);
         }
 
