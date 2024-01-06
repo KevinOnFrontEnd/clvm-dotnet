@@ -1,6 +1,5 @@
 using System.Numerics;
 using System.Security.Cryptography;
-using MCL.BLS12_381.Net;
 
 namespace CLVMDotNet
 {
