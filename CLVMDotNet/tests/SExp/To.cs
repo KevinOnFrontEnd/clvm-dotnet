@@ -8,6 +8,15 @@ namespace clvm_dotnet.tests.Serialize;
 public class To
 {
     [Fact]
+    public void builds_correct_tree()
+    {
+        var s = clvm.SExp.To(new dynamic[] { "+", 1, 2});
+        var t = s;
+        var tree = Common.PrintTree(t);
+        Assert.Equal("(43 (1 (2 () )))", tree);
+    }
+    
+    [Fact]
     public void test_case_1()
     {
         var sexp = clvm.SExp.To(Encoding.UTF8.GetBytes("foo"));
