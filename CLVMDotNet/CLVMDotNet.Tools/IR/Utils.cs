@@ -1,9 +1,23 @@
 using System.Numerics;
+using System.Text;
 
 namespace CLVMDotNet.Tools.IR;
 
 public class Utils
 {
+    public static BigInteger ConvertToBase256(string s)
+    {
+        byte[] byteArray = Encoding.UTF8.GetBytes(s);
+        int val = 0;
+
+        for (int i = 0; i < byteArray.Length; i++)
+        {
+            val = (val << 8) | byteArray[i];
+        }
+
+        return val;
+    }
+    
     public static SExp IrNew(IRType type, dynamic val, int? offset = null)
     {
         if (offset.HasValue)
