@@ -1,13 +1,23 @@
+using System.Data.SqlTypes;
+using System.Numerics;
 using System.Reflection;
 using System.Text;
 
 namespace CLVMDotNet
 {
-
+    
     public static class HelperFunctions
     {
         private static byte[] nullBytes = new byte[0];
 
+        public static bool IsTuple(dynamic obj) => obj switch
+        {
+            Tuple<int, int> => true,
+            Tuple<object,object> => true,
+            Tuple<BigInteger, BigInteger> => true,
+            _ => false
+        };
+        
         public static dynamic? ToSexpType(dynamic? v)
         {
             List<dynamic> stack = new List<dynamic>() { v };
@@ -32,18 +42,18 @@ namespace CLVMDotNet
                     dynamic value = stack[stack.Count - 1];
                     stack.RemoveAt(stack.Count - 1);
 
-                    if (value is Tuple<object, object> tuple)
+                    if (IsTuple(value))
                     {
-                        if (tuple.Item2 != null)
+                        if (value.Item2 != null)
                         {
-                            stack.Add(tuple.Item2);
+                            stack.Add(value.Item2);
                             ops.Add((2, target)); // set right
                             ops.Add((0, -1)); // convert
                         }
 
-                        if (tuple.Item1 != null)
+                        if (value.Item1 != null)
                         {
-                            stack.Add(tuple.Item1);
+                            stack.Add(value.Item1);
                             ops.Add((1, target)); // set left
                             ops.Add((0, -1)); // convert
                         }
@@ -132,6 +142,12 @@ namespace CLVMDotNet
             if (v is int intValue)
             {
                 var s = Casts.IntToBytes(intValue);
+                return s;
+            }
+            
+            if (v is BigInteger bigIntValue)
+            {
+                var s = Casts.IntToBytes(bigIntValue);
                 return s;
             }
 
