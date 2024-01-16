@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Text;
-using System.Linq;
+using System.Collections;
 using System.Numerics;
-using CLVMDotNet;
-using CLVMDotNet.Tools.IR;
+using System.Text;
 
-public class Tokenizer
+namespace CLVMDotNet.Tools.IR;
+public class IRReader
 {
     public delegate CLVMObject TokenizeSexpDelegate(string token, int offset, IEnumerator<Token> stream);
 
@@ -92,7 +88,7 @@ public class Tokenizer
             }
         }
 
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }
@@ -303,7 +299,7 @@ public class Tokenizer
         return Tuple.Create((IRType.SYMBOL, offset),token);
     }
 
-    static IEnumerable<(string token, int offset)> TokenStream(string s)
+    public static IEnumerable<(string token, int offset)> TokenStream(string s)
     {
         int offset = 0;
         while (offset < s.Length)
@@ -365,12 +361,5 @@ public class Tokenizer
         }
         
         throw new ArgumentException("unexpected end of stream");
-    }
-
-    public class SyntaxException : Exception
-    {
-        public SyntaxException(string message) : base(message)
-        {
-        }
     }
 }
