@@ -4,6 +4,7 @@ using System.Text;
 namespace CLVMDotNet.Tools.IR;
 
 public class Utils
+
 {
     public static BigInteger ConvertToBase256(string s)
     {

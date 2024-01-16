@@ -23,10 +23,13 @@ namespace CLVMDotNet
         public byte[]? Atom { get; set; }
         public Tuple<dynamic, dynamic>? Pair { get; set; }
 
-        public SExp(CLVMObject? obj)
+        public SExp(dynamic? obj)
         {
-            Atom = obj.Atom;
-            Pair = obj.Pair;
+            Atom = obj?.Atom;
+            if (obj?.Pair is (_, _))
+                Pair = Tuple.Create<dynamic, dynamic>(obj?.Pair.Item1, obj?.Pair.Item2);
+            else
+                Pair = null;
         }
 
         public SExp()
