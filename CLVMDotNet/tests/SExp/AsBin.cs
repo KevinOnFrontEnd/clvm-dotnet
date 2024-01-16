@@ -1,7 +1,7 @@
 using Xunit;
 using clvm = CLVMDotNet;
 
-namespace clvm_dotnet.tests.SExp;
+namespace CLVMDotNet.Tests.SExp;
 [Trait("SExp", "AsBin")]
 public class AsBin
 {

@@ -18,14 +18,14 @@ public class Utils
         return val;
     }
     
-    public static SExp IrNew(IRType type, dynamic val, int? offset = null)
+    public static SExp IrNew(BigInteger type, dynamic val, int? offset = null)
     {
         if (offset.HasValue)
         {
-            return SExp.To(new Tuple<BigInteger, BigInteger>(type._val, offset.Value));
+            return SExp.To(new Tuple<dynamic, dynamic>(type, offset));
         }
 
-        return SExp.To(new Tuple<BigInteger, dynamic>(type._val, val));
+        return SExp.To(new Tuple<BigInteger, dynamic>(type, val));
     }
     
     public static SExp IrNew(SExp first, SExp rest)
@@ -33,7 +33,7 @@ public class Utils
         return SExp.To((first, rest));
     }
     
-    public static SExp IrCons(SExp first, SExp rest, int? offset = null)
+    public static SExp IrCons(dynamic first, dynamic rest, int? offset = null)
     {
         return IrNew(IRType.CONS, IrNew(first, rest), offset);
     }
@@ -91,8 +91,7 @@ public class Utils
         var theType = Casts.IntFromBytes(f);
         try
         {
-            IRType t = new IRType(theType);
-            if (t._val == IRType.CONS._val)
+            if (theType == IRType.CONS)
             {
                 if (pair.Item2.Atom != null && pair.Item2.Atom.Length == 0)
                 {

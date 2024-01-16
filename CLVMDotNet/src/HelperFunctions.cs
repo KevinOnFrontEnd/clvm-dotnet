@@ -5,19 +5,78 @@ using System.Text;
 
 namespace CLVMDotNet
 {
-    
     public static class HelperFunctions
     {
         private static byte[] nullBytes = new byte[0];
 
-        public static bool IsTuple(dynamic obj) => obj switch
+        private static bool IsTuple(dynamic? obj)
         {
-            Tuple<int, int> => true,
-            Tuple<object,object> => true,
-            Tuple<BigInteger, BigInteger> => true,
-            _ => false
-        };
-        
+            var isTuple = false;
+            Type type = obj?.GetType();
+            
+            
+            if (type != null)
+            {
+
+                if (!isTuple)
+                    isTuple = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Tuple<,>);
+
+                if (!isTuple)
+                    isTuple = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ValueTuple<,>);
+            }
+
+            return isTuple;
+        }
+
+        public static dynamic? GetLeftIfTuple(dynamic t)
+        {
+            if (IsTuple(t))
+            {
+                if (t.GetType().GetGenericTypeDefinition() == typeof(ValueTuple<,>))
+                {
+                    FieldInfo item1Field = t.GetType().GetField("Item1");
+                    if (item1Field != null)
+                    {
+                        return item1Field.GetValue(t);
+                    }
+                }
+                else
+                {
+                    PropertyInfo item1Property = t.GetType().GetProperty("Item1");
+                    if (item1Property != null)
+                    {
+                        return item1Property.GetValue(t);
+                    }
+                }
+            }
+            return null;
+        }
+
+        public static dynamic? GetRightIfTuple(dynamic t)
+        {
+            if (IsTuple(t))
+            {
+                if (t.GetType().GetGenericTypeDefinition() == typeof(ValueTuple<,>))
+                {
+                    FieldInfo item1Field = t.GetType().GetField("Item2");
+                    if (item1Field != null)
+                    {
+                        return item1Field.GetValue(t);
+                    }
+                }
+                else
+                {
+                    PropertyInfo item1Property = t.GetType().GetProperty("Item2");
+                    if (item1Property != null)
+                    {
+                        return item1Property.GetValue(t);
+                    }
+                }
+            }
+            return null;
+        }
+
+
         public static dynamic? ToSexpType(dynamic? v)
         {
             List<dynamic> stack = new List<dynamic>() { v };
@@ -39,21 +98,26 @@ namespace CLVMDotNet
                         continue;
                     }
 
-                    dynamic value = stack[stack.Count - 1];
+                    dynamic? value = stack[stack.Count - 1];
                     stack.RemoveAt(stack.Count - 1);
 
                     if (IsTuple(value))
                     {
-                        if (value.Item2 != null)
+                        var left = GetLeftIfTuple(value);
+                        var right = GetRightIfTuple(value);
+                        target = stack.Count;
+                        stack.Add(new CLVMObject(Tuple.Create(left, right)));
+
+                        if (!LooksLikeCLVMObject(right))
                         {
-                            stack.Add(value.Item2);
+                            stack.Add(right);
                             ops.Add((2, target)); // set right
                             ops.Add((0, -1)); // convert
                         }
 
-                        if (value.Item1 != null)
+                        if (!LooksLikeCLVMObject(left))
                         {
-                            stack.Add(value.Item1);
+                            stack.Add(left);
                             ops.Add((1, target)); // set left
                             ops.Add((0, -1)); // convert
                         }
@@ -61,7 +125,7 @@ namespace CLVMDotNet
                         continue;
                     }
 
-                    if (value != null && value.GetType().IsArray)
+                    else if (value != null && value.GetType().IsArray)
                     {
                         target = stack.Count;
                         stack.Add(new CLVMObject(nullBytes));
@@ -90,8 +154,8 @@ namespace CLVMDotNet
                 {
                     var leftValue = new CLVMObject(stack[stack.Count - 1]);
                     stack.RemoveAt(stack.Count - 1);
-                    var currentPair = ((Tuple<CLVMObject, CLVMObject>)stack[target]);
-                    stack[target] = new Tuple<CLVMObject, CLVMObject>(leftValue, currentPair.Item2);
+                    var currentPair = stack[target];
+                    stack[target].Pair = Tuple.Create<dynamic,dynamic>(leftValue, currentPair.Pair.Item2);
                     continue;
                 }
 
@@ -99,8 +163,8 @@ namespace CLVMDotNet
                 {
                     var rightValue = new CLVMObject(stack[stack.Count - 1]);
                     stack.RemoveAt(stack.Count - 1);
-                    var currentPair = ((Tuple<CLVMObject, CLVMObject>)stack[target]);
-                    stack[target] = new Tuple<CLVMObject, CLVMObject>(currentPair.Item1, rightValue);
+                    var currentPair = stack[target];
+                    stack[target].Pair = Tuple.Create<dynamic,dynamic>(currentPair.Pair.Item1, rightValue);
                     continue;
                 }
 
@@ -144,7 +208,7 @@ namespace CLVMDotNet
                 var s = Casts.IntToBytes(intValue);
                 return s;
             }
-            
+
             if (v is BigInteger bigIntValue)
             {
                 var s = Casts.IntToBytes(bigIntValue);

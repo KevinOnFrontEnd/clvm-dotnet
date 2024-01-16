@@ -1,8 +1,9 @@
 using System.Text;
+using clvm_dotnet.tests;
 using Xunit;
 using clvm = CLVMDotNet;
 
-namespace clvm_dotnet.tests.Serialize;
+namespace CLVMDotNet.Tests.SExp;
 
 [Trait("SExp", "To")]
 public class To

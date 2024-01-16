@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Text;
 using System.Linq;
+using System.Numerics;
 using CLVMDotNet;
 using CLVMDotNet.Tools.IR;
 
@@ -99,13 +100,18 @@ public class Tokenizer
 
     public static int ConsumeWhitespace(string s, int offset)
     {
-        while (offset < s.Length && char.IsWhiteSpace(s[offset]))
+        while (true)
         {
-            offset++;
-        }
+            while (offset < s.Length && char.IsWhiteSpace(s[offset]))
+            {
+                offset++;
+            }
 
-        if (offset < s.Length && s[offset] == ';')
-        {
+            if (offset >= s.Length || s[offset] != ';')
+            {
+                break;
+            }
+
             while (offset < s.Length && s[offset] != '\n' && s[offset] != '\r')
             {
                 offset++;
@@ -269,7 +275,7 @@ public class Tokenizer
         }
     }
 
-    public static Tuple<Tuple<IRType, int>, byte[]>? TokenizeQuotes(string token, int offset)
+    public static Tuple<Tuple<BigInteger, int>, byte[]>? TokenizeQuotes(string token, int offset)
     {
         if (token.Length >= 2)
         {
@@ -278,9 +284,9 @@ public class Tokenizer
             {
                 if (token[token.Length - 1] == c)
                 {
-                    IRType qType = (c == '\'') ? IRType.SINGLE_QUOTE : IRType.DOUBLE_QUOTE;
+                    BigInteger qType = (c == '\'') ? IRType.SINGLE_QUOTE : IRType.DOUBLE_QUOTE;
                     byte[] value = Encoding.UTF8.GetBytes(token.Substring(1, token.Length - 2));
-                    return new Tuple<Tuple<IRType, int>, byte[]>(new Tuple<IRType, int>(qType, offset), value);
+                    return new Tuple<Tuple<BigInteger, int>, byte[]>(new Tuple<BigInteger, int>(qType, offset), value);
                 }
                 else
                 {
@@ -292,7 +298,7 @@ public class Tokenizer
         return null;
     }
 
-    public static Tuple<(IRType, int), string>? TokenizeSymbol(string token, int offset)
+    public static Tuple<(BigInteger, int), string>? TokenizeSymbol(string token, int offset)
     {
         return Tuple.Create((IRType.SYMBOL, offset),token);
     }
@@ -349,13 +355,15 @@ public class Tokenizer
     public static SExp ReadIR(string s)
     {
         var stream = TokenStream(s);
+
         var enumerator = stream.GetEnumerator();
         while (enumerator.MoveNext())
         {
             var item = enumerator.Current;
-            return SExp.To(TokenizeSexp(item.token, item.offset, enumerator));
+            var ts = TokenizeSexp(item.token, item.offset, enumerator);
+            return SExp.To(ts);
         }
-
+        
         throw new ArgumentException("unexpected end of stream");
     }
 
