@@ -19,14 +19,15 @@ public class Utils
         return val;
     }
     
-    public static SExp IrNew(BigInteger type, dynamic val, int? offset = null)
+    public static SExp IrNew(dynamic type, dynamic val, int? offset = null)
     {
         if (offset.HasValue)
         {
-            return SExp.To(new Tuple<dynamic, dynamic>(type, offset));
+            var t = SExp.To(new Tuple<dynamic, dynamic>(type, offset));
+            return SExp.To(new Tuple<dynamic, dynamic>(t, val));
         }
 
-        return SExp.To(new Tuple<BigInteger, dynamic>(type, val));
+        return SExp.To(new Tuple<dynamic, dynamic>(type, val));
     }
     
     public static SExp IrNew(SExp first, SExp rest)

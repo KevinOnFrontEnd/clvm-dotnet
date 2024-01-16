@@ -159,7 +159,6 @@ namespace CLVMDotNet
         {
             try
             {
-                var thisob = this;
                 var otherObj = SExp.To(other);
                 Stack<(SExp, SExp)> toCompareStack = new Stack<(SExp, SExp)>();
                 toCompareStack.Push((this, otherObj));

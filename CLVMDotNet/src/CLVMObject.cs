@@ -25,19 +25,7 @@ public class CLVMObject
         {
             //valid tuple
             Atom = null;
-
-            if (v is Tuple<BigInteger, BigInteger> bi)
-                Pair = new Tuple<dynamic?, dynamic?>(bi.Item1, bi.Item2);
-            else if (v is Tuple<SExp, SExp> sexp)
-                Pair = new Tuple<dynamic?, dynamic?>(sexp.Item1, sexp.Item2);
-            else if (v is Tuple<CLVMObject, CLVMObject> clvm)
-                Pair = new Tuple<dynamic?, dynamic?>(clvm.Item1, clvm.Item2);
-            else if (v is Tuple<BigInteger, int> mixint)
-                Pair = new Tuple<dynamic?, dynamic?>(mixint.Item1, mixint.Item2);
-            else
-            {
-                Pair = v;
-            }
+            Pair = new Tuple<dynamic?, dynamic?>(v?.Item1, v?.Item2);
         }
         else
         {

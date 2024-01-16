@@ -351,7 +351,6 @@ public class IRReader
     public static SExp ReadIR(string s)
     {
         var stream = TokenStream(s);
-
         var enumerator = stream.GetEnumerator();
         while (enumerator.MoveNext())
         {
