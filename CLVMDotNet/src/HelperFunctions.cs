@@ -125,7 +125,7 @@ namespace CLVMDotNet
                         continue;
                     }
 
-                    else if (value != null && value.GetType().IsArray)
+                    else if (value != null && value.GetType().IsArray && value is not byte[])
                     {
                         target = stack.Count;
                         stack.Add(new CLVMObject(nullBytes));

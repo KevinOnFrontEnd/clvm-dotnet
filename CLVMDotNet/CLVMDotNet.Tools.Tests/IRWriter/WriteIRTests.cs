@@ -9,13 +9,16 @@ public class IRWriterTests
 {
     [Theory]
     [InlineData("100")]
-    //[InlineData("0x0100")]
-    // [InlineData("0x100")]
-    // [InlineData("\"100\"")]
-    // [InlineData("the quick brown fox jumps over the lazy dogs")]
-    // [InlineData("(the quick brown fox jumps over the lazy dogs)")]
-    // [InlineData("foo")]
-    // [InlineData("(100 0x0100)")]
+    [InlineData("0x0100")]
+    [InlineData("0x100")]
+    [InlineData("\"100\"")]
+    [InlineData("the quick brown fox jumps over the lazy dogs")]
+    [InlineData("(the quick brown fox jumps over the lazy dogs)")]
+    [InlineData("foo")]
+    [InlineData("(100 0x0100)")]
+    [InlineData("(c (quote 100) (c (quote \"foo\") (quote ())))")]
+    [InlineData("(c . foo)")]
+    [InlineData("(a b c de f g h i . j)")]
     public void WriterTests(string sexpText)
     {
         var irSexp = x.IRReader.ReadIR(sexpText);

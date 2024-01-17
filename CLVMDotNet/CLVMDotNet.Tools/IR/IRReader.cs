@@ -332,6 +332,15 @@ public class IRReader
     public static SExp ReadIR(string s)
     {
         var stream = TokenStream(s);
+
+        // foreach (var item in stream)
+        // {
+        //     Console.WriteLine($"{item.token} - {item.offset}");
+        // }
+        //
+        // var t = "";
+        // return null;
+
         var enumerator = stream.GetEnumerator();
         while (enumerator.MoveNext())
         {
