@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Security.Cryptography;
 using System.Text;
 
 //  SExp provides higher level API on top of any object implementing the CLVM
@@ -23,10 +24,13 @@ namespace CLVMDotNet
         public byte[]? Atom { get; set; }
         public Tuple<dynamic, dynamic>? Pair { get; set; }
 
-        public SExp(CLVMObject? obj)
+        public SExp(dynamic? obj)
         {
-            Atom = obj.Atom;
-            Pair = obj.Pair;
+            Atom = obj?.Atom;
+            if (obj?.Pair is (_, _))
+                Pair = Tuple.Create<dynamic, dynamic>(obj?.Pair.Item1, obj?.Pair.Item2);
+            else
+                Pair = null;
         }
 
         public SExp()
@@ -55,21 +59,21 @@ namespace CLVMDotNet
             return To(new Tuple<dynamic, dynamic>(this, right));
         }
 
-        public SExp First()
+        public dynamic First()
         {
-            if (Pair != null)
+            if (Pair is (_,_))
             {
-                return Pair.Item1;
+                return new SExp(Pair.Item1);
             }
 
             throw new EvalError("first of non-cons", this);
         }
 
-        public SExp Rest()
+        public dynamic Rest()
         {
-            if (Pair != null)
+            if (Pair is (_,_))
             {
-                return Pair.Item2;
+                return new SExp(Pair.Item2);
             }
 
             throw new EvalError("rest of non-cons", this);
@@ -106,7 +110,8 @@ namespace CLVMDotNet
                 return new SExp(v);
             }
 
-            return new SExp(HelperFunctions.ToSexpType(v));
+            var sexp = new SExp(HelperFunctions.ToSexpType(v));
+            return sexp;
         }
 
         public BigInteger AsInt()
@@ -156,7 +161,6 @@ namespace CLVMDotNet
         {
             try
             {
-                var thisob = this;
                 var otherObj = SExp.To(other);
                 Stack<(SExp, SExp)> toCompareStack = new Stack<(SExp, SExp)>();
                 toCompareStack.Push((this, otherObj));

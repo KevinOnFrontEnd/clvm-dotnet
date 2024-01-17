@@ -161,7 +161,7 @@ namespace CLVMDotNet
             while (todoStack.Count > 0)
             {
                 var p = todoStack.Pop();
-                Tuple<dynamic, dynamic>? pair = p.Pair;
+                Tuple<object, object>? pair = p.Pair;
 
                 if (pair != null)
                 {

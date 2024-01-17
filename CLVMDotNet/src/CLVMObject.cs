@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace CLVMDotNet;
 
 using System;
@@ -9,7 +11,7 @@ using System;
 public class CLVMObject
 {
     public dynamic? Atom { get; set; }
-    public Tuple<dynamic, dynamic>? Pair { get; set; }
+    public Tuple<dynamic?, dynamic?>? Pair { get; set; }
 
     public CLVMObject(dynamic? v)
     {
@@ -23,7 +25,7 @@ public class CLVMObject
         {
             //valid tuple
             Atom = null;
-            Pair = v;
+            Pair = new Tuple<dynamic?, dynamic?>(v?.Item1, v?.Item2);
         }
         else
         {
@@ -37,7 +39,7 @@ public class CLVMObject
             {
                 throw new ArgumentException("tuples must be of size 2");
             }
-            
+
             //v is an atom, which means it can be any type (string,byte,byte[],[],sexp etc)
             Pair = null;
             Atom = v;
