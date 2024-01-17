@@ -31,41 +31,8 @@ namespace CLVMDotNet
                 return this[op](arguments);
             }
         }
-
-        private static readonly Dictionary<string, byte[]> KEYWORD_TO_ATOM = KEYWORD_FROM_ATOM
-            .ToDictionary(kv => kv.Value.Trim(), kv => kv.Key);
-
-
-        // Initialize KEYWORDS as a list of strings
-        public static List<string> keywordsList = new List<string>
-        {
-            // core opcodes 0x01-x08
-            ". q a i c f r l x",
-
-            // opcodes on atoms as strings 0x09-0x0f
-            "= >s sha256 substr strlen concat .",
-
-            // opcodes on atoms as ints 0x10-0x17
-            "+ - * / divmod > ash lsh",
-
-            // opcodes on atoms as vectors of bools 0x18-0x1c
-            "logand logior logxor lognot .",
-
-            // opcodes for bls 1381 0x1d-0x1f
-            "point_add pubkey_for_exp .",
-
-            // bool opcodes 0x20-0x23
-            "not any all .",
-
-            // misc 0x24
-            "softfork "
-        };
-
-        // Split the concatenated string into individual keywords
-        public static string[] KEYWORDS = keywordsList
-            .SelectMany(s => s.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
-            .ToArray();
-
+   
+        
         public static Dictionary<string, string> OP_REWRITE = new Dictionary<string, string>
         {
             { "+", "add" },
@@ -175,11 +142,8 @@ namespace CLVMDotNet
 
             return new Tuple<int, CLVMObject>(cost, null);
         }
-
-        public static Dictionary<byte[], string> KEYWORD_FROM_ATOM = Enumerable.Range(0, KEYWORDS.Length)
-            .ToDictionary(k => HelperFunctions.ConvertAtomToBytes((Int32)k), v => KEYWORDS[v]);
-
-        public static byte[] QUOTE_ATOM = KEYWORD_TO_ATOM["q"];
-        public static byte[] APPLY_ATOM = KEYWORD_TO_ATOM["a"];
+        
+        public static byte[] QUOTE_ATOM = Keywords.KEYWORD_TO_ATOM["q"];
+        public static byte[] APPLY_ATOM = Keywords.KEYWORD_TO_ATOM["a"];
     }
 }

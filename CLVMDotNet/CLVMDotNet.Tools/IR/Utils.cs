@@ -19,6 +19,37 @@ public class Utils
         return val;
     }
     
+    public static string IrAsSymbol(SExp irSexp)
+    {
+        if (irSexp.Listp() && IrType(irSexp) == IRType.SYMBOL)
+        {
+            return Encoding.UTF8.GetString(IrAsSexp(irSexp).AsAtom());
+        }
+        return null;
+    }
+    
+    public static Tuple<BigInteger, byte[]> IrSymbol(string symbol)
+    {
+        return new Tuple<BigInteger, byte[]>(IRType.SYMBOL, Encoding.UTF8.GetBytes(symbol));
+    }
+    
+    public static SExp IrAsSexp(SExp irSexp)
+    {
+        if (IrNullp(irSexp))
+        {
+            return new SExp(new List<object>()); // Assuming SExp can be constructed from a List<object>.
+        }
+
+        if (IrType(irSexp) == IRType.CONS)
+        {
+            SExp first = IrAsSexp(IrFirst(irSexp));
+            SExp rest = IrAsSexp(IrRest(irSexp));
+            return first.Cons(rest);
+        }
+
+        return irSexp.Rest();
+    }
+    
     public static SExp IrNew(dynamic type, dynamic val, int? offset = null)
     {
         if (offset.HasValue)
