@@ -15,8 +15,8 @@ public class IRType
     public static BigInteger OPERATOR = Utils.ConvertToBase256("OP"); // Equivalent to b"OP"
     public static BigInteger CODE = Utils.ConvertToBase256("CODE"); // Equivalent to b"CODE"
     public static BigInteger NODE = Utils.ConvertToBase256("NODE"); // Equivalent to b"NODE"
+    public static BigInteger[] CONS_TYPES => new[] { CONS };
 
-    
     public static bool Listp()
     {
         return false;

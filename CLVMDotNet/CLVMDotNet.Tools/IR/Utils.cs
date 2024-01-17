@@ -24,7 +24,8 @@ public class Utils
         if (offset.HasValue)
         {
             var t = SExp.To(new Tuple<dynamic, dynamic>(type, offset));
-            return SExp.To(new Tuple<dynamic, dynamic>(t, val));
+            var sexp = SExp.To(new Tuple<dynamic, dynamic>(t, val));
+            return sexp;
         }
 
         return SExp.To(new Tuple<dynamic, dynamic>(type, val));
@@ -45,15 +46,37 @@ public class Utils
         return IrNew(IRType.NULL, 0);
     }
     
+    public static bool IrListp(SExp irSexp)
+    {
+        var irType = IrType(irSexp);
+        return IRType.CONS_TYPES.Contains(irType); 
+    }
+    
+    public static bool IrNullp(SExp irSexp)
+    {
+        return IrType(irSexp) == IRType.NULL;
+    }
+    
     public static BigInteger IrType(SExp irSexp)
     {
         SExp theType = irSexp.First();
         if (theType.Listp())
         {
-            theType = theType.First();
+            dynamic first = theType.First();
+            return Casts.IntFromBytes(first.AsAtom());
         }
 
         return Casts.IntFromBytes(theType.AsAtom());
+    }
+    
+    public static SExp IrVal(SExp irSexp)
+    {
+        return irSexp.Rest();
+    }
+    
+    public static SExp IrFirst(SExp irSexp)
+    {
+        return irSexp.Rest().First();
     }
     
     public static BigInteger IrOffset(SExp irSexp)
@@ -63,18 +86,29 @@ public class Utils
         {
             theOffset.Atom = theOffset.Rest().AsAtom();
         }
-        // else
-        // {
-        //     theOffset = new SExp(new byte[] { 0xff }); // Assuming b"\xff" in Python corresponds to new byte[] { 0xff } in C#
-        // }
-
+        else
+        {
+            theOffset = new SExp(new byte[] { 0xff });
+        }
         return Casts.IntFromBytes(theOffset.AsAtom());
     }
     
-    // public static int IrAsInt(SExp irSexp)
-    // {
-    //     return Casts.IntFromBytes(IrAsAtom(irSexp));
-    // }
+    public static BigInteger IrAsInt(SExp irSexp)
+    {
+        var atom = IrAsAtom(irSexp);
+        return Casts.IntFromBytes(atom);
+    }
+    
+    public static byte[] IrAsAtom(SExp irSexp)
+    {
+        var rest = irSexp.Rest().AsAtom();
+        return rest;
+    }
+    
+    public static SExp IrRest(SExp irSexp)
+    {
+        return irSexp.Rest().Rest();
+    }
     
     public static bool IsIr(SExp sexp)
     {

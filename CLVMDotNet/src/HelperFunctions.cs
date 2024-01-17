@@ -154,17 +154,20 @@ namespace CLVMDotNet
                 {
                     var leftValue = new CLVMObject(stack[stack.Count - 1]);
                     stack.RemoveAt(stack.Count - 1);
-                    var currentPair = stack[target];
-                    stack[target].Pair = Tuple.Create<dynamic,dynamic>(leftValue, currentPair.Pair.Item2);
+                    var rightValue = stack[target].Pair.Item2;
+                    stack[target].Pair = Tuple.Create<dynamic,dynamic>(leftValue, rightValue);
                     continue;
                 }
 
                 if (op == 2) // set right
                 {
-                    var rightValue = new CLVMObject(stack[stack.Count - 1]);
+
+                    var leftValue = stack[target].Pair.Item1;
+                    var right = stack[stack.Count - 1];
                     stack.RemoveAt(stack.Count - 1);
-                    var currentPair = stack[target];
-                    stack[target].Pair = Tuple.Create<dynamic,dynamic>(currentPair.Pair.Item1, rightValue);
+                    var rightValue = new CLVMObject(right);
+
+                    stack[target].Pair = Tuple.Create<dynamic,dynamic>(leftValue, rightValue);
                     continue;
                 }
 

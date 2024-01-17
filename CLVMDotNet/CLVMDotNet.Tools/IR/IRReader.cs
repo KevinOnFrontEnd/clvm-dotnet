@@ -5,25 +5,6 @@ using System.Text;
 namespace CLVMDotNet.Tools.IR;
 public class IRReader
 {
-    public delegate CLVMObject TokenizeSexpDelegate(string token, int offset, IEnumerator<Token> stream);
-
-    public delegate CLVMObject ReadIRDelegate(string s, Func<CLVMObject, byte[]> toSexp);
-
-    public delegate CLVMObject TokenizeConsDelegate(string token, int offset, IEnumerator<Token> stream);
-
-    public delegate Tuple<string, int> NextConsTokenDelegate(IEnumerator<Token> stream);
-
-    public delegate Tuple<Tuple<IRType, int>, byte[]> TokenizeQuotesDelegate(string token, int offset);
-
-    public delegate Tuple<Tuple<IRType, int>, byte[]> TokenizeSymbolDelegate(string token, int offset);
-
-    public delegate bool TryParseIntDelegate(string token, out int result);
-
-    public delegate bool TryParseHexDelegate(string token, out byte[] result);
-
-    public delegate Stream TokenStreamDelegate(string s);
-
-
     public class Token
     {
         public string Value { get; set; }
