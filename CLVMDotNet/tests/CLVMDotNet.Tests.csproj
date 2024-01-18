@@ -28,9 +28,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="CLVM\MoreOps\" />
+      <Folder Include="CLVM\OpUtils\" />
       <Folder Include="Content\" />
-      <Folder Include="MoreOps\" />
-      <Folder Include="OpUtils\" />
     </ItemGroup>
 
 </Project>

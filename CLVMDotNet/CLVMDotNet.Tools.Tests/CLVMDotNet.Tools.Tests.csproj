@@ -23,7 +23,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\CLVMDotNet.Tools\CLVMDotNet.Tools.csproj" />
       <ProjectReference Include="..\src\CLVMDotNet.csproj" />
     </ItemGroup>
 
