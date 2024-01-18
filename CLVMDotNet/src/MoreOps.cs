@@ -14,32 +14,32 @@ namespace CLVMDotNet
             return Tuple.Create(newCost, atom);
         }
 
-        // public static CostResult OpSha256(SExp args)
-        // {
-        //     int cost = SHA256_BASE_COST;
-        //     int argLen = 0;
-        //     using (SHA256 sha256 = SHA256.Create())
-        //     {
-        //         foreach (SExp arg in args.AsIter())
-        //         {
-        //             byte[] atom = arg.AsAtom();
-        //             if (atom == null)
-        //             {
-        //                 throw new EvalError("sha256 on list", arg);
-        //             }
-        //             argLen += atom.Length;
-        //             cost += Costs.SHA256_COST_PER_ARG;
-        //             sha256.TransformBlock(atom, 0, atom.Length, null, 0);
-        //         }
-        //
-        //         sha256.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
-        //         byte[] result = sha256.Hash;
-        //         cost += argLen * Costs.SHA256_COST_PER_BYTE;
-        //
-        //         return new CostResult { Cost = cost, Atom = args.AsAtom(result) };
-        //     }
-        // }
+        public static Tuple<BigInteger, SExp> OpSha256(SExp args)
+        {
+            int cost = SHA256_BASE_COST;
+            int argLen = 0;
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                foreach (SExp arg in args.AsIter())
+                {
+                    byte[] atom = arg.AsAtom();
+                    if (atom == null)
+                    {
+                        throw new EvalError("sha256 on list", arg);
+                    }
 
+                    argLen += atom.Length;
+                    cost += Costs.SHA256_COST_PER_ARG;
+                    sha256.TransformBlock(atom, 0, atom.Length, null, 0);
+                }
+
+                sha256.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+                byte[] result = sha256.Hash;
+                cost += argLen * Costs.SHA256_COST_PER_BYTE;
+
+                return MallocCost(cost, SExp.To(result));
+            }
+        }
 
         public static IEnumerable<(BigInteger, int)> ArgsAsInts(string opName, SExp args)
         {
@@ -75,9 +75,9 @@ namespace CLVMDotNet
             }
         }
 
-        public static List<BigInteger> ArgsAsIntList(string opName, dynamic args, int count)
+        public static List<(BigInteger, BigInteger)> ArgsAsIntList(string opName, dynamic args, int count)
         {
-            List<BigInteger> intList = new List<BigInteger>(ArgsAsInts(opName, args));
+            var intList = ArgsAsInts(opName, args);
             if (intList.Count != count)
             {
                 string plural = count != 1 ? "s" : "";
@@ -87,7 +87,7 @@ namespace CLVMDotNet
             return intList;
         }
 
-        public static IEnumerable<CLVMObject> ArgsAsBools(string opName, SExp args)
+        public static IEnumerable<SExp> ArgsAsBools(string opName, SExp args)
         {
             foreach (var arg in args.AsIter())
             {
@@ -103,9 +103,9 @@ namespace CLVMDotNet
             }
         }
 
-        public static List<CLVMObject> ArgsAsBoolList(string opName, SExp args, int count)
+        public static List<SExp> ArgsAsBoolList(string opName, SExp args, int count)
         {
-            List<CLVMObject> boolList = ArgsAsBools(opName, args).ToList();
+            List<SExp> boolList = ArgsAsBools(opName, args).ToList();
             if (boolList.Count != count)
             {
                 string plural = count != 1 ? "s" : "";
@@ -131,51 +131,52 @@ namespace CLVMDotNet
             return MallocCost(cost, SExp.To(total));
         }
 
-        // public (BigInteger, SExp) OpDivmod(SExp args)
+        public static (BigInteger, SExp) OpDivmod(SExp args)
+        {
+            BigInteger cost = Costs.DIV_BASE_COST;
+            var (i0, l0) = ArgsAsIntList("divmod", args, 2)[0];
+            var (i1, l1) = ArgsAsIntList("divmod", args, 2)[1];
+            if (i1 == 0)
+            {
+                throw new EvalError("divmod with 0", SExp.To(i0));
+            }
+
+            cost += (l0 + l1) * Costs.DIV_COST_PER_BYTE;
+            BigInteger q = BigInteger.DivRem(i0, i1, out BigInteger r);
+            SExp q1 = SExp.To(q);
+            SExp r1 = SExp.To(r);
+            cost += (q1.Atom.Length + r1.Atom.Length) * Costs.MALLOC_COST_PER_BYTE;
+            return (cost, SExp.To(new List<SExp> { q1, r1 }));
+        }
+
+        public static Tuple<BigInteger, SExp> OpDiv(SExp args)
+        {
+            BigInteger cost = Costs.DIV_BASE_COST;
+            var (i0, l0) = ArgsAsIntList("/", args, 2)[0];
+            var (i1, l1) = ArgsAsIntList("/", args, 2)[1];
+            if (i1 == 0)
+            {
+                throw new EvalError("div with 0", SExp.To(i0));
+            }
+
+            if (i0 < 0 || i1 < 0)
+            {
+                throw new EvalError("div operator with negative operands is deprecated", args);
+            }
+
+            cost += (l0 + l1) * Costs.DIV_COST_PER_BYTE;
+            BigInteger q = BigInteger.Divide(i0, i1);
+
+            return MallocCost(cost, SExp.To(q));
+        }
+
+        // public (BigInteger, SExp) OpGr(SExp args)
         // {
-        //     BigInteger cost = Costs.DIV_BASE_COST;
-        //     var (i0, l0) = ArgsAsIntList("divmod", args, 2)[0];
-        //     var (i1, l1) = ArgsAsIntList("divmod", args, 2)[1];
-        //     if (i1 == 0)
-        //     {
-        //         throw new EvalError("divmod with 0", args.To(i0));
-        //     }
-        //     cost += (l0 + l1) * Costs.DIV_COST_PER_BYTE;
-        //     BigInteger q = BigInteger.DivRem(i0, i1, out BigInteger r);
-        //     SExp q1 = args.To(q);
-        //     SExp r1 = args.To(r);
-        //     cost += (q1.Atom.Length + r1.Atom.Length) * Costs.MALLOC_COST_PER_BYTE;
-        //     return (cost, args.To(new List<SExp> { q1, r1 }));
+        //     var (i0, l0) = ArgsAsIntList(">", args, 2);
+        //     BigInteger cost = Costs.GR_BASE_COST;
+        //     cost += (l0 + ArgsAsIntList(">", args, 2)[1].Item2) * Costs.GR_COST_PER_BYTE;
+        //     return (cost, i0 > ArgsAsIntList(">", args, 2)[1].Item1 ? SExp.True : SExp.False);
         // }
-//
-//     public (BigInteger, SExp) OpDiv(SExp args)
-//     {
-//         BigInteger cost = Costs.DIV_BASE_COST;
-//         var (i0, l0) = ArgsAsIntList("/", args, 2)[0];
-//         var (i1, l1) = ArgsAsIntList("/", args, 2)[1];
-//         if (i1 == 0)
-//         {
-//             throw new EvalError("div with 0", args.To(i0));
-//         }
-//
-//         if (i0 < 0 || i1 < 0)
-//         {
-//             throw new EvalError("div operator with negative operands is deprecated", args);
-//         }
-//
-//         cost += (l0 + l1) * Costs.DIV_COST_PER_BYTE;
-//         BigInteger q = BigInteger.Divide(i0, i1);
-//
-//         return MallocCost(cost, args.To(q));
-//     }
-//
-//     public (BigInteger, SExp) OpGr(SExp args)
-//     {
-//         var (i0, l0) = ArgsAsIntList(">", args, 2);
-//         BigInteger cost = Costs.GR_BASE_COST;
-//         cost += (l0 + ArgsAsIntList(">", args, 2)[1].Item2) * Costs.GR_COST_PER_BYTE;
-//         return (cost, i0 > ArgsAsIntList(">", args, 2)[1].Item1 ? args.True : args.False);
-//     }
 //     
 //     public (BigInteger, SExp) OpGrBytes(dynamic args)
 //     {
@@ -240,109 +241,115 @@ namespace CLVMDotNet
 //         return MallocCost(cost, items.To(p.ToBytes()));
 //     }
 //
-//     public (BigInteger, SExp) OpStrlen(SExp args)
-//     {
-//         if (args.ListLength() != 1)
-//         {
-//             throw new EvalError("strlen takes exactly 1 argument", args);
-//         }
-//         var a0 = args.First();
-//         if (a0.Pair != null)
-//         {
-//             throw new EvalError("strlen on list", a0);
-//         }
-//         int size = a0.AsAtom().Length;
-//         BigInteger cost = Costs.STRLEN_BASE_COST + size * Costs.STRLEN_COST_PER_BYTE;
-//         return MallocCost(cost, args.To(size));
-//     }
-//
-//     public (BigInteger, SExp) OpSubstr(SExp args)
-//     {
-//         int argCount = args.ListLength();
-//         if (argCount != 2 && argCount != 3)
-//         {
-//             throw new EvalError("substr takes exactly 2 or 3 arguments", args);
-//         }
-//         var a0 = args.First();
-//         if (a0.Pair != null)
-//         {
-//             throw new EvalError("substr on list", a0);
-//         }
-//
-//         var s0 = a0.AsAtom();
-//
-//         int i1, i2;
-//         if (argCount == 2)
-//         {
-//             i1 = ArgsAsInt32("substr", args.Rest()).Single();
-//             i2 = s0.Length;
-//         }
-//         else
-//         {
-//             var intArgs = ArgsAsInt32("substr", args.Rest()).ToArray();
-//             i1 = intArgs[0];
-//             i2 = intArgs[1];
-//         }
-//
-//         if (i2 > s0.Length || i2 < i1 || i2 < 0 || i1 < 0)
-//         {
-//             throw new EvalError("invalid indices for substr", args);
-//         }
-//         var s = s0.SubString(i1, i2 - i1);
-//         BigInteger cost = 1;
-//         return (cost, args.To(s));
-//     }
-//
-//     public (BigInteger, SExp) OpConcat(SExp args)
-//     {
-//         BigInteger cost = Costs.CONCAT_BASE_COST;
-//         var s = new MemoryStream();
-//         foreach (var arg in args.AsIter())
-//         {
-//             if (arg.Pair != null)
-//             {
-//                 throw new EvalError("concat on list", arg);
-//             }
-//             var atom = arg.AsAtom();
-//             s.Write(atom, 0, atom.Length);
-//             cost += Costs.CONCAT_COST_PER_ARG;
-//         }
-//         var r = s.ToArray();
-//         cost += r.Length * Costs.CONCAT_COST_PER_BYTE;
-//         return (cost, args.To(r));
-//     }
-//
-//     public (BigInteger, SExp) OpAsh(SExp args)
-//     {
-//         var (i0, l0) = ArgsAsIntList("ash", args, 2);
-//         var (i1, l1) = ArgsAsIntList("ash", args.Rest(), 1).First();
-//
-//         if (l1 > 4)
-//         {
-//             throw new EvalError("ash requires int32 args (with no leading zeros)", args.Rest().First());
-//         }
-//
-//         if (Math.Abs(i1) > 65535)
-//         {
-//             throw new EvalError("shift too large", args.To(i1));
-//         }
-//
-//         BigInteger r;
-//
-//         if (i1 >= 0)
-//         {
-//             r = i0 << (int)i1;
-//         }
-//         else
-//         {
-//             r = i0 >> (int)-i1;
-//         }
-//
-//         BigInteger cost = Costs.ASHIFT_BASE_COST;
-//         cost += (l0 + Casts.LimbsForInt(r)) * Costs.ASHIFT_COST_PER_BYTE;
-//
-//         return (cost, args.To(r));
-//     }
+        public static Tuple<BigInteger, SExp> OpStrlen(SExp args)
+        {
+            if (args.ListLength() != 1)
+            {
+                throw new EvalError("strlen takes exactly 1 argument", args);
+            }
+
+            var a0 = args.First();
+            if (a0.Pair != null)
+            {
+                throw new EvalError("strlen on list", a0);
+            }
+
+            int size = a0.AsAtom().Length;
+            BigInteger cost = Costs.STRLEN_BASE_COST + size * Costs.STRLEN_COST_PER_BYTE;
+            return MallocCost(cost, SExp.To(size));
+        }
+
+        public static Tuple<BigInteger, SExp> OpSubstr(SExp args)
+        {
+            int argCount = args.ListLength();
+            if (argCount != 2 && argCount != 3)
+            {
+                throw new EvalError("substr takes exactly 2 or 3 arguments", args);
+            }
+
+            var a0 = args.First();
+            if (a0.Pair != null)
+            {
+                throw new EvalError("substr on list", a0);
+            }
+
+            var s0 = a0.AsAtom();
+
+            int i1, i2;
+            if (argCount == 2)
+            {
+                i1 = ArgsAsInt32("substr", args.Rest()).Single();
+                i2 = s0.Length;
+            }
+            else
+            {
+                var intArgs = ArgsAsInt32("substr", args.Rest()).ToArray();
+                i1 = intArgs[0];
+                i2 = intArgs[1];
+            }
+
+            if (i2 > s0.Length || i2 < i1 || i2 < 0 || i1 < 0)
+            {
+                throw new EvalError("invalid indices for substr", args);
+            }
+
+            var s = s0.SubString(i1, i2 - i1);
+            BigInteger cost = 1;
+            return MallocCost(cost, SExp.To(s));
+        }
+
+        public static Tuple<BigInteger, SExp> OpConcat(SExp args)
+        {
+            BigInteger cost = Costs.CONCAT_BASE_COST;
+            var s = new MemoryStream();
+            foreach (var arg in args.AsIter())
+            {
+                if (arg.Pair != null)
+                {
+                    throw new EvalError("concat on list", arg);
+                }
+
+                var atom = arg.AsAtom();
+                s.Write(atom, 0, atom.Length);
+                cost += Costs.CONCAT_COST_PER_ARG;
+            }
+
+            var r = s.ToArray();
+            cost += r.Length * Costs.CONCAT_COST_PER_BYTE;
+            return MallocCost(cost, SExp.To(r));
+        }
+
+        // public static  Tuple<BigInteger, SExp> OpAsh(SExp args)
+        // {
+        //     var (i0, l0) = ArgsAsIntList("ash", args, 2);
+        //     var (i1, l1) = ArgsAsIntList("ash", args.Rest(), 1).First();
+        //
+        //     if (l1 > 4)
+        //     {
+        //         throw new EvalError("ash requires int32 args (with no leading zeros)", args.Rest().First());
+        //     }
+        //
+        //     if (Math.Abs(i1) > 65535)
+        //     {
+        //         throw new EvalError("shift too large", args.To(i1));
+        //     }
+        //
+        //     BigInteger r;
+        //
+        //     if (i1 >= 0)
+        //     {
+        //         r = i0 << (int)i1;
+        //     }
+        //     else
+        //     {
+        //         r = i0 >> (int)-i1;
+        //     }
+        //
+        //     BigInteger cost = Costs.ASHIFT_BASE_COST;
+        //     cost += (l0 + Casts.LimbsForInt(r)) * Costs.ASHIFT_COST_PER_BYTE;
+        //
+        //     return MallocCost(cost, SExp.To(r));
+        // }
 //
 //     public (BigInteger, SExp) OpLsh(SExp args)
 //     {
@@ -380,61 +387,62 @@ namespace CLVMDotNet
 //
 //         return (cost, args.To(r));
 //     }
-//     
-//     public (BigInteger, SExp) BinopReduction(string opName, BigInteger initialValue, SExp args, Func<BigInteger, BigInteger, BigInteger> opF)
-//     {
-//         BigInteger total = initialValue;
-//         BigInteger argSize = 0;
-//         BigInteger cost = Costs.LOG_BASE_COST;
-//
-//         foreach (var (r, l) in ArgsAsInts(opName, args))
-//         {
-//             total = opF(total, r);
-//             argSize += l;
-//             cost += Costs.LOG_COST_PER_ARG;
-//         }
-//
-//         cost += argSize * Costs.LOG_COST_PER_BYTE;
-//         return (MallocCost(cost, args.To(total)), args.To(total));
-//     }
-//
-//     public (BigInteger, SExp) OpLogand(SExp args)
-//     {
-//         BigInteger Binop(BigInteger a, BigInteger b) => a & b;
-//
-//         return BinopReduction("logand", -1, args, Binop);
-//     }
-//
-//     public (BigInteger, SExp) OpLogior(SExp args)
-//     {
-//         BigInteger Binop(BigInteger a, BigInteger b) => a | b;
-//
-//         return BinopReduction("logior", 0, args, Binop);
-//     }
-//
-//     public (BigInteger, SExp) OpLogxor(SExp args)
-//     {
-//         BigInteger Binop(BigInteger a, BigInteger b) => a ^ b;
-//
-//         return BinopReduction("logxor", 0, args, Binop);
-//     }
-//
-//     public (BigInteger, SExp) OpLognot(SExp args)
-//     {
-//         (BigInteger i0, int l0) = ArgsAsIntList("lognot", args, 1);
-//         BigInteger result = ~i0;
-//         int cost = Costs.LOGNOT_BASE_COST + l0 * Costs.LOGNOT_COST_PER_BYTE;
-//         return (cost, args.To(result));
-//     }
-//
-//     public (int, SExp) OpNot(dynamic args)
-//     {
-//         List<bool> boolList = ArgsAsBoolList("not", args, 1);
-//         bool i0 = boolList[0];
-//         bool result = !i0;
-//         int cost = Costs.BOOL_BASE_COST;
-//         return (cost, args.To(result ? args.True : args.False));
-//     }
+
+        public static Tuple<BigInteger, SExp> BinopReduction(string opName, BigInteger initialValue, SExp args,
+            Func<BigInteger, BigInteger, BigInteger> opF)
+        {
+            BigInteger total = initialValue;
+            BigInteger argSize = 0;
+            BigInteger cost = Costs.LOG_BASE_COST;
+
+            foreach (var (r, l) in ArgsAsInts(opName, args))
+            {
+                total = opF(total, r);
+                argSize += l;
+                cost += Costs.LOG_COST_PER_ARG;
+            }
+
+            cost += argSize * Costs.LOG_COST_PER_BYTE;
+            return MallocCost(cost, SExp.To(total));
+        }
+
+        public static Tuple<BigInteger, SExp> OpLogand(SExp args)
+        {
+            BigInteger Binop(BigInteger a, BigInteger b) => a & b;
+
+            return BinopReduction("logand", -1, args, Binop);
+        }
+
+        public static Tuple<BigInteger, SExp> OpLogior(SExp args)
+        {
+            BigInteger Binop(BigInteger a, BigInteger b) => a | b;
+
+            return BinopReduction("logior", 0, args, Binop);
+        }
+
+        public static Tuple<BigInteger, SExp> OpLogxor(SExp args)
+        {
+            BigInteger Binop(BigInteger a, BigInteger b) => a ^ b;
+
+            return BinopReduction("logxor", 0, args, Binop);
+        }
+
+        // public static Tuple<BigInteger, SExp> OpLognot(SExp args)
+        // {
+        //     var (i0, l0) = ArgsAsIntList("lognot", args, 1);
+        //     BigInteger result = ~i0;
+        //     int cost = Costs.LOGNOT_BASE_COST + l0 * Costs.LOGNOT_COST_PER_BYTE;
+        //     return MallocCost(cost, SExp.To(result));
+        // }
+
+        // public static Tuple<BigInteger, SExp> OpNot(dynamic args)
+        // {
+        //     List<bool> boolList = ArgsAsBoolList("not", args, 1);
+        //     bool i0 = boolList[0];
+        //     bool result = !i0;
+        //     int cost = Costs.BOOL_BASE_COST;
+        //     return MallocCost(cost, args.To(result ? args.True : args.False));
+        // }
 //     
 //     public (int, SExp) OpAny(dynamic args)
 //     {
@@ -453,28 +461,28 @@ namespace CLVMDotNet
         // }
 
 
-        // public (BigInteger, SExp) OpSoftfork(SExp args)
-        // {
-        //     if (args.ListLength() < 1)
-        //     {
-        //         throw new EvalError("softfork takes at least 1 argument", args);
-        //     }
-        //
-        //     SExp a = args.First();
-        //
-        //     if (a.Pair != null)
-        //     {
-        //         throw new EvalError("softfork requires int args", a);
-        //     }
-        //
-        //     var cost = a.AsInt();
-        //
-        //     if (cost < 1)
-        //     {
-        //         throw new EvalError("cost must be > 0", args);
-        //     }
-        //
-        //     return (cost, args.False);
-        // }
+        public static Tuple<BigInteger, SExp> OpSoftfork(SExp args)
+        {
+            if (args.ListLength() < 1)
+            {
+                throw new EvalError("softfork takes at least 1 argument", args);
+            }
+
+            SExp a = args.First();
+
+            if (a.Pair != null)
+            {
+                throw new EvalError("softfork requires int args", a);
+            }
+
+            var cost = a.AsInt();
+
+            if (cost < 1)
+            {
+                throw new EvalError("cost must be > 0", args);
+            }
+
+            return MallocCost(cost, SExp.False);
+        }
     }
 }
