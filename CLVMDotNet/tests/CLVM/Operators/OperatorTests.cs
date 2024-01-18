@@ -1,3 +1,4 @@
+using System.Numerics;
 using Xunit;
 using x = CLVMDotNet.CLVM;
 using CLVM = CLVMDotNet;
@@ -6,6 +7,35 @@ namespace CLVMDotNet.Tests.Operators
 {
     public class OperatorTests
     {
+        [Fact]
+        public void testAdd()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x01 }, x.SExp.To(new int[] { 3, 4, 5 }));
+            var s = result;
+        }
+        
+        [Fact]
+        public void testDivide()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x02 }, x.SExp.To(new BigInteger[] { 10,2}));
+            var s = result;
+        }
+        
+        [Fact]
+        public void testMultiply()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x03 }, x.SExp.To(new BigInteger[] { 10,2}));
+            var s = result;
+        }
+        //
+        // [Fact]
+        // public void testSubtract()
+        // {
+        //     var result = x.Operator.ApplyOperator(Array.Empty<byte>(), x.SExp.To(new int[] { 3, 4, 5 }));
+        //     var s = result;
+        // }
+        
+        
         // private bool handlerCalled = false;
         // private Tuple<int, SExp> UnknownHandler(byte[] name, SExp args)
         // {

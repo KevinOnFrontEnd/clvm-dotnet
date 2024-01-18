@@ -41,7 +41,7 @@ namespace CLVMDotNet.CLVM
             }
         }
 
-        public static IEnumerable<(BigInteger, int)> ArgsAsInts(string opName, SExp args)
+        public static IEnumerable<(BigInteger, BigInteger)> ArgsAsInts(string opName, SExp args)
         {
             foreach (SExp arg in args.AsIter())
             {
@@ -77,14 +77,19 @@ namespace CLVMDotNet.CLVM
 
         public static List<(BigInteger, BigInteger)> ArgsAsIntList(string opName, dynamic args, int count)
         {
-            var intList = ArgsAsInts(opName, args);
-            if (intList.Count != count)
+            List<(BigInteger, BigInteger)> result = new List<(BigInteger, BigInteger)>();
+            foreach (var intList in ArgsAsInts(opName, args))
             {
-                string plural = count != 1 ? "s" : "";
-                throw new EvalError($"{opName} takes exactly {count} argument{plural}", args);
+                // if (intList.Count != count)
+                // {
+                //     string plural = count != 1 ? "s" : "";
+                //     throw new EvalError($"{opName} takes exactly {count} argument{plural}", args);
+                // }
+
+                result.Add(intList);
             }
 
-            return intList;
+            return result;
         }
 
         public static IEnumerable<SExp> ArgsAsBools(string opName, SExp args)
@@ -115,6 +120,36 @@ namespace CLVMDotNet.CLVM
             return boolList;
         }
 
+        // public static SExp OpMultiply(SExp args)
+        // {
+        //     BigInteger cost = Costs.MUL_BASE_COST;
+        //     var operands = ArgsAsInts("*", args);
+        //
+        //     try
+        //     {
+        //         var firstOperand = operands.First();
+        //         var v = firstOperand.Item1;
+        //         var vs = firstOperand.Item2;
+        //     }
+        //     catch (InvalidOperationException)
+        //     {
+        //         return MallocCost(cost, SExp.To(1)); // Assuming malloc_cost and args.to functions are defined
+        //     }
+        //
+        //     foreach (var (r, rs) in operands.Skip(1))
+        //     {
+        //         cost += Costs.MUL_COST_PER_OP;
+        //         cost += (rs + vs) * Costs.MUL_LINEAR_COST_PER_BYTE;
+        //         cost += (rs * vs) / Costs.MUL_SQUARE_COST_PER_BYTE_DIVIDER;
+        //         v = v * r;
+        //         vs = (v); // Assuming limbs_for_int function is defined
+        //     }
+        //
+        //     return MallocCost(cost, SExp.To(v)); // Assuming malloc_cost and args.to functions are defined
+        // }
+        
+        
+        
         public static Tuple<BigInteger, SExp> OpAdd(SExp args)
         {
             BigInteger total = 0;
