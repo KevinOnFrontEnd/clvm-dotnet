@@ -7,7 +7,7 @@ using CLVM = CLVMDotNet;
 
 namespace CLVMDotNet.Tests.CLVM.Operators
 {
-    [Trait("Operators","All Operators")]
+    [Trait("Operators", "All Operators")]
     public class OperatorTests
     {
         [Fact]
@@ -38,7 +38,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             var result = x.Operator.ApplyOperator(new byte[] { 0x12 }, x.SExp.To(new BigInteger[] { 10, 3 }));
             var s = result;
         }
-        
+
         [Fact]
         public void OpDivMod()
         {
@@ -46,16 +46,14 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             var s = result;
         }
 
-        
-        
-        
+
         [Fact]
         public void OpConcat()
         {
             var result = x.Operator.ApplyOperator(new byte[] { 0x0E }, x.SExp.To(new string[] { "test", "ing" }));
             var s = result;
         }
-        
+
         #region OpSubStr
 
         [Theory]
@@ -75,11 +73,11 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         {
             var errorMessage =
                 Assert.Throws<x.EvalError>(() =>
-                    x.Operator.ApplyOperator(new byte[] { 0x0C }, x.SExp.To(new dynamic[] { "kevin", 1,2,3 }))
+                    x.Operator.ApplyOperator(new byte[] { 0x0C }, x.SExp.To(new dynamic[] { "kevin", 1, 2, 3 }))
                 );
             Assert.Contains("substr takes exactly 2 or 3 arguments", errorMessage.Message);
         }
-        
+
         [Fact]
         public void OpSubstrThrowsWithTooFewArgs()
         {
@@ -89,45 +87,82 @@ namespace CLVMDotNet.Tests.CLVM.Operators
                 );
             Assert.Contains("substr takes exactly 2 or 3 arguments", errorMessage.Message);
         }
-        
+
         [Theory]
-        [InlineData(1,"somelongstring",4,"longstring" )]
-        [InlineData(1,"somelongstring",0,"somelongstring" )]
-        [InlineData(1,"somelongstring",13,"g" )]
+        [InlineData(1, "somelongstring", 4, "longstring")]
+        [InlineData(1, "somelongstring", 0, "somelongstring")]
+        [InlineData(1, "somelongstring", 13, "g")]
         public void OpSubstrReturnsSubStringWithCost(BigInteger cost, string val, int startindex, string expectedResult)
         {
-            var result =x.Operator.ApplyOperator(new byte[] { 0x0C }, x.SExp.To(new dynamic[] { val, startindex }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x0C }, x.SExp.To(new dynamic[] { val, startindex }));
             var atom = result.Item2.AsAtom();
             string text = Encoding.UTF8.GetString(atom);
             Assert.Equal(expectedResult, text);
             Assert.Equal(cost, result.Item1);
         }
-        
+
         [Theory]
-        [InlineData(1,"somelongstring",0,2,"so" )]
-        [InlineData(1,"somelongstring",4,5,"l" )]
-        [InlineData(1,"somelongstring",13,14,"g" )]
-        [InlineData(1,"somelongstring",3,12,"elongstri" )]
-        public void OpSubstrReturnsSubStringOfNumberOfCharactersWithCost(BigInteger cost, string val, int startindex,int endIndex, string expectedResult)
+        [InlineData(1, "somelongstring", 0, 2, "so")]
+        [InlineData(1, "somelongstring", 4, 5, "l")]
+        [InlineData(1, "somelongstring", 13, 14, "g")]
+        [InlineData(1, "somelongstring", 3, 12, "elongstri")]
+        public void OpSubstrReturnsSubStringOfNumberOfCharactersWithCost(BigInteger cost, string val, int startindex,
+            int endIndex, string expectedResult)
         {
-            var result =x.Operator.ApplyOperator(new byte[] { 0x0C }, x.SExp.To(new dynamic[] { val, startindex, endIndex }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x0C },
+                x.SExp.To(new dynamic[] { val, startindex, endIndex }));
             var atom = result.Item2.AsAtom();
             string text = Encoding.UTF8.GetString(atom);
             Assert.Equal(expectedResult, text);
             Assert.Equal(cost, result.Item1);
         }
+
         #endregion
 
-        
 
         [Fact]
         public void OpNot()
         {
-            
+        }
+
+        #region OpStrLen
+        [Theory]
+        [InlineData("somestring", 10, 193)]
+        [InlineData("s", 1, 184)]
+        [InlineData("", 0, 173)]
+        [InlineData("THIS IS A LONGER SENTENCE TO CALCULATE THE COST OF.", 51, 233)]
+        public void OpStrLen(string val, BigInteger length, int cost)
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x0D },
+                x.SExp.To(new string[] { val }));
+            var atom = result.Item2.AsAtom();
+            var actualLength = new BigInteger(atom);
+            Assert.Equal(length, actualLength);
+            Assert.Equal(cost, result.Item1);
         }
         
         
+        [Fact]
+        public void OpStrLenThrowsWithTooManyArgs()
+        {
+            var errorMessage =
+                Assert.Throws<x.EvalError>(() =>
+                    x.Operator.ApplyOperator(new byte[] { 0x0D }, x.SExp.To(new string[] { "THIS","WILL THROW AN EXCEPTION" }))
+                );
+            Assert.Contains("strlen takes exactly 1 argument", errorMessage.Message);
+        }
         
+        [Fact]
+        public void OpStrLenThrowsIfPair()
+        {
+            var errorMessage =
+                Assert.Throws<x.EvalError>(() =>
+                    x.Operator.ApplyOperator(new byte[] { 0x0D }, x.SExp.To(new int[] { 3, 1 }))
+                );
+            Assert.Contains("strlen takes exactly 1 argument", errorMessage.Message);
+        }
+        #endregion
+
         // private bool handlerCalled = false;
         // private Tuple<int, SExp> UnknownHandler(byte[] name, SExp args)
         // {

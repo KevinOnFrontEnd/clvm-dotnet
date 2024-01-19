@@ -107,8 +107,7 @@ namespace CLVMDotNet.CLVM
             else if (atom.AsSpan().SequenceEqual(new byte[] { 0x0D }))
             {
                 //strlen
-                //return MoreOps.OpSubtract(args);
-                throw new ArgumentException("Op Not Implemented!");
+                return MoreOps.OpStrlen(args);
             }
             else if (atom.AsSpan().SequenceEqual(new byte[] { 0x0E }))
             {
