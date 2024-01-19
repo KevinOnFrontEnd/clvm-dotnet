@@ -84,37 +84,44 @@ namespace CLVMDotNet.CLVM
             if (atom.AsSpan().SequenceEqual(new byte[] { 0x09 }))
             {
                 //=
-                return MoreOps.OpAdd(args);
+                //return MoreOps.OpAdd(args);
+                throw new ArgumentException("Op Not Implemented!");
             }
             else if (atom.AsSpan().SequenceEqual(new byte[] { 0x0A }))
             {
                 //>s
-                return MoreOps.OpSubtract(args);
+                //return MoreOps.OpSubtract(args);
+                throw new ArgumentException("Op Not Implemented!");
             }
             else if (atom.AsSpan().SequenceEqual(new byte[] { 0x0B }))
             {
                 //sha256
-                return MoreOps.OpSubtract(args);
+                //return MoreOps.OpSubtract(args);
+                throw new ArgumentException("Op Not Implemented!");
             }
             else if (atom.AsSpan().SequenceEqual(new byte[] { 0x0C }))
             {
                 //substr
-                return MoreOps.OpSubtract(args);
+                //return MoreOps.OpSubtract(args);
+                throw new ArgumentException("Op Not Implemented!");
             }
             else if (atom.AsSpan().SequenceEqual(new byte[] { 0x0D }))
             {
                 //strlen
-                return MoreOps.OpSubtract(args);
+                //return MoreOps.OpSubtract(args);
+                throw new ArgumentException("Op Not Implemented!");
             }
             else if (atom.AsSpan().SequenceEqual(new byte[] { 0x0E }))
             {
                 //concat
-                return MoreOps.OpSubtract(args);
+                //return MoreOps.OpSubtract(args);
+                throw new ArgumentException("Op Not Implemented!");
             }
             else if (atom.AsSpan().SequenceEqual(new byte[] { 0x0F }))
             {
                 //.
-                return MoreOps.OpSubtract(args);
+                //return MoreOps.OpSubtract(args);
+                throw new ArgumentException("Op Not Implemented!");
             }
             
             

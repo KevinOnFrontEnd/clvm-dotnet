@@ -20,21 +20,21 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         [Fact]
         public void OpSubtract()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x04 }, x.SExp.To(new int[] { 3, 1 }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x11 }, x.SExp.To(new int[] { 3, 1 }));
             var s = result;
         }
 
         [Fact]
         public void OpDivide()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x02 }, x.SExp.To(new BigInteger[] { 10, 2 }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x12 }, x.SExp.To(new BigInteger[] { 10, 2 }));
             var s = result;
         }
 
         [Fact]
         public void OpMultiply()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x03 }, x.SExp.To(new BigInteger[] { 10, 3 }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x12 }, x.SExp.To(new BigInteger[] { 10, 3 }));
             var s = result;
         }
         
