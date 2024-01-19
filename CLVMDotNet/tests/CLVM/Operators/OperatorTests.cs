@@ -10,12 +10,14 @@ namespace CLVMDotNet.Tests.CLVM.Operators
     [Trait("Operators", "All Operators")]
     public class OperatorTests
     {
+        #region OpAdd
         [Fact]
         public void OpAdd()
         {
             var result = x.Operator.ApplyOperator(new byte[] { 0x10 }, x.SExp.To(new int[] { 3, 4, 5 }));
             var s = result;
         }
+        #endregion
 
 
         [Fact]
@@ -25,12 +27,37 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             var s = result;
         }
 
+        #region OpDivide
         [Fact]
         public void OpDivide()
         {
             var result = x.Operator.ApplyOperator(new byte[] { 0x12 }, x.SExp.To(new BigInteger[] { 10, 2 }));
             var s = result;
         }
+        
+        [Fact]
+        public void OpDivideThrowsExceptionIfDividingByZero()
+        {
+            var errorMessage =
+                Assert.Throws<x.EvalError>(() =>
+                    x.Operator.ApplyOperator(new byte[] { 0x12 }, x.SExp.To(new BigInteger[] { 10, 0 }))
+                );
+            Assert.Contains("div with 0", errorMessage.Message);
+        }
+        
+        /// <summary>
+        /// TODO: This test needs further clarification on how to represent signed or unsigned numbers
+        /// </summary>
+        [Fact(Skip = "Skipping until it's decided how bytes will be signed i.e representing negative numbers - will it be an sbyte?")]
+        public void OpDivideThrowsExceptionWithNegativeOperand1()
+        {
+            var errorMessage =
+                Assert.Throws<x.EvalError>(() =>
+                    x.Operator.ApplyOperator(new byte[] { 0x12 }, x.SExp.To(new BigInteger[] { -1, 5 }))
+                );
+            Assert.Contains("div operator with negative operands is deprecated", errorMessage.Message);
+        }
+        #endregion
 
         [Fact]
         public void OpMultiply()
@@ -130,7 +157,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         [InlineData("somestring", 10, 193)]
         [InlineData("s", 1, 184)]
         [InlineData("", 0, 173)]
-        [InlineData("THIS IS A LONGER SENTENCE TO CALCULATE THE COST OF.", 51, 233)]
+        [InlineData("THIS IS A LONGER SENTENCE TO CALCULATE THE COST OF.", 51, 234)]
         public void OpStrLen(string val, BigInteger length, int cost)
         {
             var result = x.Operator.ApplyOperator(new byte[] { 0x0D },
