@@ -5,21 +5,18 @@ namespace CLVMDotNet.CLVM
 {
     public static class MoreOps
     {
-        private const int MALLOC_COST_PER_BYTE = 1;
-        private const int SHA256_BASE_COST = 1; // Define other constants as needed.
-
         public static Tuple<BigInteger, SExp> MallocCost(BigInteger cost, SExp atom)
         {
             var a = atom.AsAtom();
-            var length = a?.Length ?? 0;
+            var length = a != null ? a.Length : 0;
             
-            BigInteger newCost = cost + length * MALLOC_COST_PER_BYTE;
+            BigInteger newCost = cost + length * Costs.MALLOC_COST_PER_BYTE;
             return Tuple.Create(newCost, atom);
         }
 
         public static Tuple<BigInteger, SExp> OpSha256(SExp args)
         {
-            int cost = SHA256_BASE_COST;
+            int cost = Costs.SHA256_BASE_COST;
             int argLen = 0;
             using (SHA256 sha256 = SHA256.Create())
             {

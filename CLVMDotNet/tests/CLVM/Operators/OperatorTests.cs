@@ -44,8 +44,23 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             var result = x.Operator.ApplyOperator(new byte[] { 0x14 }, x.SExp.To(new BigInteger[] { 3, 5 }));
             var s = result;
         }
+
         
         
+        
+        [Fact]
+        public void OpConcat()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x0E }, x.SExp.To(new string[] { "test", "ing" }));
+            var s = result;
+        }
+        
+
+        [Fact]
+        public void OpNot()
+        {
+            
+        }
         
         
         
