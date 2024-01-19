@@ -17,14 +17,14 @@ namespace CLVMDotNet.CLVM
             {
                 return MoreOps.OpDiv(args);
             }
-            else if (atom == new byte[] { 0x03 })
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x03 }))
             {
-                //return MoreOps.OpMultiply(args);
+                return MoreOps.OpMultiply(args);
             }
-            // else if (atom == new byte[] { 0x04 })
-            // {
-            //     return MoreOps.OpAdd(args);
-            // }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x04 }))
+            {
+                return MoreOps.OpSubtract(args);
+            }
 
             return null;
         }

@@ -120,33 +120,61 @@ namespace CLVMDotNet.CLVM
             return boolList;
         }
 
-        // public static SExp OpMultiply(SExp args)
-        // {
-        //     BigInteger cost = Costs.MUL_BASE_COST;
-        //     var operands = ArgsAsInts("*", args);
-        //
-        //     try
-        //     {
-        //         var firstOperand = operands.First();
-        //         var v = firstOperand.Item1;
-        //         var vs = firstOperand.Item2;
-        //     }
-        //     catch (InvalidOperationException)
-        //     {
-        //         return MallocCost(cost, SExp.To(1)); // Assuming malloc_cost and args.to functions are defined
-        //     }
-        //
-        //     foreach (var (r, rs) in operands.Skip(1))
-        //     {
-        //         cost += Costs.MUL_COST_PER_OP;
-        //         cost += (rs + vs) * Costs.MUL_LINEAR_COST_PER_BYTE;
-        //         cost += (rs * vs) / Costs.MUL_SQUARE_COST_PER_BYTE_DIVIDER;
-        //         v = v * r;
-        //         vs = (v); // Assuming limbs_for_int function is defined
-        //     }
-        //
-        //     return MallocCost(cost, SExp.To(v)); // Assuming malloc_cost and args.to functions are defined
-        // }
+        public static Tuple<BigInteger, SExp>  OpSubtract(SExp args)
+        {
+            BigInteger cost = Costs.ARITH_BASE_COST;
+
+            if (args.Nullp())
+            {
+                return MallocCost(cost, SExp.To(0));
+            }
+
+            BigInteger sign = 1;
+            BigInteger total = 0;
+            BigInteger arg_size = 0;
+
+            foreach (var pair in ArgsAsInts("-", args))
+            {
+                var r = pair.Item1;
+                var l = pair.Item2;
+
+                total += sign * r;
+                sign = -1;
+                arg_size += l;
+                cost += Costs.ARITH_COST_PER_ARG;
+            }
+
+            cost += arg_size * Costs.ARITH_COST_PER_BYTE;
+            return MallocCost(cost, SExp.To(total));
+        }
+        
+        
+        public static Tuple<BigInteger, SExp> OpMultiply(SExp args)
+        {
+            BigInteger cost = Costs.MUL_BASE_COST;
+            var operands = ArgsAsInts("*", args);
+        
+            try
+            {
+                var firstOperand = operands.First();
+                var v = firstOperand.Item1;
+                var vs = firstOperand.Item2;
+                
+                foreach (var (r, rs) in operands.Skip(1))
+                {
+                    cost += Costs.MUL_COST_PER_OP;
+                    cost += (rs + vs) * Costs.MUL_LINEAR_COST_PER_BYTE;
+                    cost += (rs * vs) / Costs.MUL_SQUARE_COST_PER_BYTE_DIVIDER;
+                    v = v * r;
+                    vs = (v); // Assuming limbs_for_int function is defined
+                }
+                return MallocCost(cost, SExp.To(v)); // Assuming malloc_cost and args.to functions are defined
+            }
+            catch (InvalidOperationException)
+            {
+                return MallocCost(cost, SExp.To(1)); // Assuming malloc_cost and args.to functions are defined
+            }
+        }
         
         
         

@@ -3,37 +3,40 @@ using Xunit;
 using x = CLVMDotNet.CLVM;
 using CLVM = CLVMDotNet;
 
-namespace CLVMDotNet.Tests.Operators
+
+namespace CLVMDotNet.Tests.CLVM.Operators
 {
+    [Trait("Operators","All Operators")]
     public class OperatorTests
     {
         [Fact]
-        public void testAdd()
+        public void OpAdd()
         {
             var result = x.Operator.ApplyOperator(new byte[] { 0x01 }, x.SExp.To(new int[] { 3, 4, 5 }));
             var s = result;
         }
-        
+
+
         [Fact]
-        public void testDivide()
+        public void OpSubtract()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x02 }, x.SExp.To(new BigInteger[] { 10,2}));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x04 }, x.SExp.To(new int[] { 3, 1 }));
             var s = result;
         }
-        
+
         [Fact]
-        public void testMultiply()
+        public void OpDivide()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x03 }, x.SExp.To(new BigInteger[] { 10,2}));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x02 }, x.SExp.To(new BigInteger[] { 10, 2 }));
             var s = result;
         }
-        //
-        // [Fact]
-        // public void testSubtract()
-        // {
-        //     var result = x.Operator.ApplyOperator(Array.Empty<byte>(), x.SExp.To(new int[] { 3, 4, 5 }));
-        //     var s = result;
-        // }
+
+        [Fact]
+        public void OpMultiply()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x03 }, x.SExp.To(new BigInteger[] { 10, 3 }));
+            var s = result;
+        }
         
         
         // private bool handlerCalled = false;
