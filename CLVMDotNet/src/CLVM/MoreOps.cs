@@ -1,5 +1,6 @@
 using System.Numerics;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace CLVMDotNet.CLVM
 {
@@ -9,7 +10,7 @@ namespace CLVMDotNet.CLVM
         {
             var a = atom.AsAtom();
             var length = a != null ? a.Length : 0;
-            
+
             BigInteger newCost = cost + length * Costs.MALLOC_COST_PER_BYTE;
             return Tuple.Create(newCost, atom);
         }
@@ -61,12 +62,13 @@ namespace CLVMDotNet.CLVM
         {
             foreach (SExp arg in args.AsIter())
             {
-                if (arg != null)
+                if (arg.Pair != null)
                 {
                     throw new EvalError($"{opName} requires int32 args", arg);
                 }
 
-                if (arg.AsAtom().Length > 4)
+                var atom = arg.AsAtom();
+                if (atom?.Length > 4)
                 {
                     throw new EvalError($"{opName} requires int32 args (with no leading zeros)", arg);
                 }
@@ -120,7 +122,7 @@ namespace CLVMDotNet.CLVM
             return boolList;
         }
 
-        public static Tuple<BigInteger, SExp>  OpSubtract(SExp args)
+        public static Tuple<BigInteger, SExp> OpSubtract(SExp args)
         {
             BigInteger cost = Costs.ARITH_BASE_COST;
 
@@ -147,19 +149,19 @@ namespace CLVMDotNet.CLVM
             cost += arg_size * Costs.ARITH_COST_PER_BYTE;
             return MallocCost(cost, SExp.To(total));
         }
-        
-        
+
+
         public static Tuple<BigInteger, SExp> OpMultiply(SExp args)
         {
             BigInteger cost = Costs.MUL_BASE_COST;
             var operands = ArgsAsInts("*", args);
-        
+
             try
             {
                 var firstOperand = operands.First();
                 var v = firstOperand.Item1;
                 var vs = firstOperand.Item2;
-                
+
                 foreach (var (r, rs) in operands.Skip(1))
                 {
                     cost += Costs.MUL_COST_PER_OP;
@@ -168,6 +170,7 @@ namespace CLVMDotNet.CLVM
                     v = v * r;
                     vs = (v); // Assuming limbs_for_int function is defined
                 }
+
                 return MallocCost(cost, SExp.To(v)); // Assuming malloc_cost and args.to functions are defined
             }
             catch (InvalidOperationException)
@@ -175,9 +178,8 @@ namespace CLVMDotNet.CLVM
                 return MallocCost(cost, SExp.To(1)); // Assuming malloc_cost and args.to functions are defined
             }
         }
-        
-        
-        
+
+
         public static Tuple<BigInteger, SExp> OpAdd(SExp args)
         {
             BigInteger total = 0;
@@ -339,27 +341,57 @@ namespace CLVMDotNet.CLVM
 
             var s0 = a0.AsAtom();
 
-            int i1, i2;
+            BigInteger i1 = 0, i2 = 0;
+            IEnumerable<BigInteger> lst = ArgsAsInt32("substr", args.Rest());
+            int charsToTake = 0;
             if (argCount == 2)
             {
-                i1 = ArgsAsInt32("substr", args.Rest()).Single();
-                i2 = s0.Length;
+                //substring starting at index, take the rest of the string
+                var array = lst.ToArray();
+                i1 = array[0];
+                i2 = 0;
             }
             else
             {
-                var intArgs = ArgsAsInt32("substr", args.Rest()).ToArray();
-                i1 = intArgs[0];
-                i2 = intArgs[1];
+                //substring starting at index, take x amount of characters
+                var array = lst.ToArray();
+                i1 = array[0];
+                i2 = (int)array[1];
+                ;
             }
 
-            if (i2 > s0.Length || i2 < i1 || i2 < 0 || i1 < 0)
+            if (i2 > s0.Length || i2 < 0 || i1 > s0.Length || i1 < 0 || (argCount > 2 && i2 < i1))
             {
                 throw new EvalError("invalid indices for substr", args);
             }
 
-            var s = s0.SubString(i1, i2 - i1);
-            BigInteger cost = 1;
-            return MallocCost(cost, SExp.To(s));
+            //much easier to work with strings
+            if (s0 is byte[] arr)
+            {
+                var startIndex = (int)(i2 - i1) + 1;
+                //if there isn't a second int to use to substring i.e. how many characters to take
+                //take them all
+                if (i2 == 0)
+                {
+                    string text = Encoding.UTF8.GetString(arr);
+                    var s = text.Substring((int)i1);
+                    BigInteger cost = 1;
+                    return Tuple.Create(cost, SExp.To(s));
+                }
+                else
+                {
+                    var endIndex = (int)(i2 - i1);
+                    string text = Encoding.UTF8.GetString(arr);
+                    var s = text.Substring((int)i1, endIndex);
+                    BigInteger cost = 1;
+                    return Tuple.Create(cost, SExp.To(s));
+                }
+            }
+            else
+            {
+                BigInteger cost = 1;
+                return Tuple.Create(cost, SExp.To(s0));
+            }
         }
 
         public static Tuple<BigInteger, SExp> OpConcat(SExp args)

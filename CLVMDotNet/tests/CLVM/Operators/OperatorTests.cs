@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Text;
 using Xunit;
 using x = CLVMDotNet.CLVM;
 using CLVM = CLVMDotNet;
@@ -54,6 +55,69 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             var result = x.Operator.ApplyOperator(new byte[] { 0x0E }, x.SExp.To(new string[] { "test", "ing" }));
             var s = result;
         }
+        
+        #region OpSubStr
+
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(10)]
+        public void OpSubstrThrowsWhenOutOfBounds(int startIndex)
+        {
+            var errorMessage =
+                Assert.Throws<x.EvalError>(() =>
+                    x.Operator.ApplyOperator(new byte[] { 0x0C }, x.SExp.To(new dynamic[] { "kevin", startIndex }))
+                );
+            Assert.Contains("invalid indices for substr", errorMessage.Message);
+        }
+
+        [Fact]
+        public void OpSubstrThrowsWithTwoManyArgs()
+        {
+            var errorMessage =
+                Assert.Throws<x.EvalError>(() =>
+                    x.Operator.ApplyOperator(new byte[] { 0x0C }, x.SExp.To(new dynamic[] { "kevin", 1,2,3 }))
+                );
+            Assert.Contains("substr takes exactly 2 or 3 arguments", errorMessage.Message);
+        }
+        
+        [Fact]
+        public void OpSubstrThrowsWithTooFewArgs()
+        {
+            var errorMessage =
+                Assert.Throws<x.EvalError>(() =>
+                    x.Operator.ApplyOperator(new byte[] { 0x0C }, x.SExp.To(new dynamic[] { "kevin" }))
+                );
+            Assert.Contains("substr takes exactly 2 or 3 arguments", errorMessage.Message);
+        }
+        
+        [Theory]
+        [InlineData(1,"somelongstring",4,"longstring" )]
+        [InlineData(1,"somelongstring",0,"somelongstring" )]
+        [InlineData(1,"somelongstring",13,"g" )]
+        public void OpSubstrReturnsSubStringWithCost(BigInteger cost, string val, int startindex, string expectedResult)
+        {
+            var result =x.Operator.ApplyOperator(new byte[] { 0x0C }, x.SExp.To(new dynamic[] { val, startindex }));
+            var atom = result.Item2.AsAtom();
+            string text = Encoding.UTF8.GetString(atom);
+            Assert.Equal(expectedResult, text);
+            Assert.Equal(cost, result.Item1);
+        }
+        
+        [Theory]
+        [InlineData(1,"somelongstring",0,2,"so" )]
+        [InlineData(1,"somelongstring",4,5,"l" )]
+        [InlineData(1,"somelongstring",13,14,"g" )]
+        [InlineData(1,"somelongstring",3,12,"elongstri" )]
+        public void OpSubstrReturnsSubStringOfNumberOfCharactersWithCost(BigInteger cost, string val, int startindex,int endIndex, string expectedResult)
+        {
+            var result =x.Operator.ApplyOperator(new byte[] { 0x0C }, x.SExp.To(new dynamic[] { val, startindex, endIndex }));
+            var atom = result.Item2.AsAtom();
+            string text = Encoding.UTF8.GetString(atom);
+            Assert.Equal(expectedResult, text);
+            Assert.Equal(cost, result.Item1);
+        }
+        #endregion
+
         
 
         [Fact]
