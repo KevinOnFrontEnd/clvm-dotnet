@@ -10,7 +10,10 @@ namespace CLVMDotNet.CLVM
 
         public static Tuple<BigInteger, SExp> MallocCost(BigInteger cost, SExp atom)
         {
-            BigInteger newCost = cost + atom.AsAtom().Length * MALLOC_COST_PER_BYTE;
+            var a = atom.AsAtom();
+            var length = a?.Length ?? 0;
+            
+            BigInteger newCost = cost + length * MALLOC_COST_PER_BYTE;
             return Tuple.Create(newCost, atom);
         }
 
@@ -194,9 +197,9 @@ namespace CLVMDotNet.CLVM
             return MallocCost(cost, SExp.To(total));
         }
 
-        public static (BigInteger, SExp) OpDivmod(SExp args)
+        public static Tuple<BigInteger, SExp> OpDivmod(SExp args)
         {
-            BigInteger cost = Costs.DIV_BASE_COST;
+            BigInteger cost = Costs.DIVMOD_BASE_COST;
             var (i0, l0) = ArgsAsIntList("divmod", args, 2)[0];
             var (i1, l1) = ArgsAsIntList("divmod", args, 2)[1];
             if (i1 == 0)
@@ -204,12 +207,13 @@ namespace CLVMDotNet.CLVM
                 throw new EvalError("divmod with 0", SExp.To(i0));
             }
 
-            cost += (l0 + l1) * Costs.DIV_COST_PER_BYTE;
+            cost += (l0 + l1) * Costs.DIVMOD_COST_PER_BYTE;
             BigInteger q = BigInteger.DivRem(i0, i1, out BigInteger r);
             SExp q1 = SExp.To(q);
             SExp r1 = SExp.To(r);
             cost += (q1.Atom.Length + r1.Atom.Length) * Costs.MALLOC_COST_PER_BYTE;
-            return (cost, SExp.To(new List<SExp> { q1, r1 }));
+            var ex = SExp.To((q1, r1));
+            return MallocCost(cost, ex);
         }
 
         public static Tuple<BigInteger, SExp> OpDiv(SExp args)

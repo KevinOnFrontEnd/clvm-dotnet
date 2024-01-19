@@ -7,23 +7,250 @@ namespace CLVMDotNet.CLVM
         public static byte[] QuoteAtom { get; set; } = new byte[0];
         public static byte[] ApplyAtom { get; set; } = new byte[0];
 
+        /// <summary>
+        /// Apply Operator to an atom.
+        ///
+        /// This is not the tidiest or most efficient way of executing an operator. The
+        /// python version uses a dictionary to lookup the function. This will likely be changed to that
+        /// to make it more efficient, rather than executing 30 if statements which ultimately slows down the function.
+        ///
+        /// TODO: MAKE SURE THIS IS CHANGED TO A Dictionary to lookup the Operator function.
+        /// </summary>
+        /// <param name="atom"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
         public static Tuple<BigInteger, SExp> ApplyOperator(byte[] atom, SExp args)
         {
+            // core op codes 0x01-x08
             if (atom.AsSpan().SequenceEqual(new byte[] { 0x01 }))
             {
-                return MoreOps.OpAdd(args);
+                //.
+                //return MoreOps.OpMultiply(args);
+                throw new ArgumentException("Op Not Implemented!");
             }
             else if (atom.AsSpan().SequenceEqual(new byte[] { 0x02 }))
             {
-                return MoreOps.OpDiv(args);
+                //q
+                //return MoreOps.OpMultiply(args);
+                throw new ArgumentException("Op Not Implemented!");
             }
             else if (atom.AsSpan().SequenceEqual(new byte[] { 0x03 }))
             {
-                return MoreOps.OpMultiply(args);
+                //a
+                //return MoreOps.OpMultiply(args);
+                throw new ArgumentException("Op Not Implemented!");
             }
             else if (atom.AsSpan().SequenceEqual(new byte[] { 0x04 }))
             {
+                //i
+                //return MoreOps.OpMultiply(args);
+                throw new ArgumentException("Op Not Implemented!");
+            }           
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x05 }))
+            {
+                //c
+                //return MoreOps.OpMultiply(args);
+                throw new ArgumentException("Op Not Implemented!");
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x06 }))
+            {
+                //f
+                //return MoreOps.OpMultiply(args);
+                throw new ArgumentException("Op Not Implemented!");
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x07 }))
+            {
+                //r
+                //return MoreOps.OpMultiply(args);
+                throw new ArgumentException("Op Not Implemented!");
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x08 }))
+            {
+                //l
+                //return MoreOps.OpMultiply(args);
+                throw new ArgumentException("Op Not Implemented!");
+            }
+            //x - note sure what this byte should be
+            // else if (atom.AsSpan().SequenceEqual(new byte[] { 0x17 }))
+            // {
+            //     //x
+            //     //return MoreOps.OpMultiply(args);
+            //     throw new ArgumentException("Op Not Implemented!");
+            // }
+            
+            
+            //opcodes on atoms as strings 0x09-0x0f
+            if (atom.AsSpan().SequenceEqual(new byte[] { 0x09 }))
+            {
+                //=
+                return MoreOps.OpAdd(args);
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x0A }))
+            {
+                //>s
                 return MoreOps.OpSubtract(args);
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x0B }))
+            {
+                //sha256
+                return MoreOps.OpSubtract(args);
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x0C }))
+            {
+                //substr
+                return MoreOps.OpSubtract(args);
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x0D }))
+            {
+                //strlen
+                return MoreOps.OpSubtract(args);
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x0E }))
+            {
+                //concat
+                return MoreOps.OpSubtract(args);
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x0F }))
+            {
+                //.
+                return MoreOps.OpSubtract(args);
+            }
+            
+            
+            //op codes on atoms as ints
+            if (atom.AsSpan().SequenceEqual(new byte[] { 0x10 }))
+            {
+                //+
+                return MoreOps.OpAdd(args);
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x11 }))
+            {
+                //-
+                return MoreOps.OpSubtract(args);
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x12 }))
+            {
+                //*
+                return MoreOps.OpDiv(args);
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x13 }))
+            {
+                // divide
+                return MoreOps.OpMultiply(args);
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x14 }))
+            {
+                //divmod
+                return MoreOps.OpDivmod(args);
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x15 }))
+            {
+                //>
+                //return MoreOps.OpMultiply(args);
+                throw new ArgumentException("Op Not Implemented!");
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x16 }))
+            {
+                //ash
+                //return MoreOps.OpMultiply(args);
+                throw new ArgumentException("Op Not Implemented!");
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x17 }))
+            {
+                //lsh
+                //return MoreOps.OpMultiply(args);
+                throw new ArgumentException("Op Not Implemented!");
+            }
+            
+            // opcodes on atoms as vectors of bools 0x18-0x1c
+            if (atom.AsSpan().SequenceEqual(new byte[] { 0x18 }))
+            {
+                //logand
+                throw new ArgumentException("Op Not Implemented!");
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x19 }))
+            {
+                //logior
+                throw new ArgumentException("Op Not Implemented!");
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x1A }))
+            {
+                //logxor
+                throw new ArgumentException("Op Not Implemented!");
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x1B }))
+            {
+                //lognot
+                throw new ArgumentException("Op Not Implemented!");
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x1C }))
+            {
+                //.
+                throw new ArgumentException("Op Not Implemented!");
+            }
+
+            //opcodes for bls 1381 0x1d-0x1f
+            if (atom.AsSpan().SequenceEqual(new byte[] { 0x18 }))
+            {
+                //point_add
+                throw new ArgumentException("Op Not Implemented!");
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x18 }))
+            {
+                //pubkey_for_exp
+                throw new ArgumentException("Op Not Implemented!");
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x18 }))
+            {
+                //.
+                throw new ArgumentException("Op Not Implemented!");
+            }
+            
+
+            //opcodes for bls 1381 0x1d-0x1f
+            if (atom.AsSpan().SequenceEqual(new byte[] { 0x1D }))
+            {
+                //point_add
+                throw new ArgumentException("Op Not Implemented!");
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x1E }))
+            {
+                //pubkey_for_exp
+                throw new ArgumentException("Op Not Implemented!");
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x1F }))
+            {
+                //.
+                throw new ArgumentException("Op Not Implemented!");
+            }
+
+            // bool opcodes 0x20-0x23
+            if (atom.AsSpan().SequenceEqual(new byte[] { 0x20 }))
+            {
+                //not
+                throw new ArgumentException("Op Not Implemented!");
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x21 }))
+            {
+                //any
+                throw new ArgumentException("Op Not Implemented!");
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x22 }))
+            {
+                //all
+                throw new ArgumentException("Op Not Implemented!");
+            }
+            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x23 }))
+            {
+                //.
+                throw new ArgumentException("Op Not Implemented!");
+            }
+            
+            if (atom.AsSpan().SequenceEqual(new byte[] { 0x24 }))
+            {
+                //softfork
+                throw new ArgumentException("Op Not Implemented!");
             }
 
             return null;

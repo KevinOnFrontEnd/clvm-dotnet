@@ -12,7 +12,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         [Fact]
         public void OpAdd()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x01 }, x.SExp.To(new int[] { 3, 4, 5 }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x10 }, x.SExp.To(new int[] { 3, 4, 5 }));
             var s = result;
         }
 
@@ -37,6 +37,16 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             var result = x.Operator.ApplyOperator(new byte[] { 0x03 }, x.SExp.To(new BigInteger[] { 10, 3 }));
             var s = result;
         }
+        
+        [Fact]
+        public void OpDivMod()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x14 }, x.SExp.To(new BigInteger[] { 3, 5 }));
+            var s = result;
+        }
+        
+        
+        
         
         
         // private bool handlerCalled = false;
