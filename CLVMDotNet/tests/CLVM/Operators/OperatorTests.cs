@@ -189,6 +189,30 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             Assert.Contains("strlen takes exactly 1 argument", errorMessage.Message);
         }
         #endregion
+        
+        #region OpSHA256
+        [Fact]
+        public void OpSHA256()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x0B }, x.SExp.To(new string[] { "THIS IS A SHA256 HASH" }));
+            var s = result;
+            var atom = result.Item2.AsAtom();
+            
+            Assert.Equal(583, result.Item1);
+            Assert.True(atom.AsSpan().SequenceEqual(new byte[] { 0xB1, 0xBD, 0xB6, 0xD1, 0xF9, 0xA8, 0x3F, 0xA5, 0xB4, 0xFA, 0x25, 0x53, 0x34, 0xF1, 0x47, 0xC3, 0xCD, 0x09, 0x4C, 0xE3, 0x6E, 0xC9, 0x74, 0xD5, 0xD8, 0x38, 0xF0, 0x45, 0x98, 0x08, 0x13, 0x4E }));
+        }
+
+        [Fact(Skip = "Skipping until SHA256 Throws an error")]
+        public void OpSHA256OnList_ThrowsError()
+        {
+            var errorMessage =
+                Assert.Throws<x.EvalError>(() =>
+                    x.Operator.ApplyOperator(new byte[] { 0x0B },
+                        x.SExp.To(("SOME","ERror"))
+                ));
+            Assert.Contains("sha256 on list", errorMessage.Message);
+        }
+        #endregion
 
         // private bool handlerCalled = false;
         // private Tuple<int, SExp> UnknownHandler(byte[] name, SExp args)

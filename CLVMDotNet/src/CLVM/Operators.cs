@@ -96,8 +96,7 @@ namespace CLVMDotNet.CLVM
             else if (atom.AsSpan().SequenceEqual(new byte[] { 0x0B }))
             {
                 //sha256
-                //return MoreOps.OpSubtract(args);
-                throw new ArgumentException("Op Not Implemented!");
+                return MoreOps.OpSha256(args);
             }
             else if (atom.AsSpan().SequenceEqual(new byte[] { 0x0C }))
             {
