@@ -50,8 +50,7 @@ namespace CLVMDotNet.CLVM
         }
 
         public byte[]? AsAtom()
-        {
-
+        { 
             return Atom;
         }
 

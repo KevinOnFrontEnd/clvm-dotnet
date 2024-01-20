@@ -4,7 +4,12 @@ namespace CLVMDotNet.CLVM
 {
     public class CoreOps
     {
-        public static Tuple<int, SExp> OpIf(SExp args)
+        public static Tuple<BigInteger, SExp> OpDefaultUnknwon(SExp args)
+        {
+            throw new Exception("Not Implemented!");
+        }
+        
+        public static Tuple<BigInteger, SExp> OpIf(SExp args)
         {
             if (args.ListLength() != 3)
             {
@@ -14,53 +19,53 @@ namespace CLVMDotNet.CLVM
             SExp r = args.Rest();
             if (args.First().Nullp())
             {
-                return new Tuple<int, SExp>(Costs.IF_COST, r.Rest().First());
+                return new Tuple<BigInteger, SExp>(Costs.IF_COST, r.Rest().First());
             }
 
-            return new Tuple<int, SExp>(Costs.IF_COST, r.First());
+            return new Tuple<BigInteger, SExp>(Costs.IF_COST, r.First());
         }
 
-        public static Tuple<int, SExp> OpCons(SExp args)
+        public static Tuple<BigInteger, SExp> OpCons(SExp args)
         {
             if (args.ListLength() != 2)
             {
                 throw new EvalError("c takes exactly 2 arguments", args);
             }
 
-            return new Tuple<int, SExp>(Costs.CONS_COST, args.First().Cons(args.Rest().First()));
+            return new Tuple<BigInteger, SExp>(Costs.CONS_COST, args.First().Cons(args.Rest().First()));
         }
 
-        public static Tuple<int, SExp> OpFirst(SExp args)
+        public static Tuple<BigInteger, SExp> OpFirst(SExp args)
         {
             if (args.ListLength() != 1)
             {
                 throw new EvalError("f takes exactly 1 argument", args);
             }
 
-            return new Tuple<int, SExp>(Costs.FIRST_COST, args.First().First());
+            return new Tuple<BigInteger, SExp>(Costs.FIRST_COST, args.First().First());
         }
 
-        public static Tuple<int, SExp> OpRest(SExp args)
+        public static Tuple<BigInteger, SExp> OpRest(SExp args)
         {
             if (args.ListLength() != 1)
             {
                 throw new EvalError("r takes exactly 1 argument", args);
             }
 
-            return new Tuple<int, SExp>(Costs.REST_COST, args.First().Rest());
+            return new Tuple<BigInteger, SExp>(Costs.REST_COST, args.First().Rest());
         }
 
-        public static Tuple<int, SExp> OpListp(SExp args)
+        public static Tuple<BigInteger, SExp> OpListp(SExp args)
         {
             if (args.ListLength() != 1)
             {
                 throw new EvalError("l takes exactly 1 argument", args);
             }
 
-            return new Tuple<int, SExp>(Costs.LISTP_COST, args.First().Listp() ? SExp.True : SExp.False);
+            return new Tuple<BigInteger, SExp>(Costs.LISTP_COST, args.First().Listp() ? SExp.True : SExp.False);
         }
 
-        public static Tuple<int, SExp> OpRaise(SExp args)
+        public static Tuple<BigInteger, SExp> OpRaise(SExp args)
         {
             if (args.ListLength() == 1 && !args.First().Listp())
             {

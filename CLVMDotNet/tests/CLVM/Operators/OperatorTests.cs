@@ -148,17 +148,9 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             Assert.Equal(expectedResult, text);
             Assert.Equal(cost, result.Item1);
         }
-
         #endregion
-
-
-        [Fact]
-        public void OpNot()
-        {
-        }
-
+        
         #region OpStrLen
-
         [Theory]
         [InlineData("somestring", 10, 193)]
         [InlineData("s", 1, 184)]
@@ -331,6 +323,19 @@ namespace CLVMDotNet.Tests.CLVM.Operators
                     x.Operator.ApplyOperator(new byte[] { 0x09 },
                         x.SExp.To(new dynamic[] { "SOMESTRING"})));
             Assert.Contains("= takes exactly 2 arguments", errorMessage.Message);
+        }
+        #endregion
+        
+        #region OpNot
+                
+        [Fact]
+        public void OpNot()
+        {
+            // var result = x.Operator.ApplyOperator(new byte[] { 0x20 }, x.SExp.To(Array.Empty<byte>()));
+            // var s = result;
+            // var areEqual = x.SExp.True.Equals(result.Item2);
+            // Assert.True(areEqual);
+            // Assert.Equal(117, result.Item1);
         }
         #endregion
 
