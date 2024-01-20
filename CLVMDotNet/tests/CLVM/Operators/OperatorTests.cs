@@ -148,9 +148,11 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             Assert.Equal(expectedResult, text);
             Assert.Equal(cost, result.Item1);
         }
+
         #endregion
-        
+
         #region OpStrLen
+
         [Theory]
         [InlineData("somestring", 10, 193)]
         [InlineData("s", 1, 184)]
@@ -270,30 +272,33 @@ namespace CLVMDotNet.Tests.CLVM.Operators
                     x.Operator.ApplyOperator(new byte[] { 0x15 }, x.SExp.To(new[] { 1 })));
             Assert.Contains("> takes exactly 2 arguments", errorMessage.Message);
         }
+
         #endregion
-        
+
         #region OpEq
 
         [Fact]
         public void OpEqReturnsTrueWhenTwoStringsMatch()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x09 }, x.SExp.To(new dynamic[] { "SomeString", x.SExp.To("SomeString") }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x09 },
+                x.SExp.To(new dynamic[] { "SomeString", x.SExp.To("SomeString") }));
             var s = result;
             var areEqual = x.SExp.True.Equals(result.Item2);
             Assert.True(areEqual);
             Assert.Equal(137, result.Item1);
         }
-        
+
         [Fact]
         public void OpEqReturnsFalseWhenTwoStringsDoNotMatch()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x09 }, x.SExp.To(new dynamic[] { "val1", x.SExp.To("DOTNOTMATCH") }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x09 },
+                x.SExp.To(new dynamic[] { "val1", x.SExp.To("DOTNOTMATCH") }));
             var s = result;
             var areEqual = x.SExp.False.Equals(result.Item2);
             Assert.True(areEqual);
             Assert.Equal(132, result.Item1);
         }
-        
+
         [Fact]
         public void OpEqReturnTrueWhenTwoEmptyStringsMatchMatch()
         {
@@ -303,7 +308,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             Assert.True(areEqual);
             Assert.Equal(117, result.Item1);
         }
-        
+
         [Fact]
         public void OpEqThrowsWhenMoreThanTwoArguments()
         {
@@ -313,21 +318,22 @@ namespace CLVMDotNet.Tests.CLVM.Operators
                         x.SExp.To(new dynamic[] { "1", "1", x.SExp.To("") })));
             Assert.Contains("= takes exactly 2 arguments", errorMessage.Message);
         }
-        
-                
+
+
         [Fact]
         public void OpEqThrowsWhenLessThanTwoArguments()
         {
             var errorMessage =
                 Assert.Throws<x.EvalError>(() =>
                     x.Operator.ApplyOperator(new byte[] { 0x09 },
-                        x.SExp.To(new dynamic[] { "SOMESTRING"})));
+                        x.SExp.To(new dynamic[] { "SOMESTRING" })));
             Assert.Contains("= takes exactly 2 arguments", errorMessage.Message);
         }
+
         #endregion
-        
+
         #region OpNot
-                
+
         [Fact]
         public void OpNot()
         {
@@ -337,6 +343,41 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             // Assert.True(areEqual);
             // Assert.Equal(117, result.Item1);
         }
+
+        #endregion
+
+        #region OpAsh
+
+        [Fact]
+        public void OpAsh()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x16 }, x.SExp.To(new int[] { 1, 2 }));
+            var s = result;
+            Assert.Equal(new byte[] { 0x04 }, result.Item2.AsAtom());
+            Assert.Equal(612, result.Item1);
+        }
+
+        [Fact]
+        public void OpAshThrowsWhenMoreThanTwoArguments()
+        {
+            var errorMessage =
+                Assert.Throws<x.EvalError>(() =>
+                    x.Operator.ApplyOperator(new byte[] { 0x16 },
+                        x.SExp.To(new int[] { 1, 2, 4 })));
+            Assert.Contains("ash takes exactly 2 arguments", errorMessage.Message);
+        }
+
+        [Fact]
+        public void OpAshThrowsWhenLessThanTwoArguments()
+        {
+            var errorMessage =
+                Assert.Throws<x.EvalError>(() =>
+                    x.Operator.ApplyOperator(new byte[] { 0x16 },
+                        x.SExp.To(new int[] { 1, 2, 4 })));
+            Assert.Contains("ash takes exactly 2 arguments", errorMessage.Message);
+        }
+        
+        //TODO: validate when integer has a leading 0
         #endregion
 
         // private bool handlerCalled = false;
