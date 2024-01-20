@@ -87,11 +87,8 @@ namespace CLVMDotNet.CLVM
             
             if (result.Count != count)
             {
-                string plural = count != 1 ? "s" : "";
-                throw new EvalError($"{opName} takes exactly {count} argument{plural}", args);
+                throw new EvalError($"{opName} takes exactly {count} arguments", args);
             }
-
-
             return result;
         }
 

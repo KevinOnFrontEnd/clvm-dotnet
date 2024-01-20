@@ -251,13 +251,32 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         /// <param name="greaterThan"></param>
         [Theory]
         [InlineData(502, 4, 2, true)]
-        [InlineData(502, -1, 2, true, Skip = "-1 is 255 as an unsigned byte. and is greater than 2. Need to probably use sbyte!")] //
+        [InlineData(502, -1, 2, true,
+            Skip = "-1 is 255 as an unsigned byte. and is greater than 2. Need to probably use sbyte!")] //
         public void OpGrReturnsTrue(int expectedCost, BigInteger val1, BigInteger val2, bool greaterThan)
         {
             var result = x.Operator.ApplyOperator(new byte[] { 0x15 }, x.SExp.To(new[] { val1, val2 }));
             var areEqual = x.SExp.True.Equals(result.Item2);
             Assert.True(areEqual);
             Assert.Equal(expectedCost, result.Item1);
+        }
+
+        [Fact]
+        public void OpGrThrowIfMoreThan2ArgumentsPassed()
+        {
+            var errorMessage =
+                Assert.Throws<x.EvalError>(() =>
+                    x.Operator.ApplyOperator(new byte[] { 0x15 }, x.SExp.To(new[] { 1, 2, 3 })));
+            Assert.Contains("> takes exactly 2 arguments", errorMessage.Message);
+        }
+
+        [Fact]
+        public void OpGrThrowIfLessThan2ArgumentsPassed()
+        {
+            var errorMessage =
+                Assert.Throws<x.EvalError>(() =>
+                    x.Operator.ApplyOperator(new byte[] { 0x15 }, x.SExp.To(new[] { 1 })));
+            Assert.Contains("> takes exactly 2 arguments", errorMessage.Message);
         }
         #endregion
 
