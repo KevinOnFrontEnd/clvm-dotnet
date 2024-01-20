@@ -11,12 +11,14 @@ namespace CLVMDotNet.Tests.CLVM.Operators
     public class OperatorTests
     {
         #region OpAdd
+
         [Fact]
         public void OpAdd()
         {
             var result = x.Operator.ApplyOperator(new byte[] { 0x10 }, x.SExp.To(new int[] { 3, 4, 5 }));
             var s = result;
         }
+
         #endregion
 
 
@@ -28,13 +30,14 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         }
 
         #region OpDivide
+
         [Fact]
         public void OpDivide()
         {
             var result = x.Operator.ApplyOperator(new byte[] { 0x12 }, x.SExp.To(new BigInteger[] { 10, 2 }));
             var s = result;
         }
-        
+
         [Fact]
         public void OpDivideThrowsExceptionIfDividingByZero()
         {
@@ -44,11 +47,12 @@ namespace CLVMDotNet.Tests.CLVM.Operators
                 );
             Assert.Contains("div with 0", errorMessage.Message);
         }
-        
+
         /// <summary>
         /// TODO: This test needs further clarification on how to represent signed or unsigned numbers
         /// </summary>
-        [Fact(Skip = "Skipping until it's decided how bytes will be signed i.e representing negative numbers - will it be an sbyte?")]
+        [Fact(Skip =
+            "Skipping until it's decided how bytes will be signed i.e representing negative numbers - will it be an sbyte?")]
         public void OpDivideThrowsExceptionWithNegativeOperand1()
         {
             var errorMessage =
@@ -57,6 +61,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
                 );
             Assert.Contains("div operator with negative operands is deprecated", errorMessage.Message);
         }
+
         #endregion
 
         [Fact]
@@ -153,6 +158,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         }
 
         #region OpStrLen
+
         [Theory]
         [InlineData("somestring", 10, 193)]
         [InlineData("s", 1, 184)]
@@ -167,18 +173,19 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             Assert.Equal(length, actualLength);
             Assert.Equal(cost, result.Item1);
         }
-        
-        
+
+
         [Fact]
         public void OpStrLenThrowsWithTooManyArgs()
         {
             var errorMessage =
                 Assert.Throws<x.EvalError>(() =>
-                    x.Operator.ApplyOperator(new byte[] { 0x0D }, x.SExp.To(new string[] { "THIS","WILL THROW AN EXCEPTION" }))
+                    x.Operator.ApplyOperator(new byte[] { 0x0D },
+                        x.SExp.To(new string[] { "THIS", "WILL THROW AN EXCEPTION" }))
                 );
             Assert.Contains("strlen takes exactly 1 argument", errorMessage.Message);
         }
-        
+
         [Fact]
         public void OpStrLenThrowsIfPair()
         {
@@ -188,18 +195,25 @@ namespace CLVMDotNet.Tests.CLVM.Operators
                 );
             Assert.Contains("strlen takes exactly 1 argument", errorMessage.Message);
         }
+
         #endregion
-        
+
         #region OpSHA256
+
         [Fact]
         public void OpSHA256()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x0B }, x.SExp.To(new string[] { "THIS IS A SHA256 HASH" }));
+            var result =
+                x.Operator.ApplyOperator(new byte[] { 0x0B }, x.SExp.To(new string[] { "THIS IS A SHA256 HASH" }));
             var s = result;
             var atom = result.Item2.AsAtom();
-            
+
             Assert.Equal(583, result.Item1);
-            Assert.True(atom.AsSpan().SequenceEqual(new byte[] { 0xB1, 0xBD, 0xB6, 0xD1, 0xF9, 0xA8, 0x3F, 0xA5, 0xB4, 0xFA, 0x25, 0x53, 0x34, 0xF1, 0x47, 0xC3, 0xCD, 0x09, 0x4C, 0xE3, 0x6E, 0xC9, 0x74, 0xD5, 0xD8, 0x38, 0xF0, 0x45, 0x98, 0x08, 0x13, 0x4E }));
+            Assert.True(atom.AsSpan().SequenceEqual(new byte[]
+            {
+                0xB1, 0xBD, 0xB6, 0xD1, 0xF9, 0xA8, 0x3F, 0xA5, 0xB4, 0xFA, 0x25, 0x53, 0x34, 0xF1, 0x47, 0xC3, 0xCD,
+                0x09, 0x4C, 0xE3, 0x6E, 0xC9, 0x74, 0xD5, 0xD8, 0x38, 0xF0, 0x45, 0x98, 0x08, 0x13, 0x4E
+            }));
         }
 
         [Fact(Skip = "Skipping until SHA256 Throws an error")]
@@ -208,9 +222,42 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             var errorMessage =
                 Assert.Throws<x.EvalError>(() =>
                     x.Operator.ApplyOperator(new byte[] { 0x0B },
-                        x.SExp.To(("SOME","ERror"))
-                ));
+                        x.SExp.To(("SOME", "ERror"))
+                    ));
             Assert.Contains("sha256 on list", errorMessage.Message);
+        }
+
+        #endregion
+
+        #region OpGr
+
+        [Theory]
+        [InlineData(502, 1, 2, false)]
+        [InlineData(502, 1, 1, false)]
+        public void OpGrReturnsFalse(int expectedCost, BigInteger val1, BigInteger val2, bool greaterThan)
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x15 }, x.SExp.To(new[] { val1, val2 }));
+            var areEqual = x.SExp.False.Equals(result.Item2);
+            Assert.True(areEqual);
+            Assert.Equal(expectedCost, result.Item1);
+        }
+
+        /// <summary>
+        /// TODO: decide how signed bytes are dealt with when comparing bytes with negative numbers.
+        /// </summary>
+        /// <param name="expectedCost"></param>
+        /// <param name="val1"></param>
+        /// <param name="val2"></param>
+        /// <param name="greaterThan"></param>
+        [Theory]
+        [InlineData(502, 4, 2, true)]
+        [InlineData(502, -1, 2, true, Skip = "-1 is 255 as an unsigned byte. and is greater than 2. Need to probably use sbyte!")] //
+        public void OpGrReturnsTrue(int expectedCost, BigInteger val1, BigInteger val2, bool greaterThan)
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x15 }, x.SExp.To(new[] { val1, val2 }));
+            var areEqual = x.SExp.True.Equals(result.Item2);
+            Assert.True(areEqual);
+            Assert.Equal(expectedCost, result.Item1);
         }
         #endregion
 

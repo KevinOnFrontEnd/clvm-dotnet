@@ -51,6 +51,7 @@ namespace CLVMDotNet.CLVM
 
         public byte[]? AsAtom()
         {
+
             return Atom;
         }
 
@@ -184,7 +185,11 @@ namespace CLVMDotNet.CLVM
                             return false;
                         }
                     }
-                    else if (s2.AsPair() != null || !s1.AsAtom().SequenceEqual(s2.AsAtom()))
+                    else if (s2.AsPair() != null || s1.AsAtom() != null && s2.AsAtom() is null || s1.AsAtom() is null && s2.AsAtom() is not null) 
+                    {
+                        return false;
+                    }
+                    else if (s2.AsAtom() != null && s1.AsAtom() != null && !s1.AsAtom().SequenceEqual(s2.AsAtom())) //both none null
                     {
                         return false;
                     }
@@ -192,7 +197,7 @@ namespace CLVMDotNet.CLVM
 
                 return true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 return false;
             }
