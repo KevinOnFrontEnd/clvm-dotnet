@@ -84,8 +84,7 @@ namespace CLVMDotNet.CLVM
             if (atom.AsSpan().SequenceEqual(new byte[] { 0x09 }))
             {
                 //=
-                //return MoreOps.OpAdd(args);
-                throw new ArgumentException("Op Not Implemented!");
+                return CoreOps.OpEq(args);
             }
             else if (atom.AsSpan().SequenceEqual(new byte[] { 0x0A }))
             {
@@ -192,24 +191,7 @@ namespace CLVMDotNet.CLVM
                 throw new ArgumentException("Op Not Implemented!");
             }
 
-            //opcodes for bls 1381 0x1d-0x1f
-            if (atom.AsSpan().SequenceEqual(new byte[] { 0x18 }))
-            {
-                //point_add
-                throw new ArgumentException("Op Not Implemented!");
-            }
-            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x18 }))
-            {
-                //pubkey_for_exp
-                throw new ArgumentException("Op Not Implemented!");
-            }
-            else if (atom.AsSpan().SequenceEqual(new byte[] { 0x18 }))
-            {
-                //.
-                throw new ArgumentException("Op Not Implemented!");
-            }
             
-
             //opcodes for bls 1381 0x1d-0x1f
             if (atom.AsSpan().SequenceEqual(new byte[] { 0x1D }))
             {

@@ -279,6 +279,60 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             Assert.Contains("> takes exactly 2 arguments", errorMessage.Message);
         }
         #endregion
+        
+        #region OpEq
+
+        [Fact]
+        public void OpEqReturnsTrueWhenTwoStringsMatch()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x09 }, x.SExp.To(new dynamic[] { "SomeString", x.SExp.To("SomeString") }));
+            var s = result;
+            var areEqual = x.SExp.True.Equals(result.Item2);
+            Assert.True(areEqual);
+            Assert.Equal(137, result.Item1);
+        }
+        
+        [Fact]
+        public void OpEqReturnsFalseWhenTwoStringsDoNotMatch()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x09 }, x.SExp.To(new dynamic[] { "val1", x.SExp.To("DOTNOTMATCH") }));
+            var s = result;
+            var areEqual = x.SExp.False.Equals(result.Item2);
+            Assert.True(areEqual);
+            Assert.Equal(132, result.Item1);
+        }
+        
+        [Fact]
+        public void OpEqReturnTrueWhenTwoEmptyStringsMatchMatch()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x09 }, x.SExp.To(new dynamic[] { "", x.SExp.To("") }));
+            var s = result;
+            var areEqual = x.SExp.True.Equals(result.Item2);
+            Assert.True(areEqual);
+            Assert.Equal(117, result.Item1);
+        }
+        
+        [Fact]
+        public void OpEqThrowsWhenMoreThanTwoArguments()
+        {
+            var errorMessage =
+                Assert.Throws<x.EvalError>(() =>
+                    x.Operator.ApplyOperator(new byte[] { 0x09 },
+                        x.SExp.To(new dynamic[] { "1", "1", x.SExp.To("") })));
+            Assert.Contains("= takes exactly 2 arguments", errorMessage.Message);
+        }
+        
+                
+        [Fact]
+        public void OpEqThrowsWhenLessThanTwoArguments()
+        {
+            var errorMessage =
+                Assert.Throws<x.EvalError>(() =>
+                    x.Operator.ApplyOperator(new byte[] { 0x09 },
+                        x.SExp.To(new dynamic[] { "SOMESTRING"})));
+            Assert.Contains("= takes exactly 2 arguments", errorMessage.Message);
+        }
+        #endregion
 
         // private bool handlerCalled = false;
         // private Tuple<int, SExp> UnknownHandler(byte[] name, SExp args)

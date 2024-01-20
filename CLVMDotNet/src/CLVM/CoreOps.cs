@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace CLVMDotNet.CLVM
 {
     public class CoreOps
@@ -70,7 +72,7 @@ namespace CLVMDotNet.CLVM
             }
         }
 
-        public static Tuple<int, SExp> OpEq(SExp args)
+        public static Tuple<BigInteger, SExp> OpEq(SExp args)
         {
             if (args.ListLength() != 2)
             {
@@ -88,10 +90,10 @@ namespace CLVMDotNet.CLVM
             byte[] b0 = a0.AsAtom();
             byte[] b1 = a1.AsAtom();
 
-            int cost = Costs.EQ_BASE_COST;
+            BigInteger cost = Costs.EQ_BASE_COST;
             cost += (b0.Length + b1.Length) * Costs.EQ_COST_PER_BYTE;
 
-            return new Tuple<int, SExp>(cost, b0.Equals(b1) ? SExp.True : SExp.False);
+            return Tuple.Create(cost, b0.SequenceEqual(b1) ? SExp.True : SExp.False);
         }
     }
 }

@@ -15,6 +15,7 @@ namespace CLVMDotNet.CLVM
             return Tuple.Create(newCost, atom);
         }
 
+
         public static Tuple<BigInteger, SExp> OpSha256(SExp args)
         {
             int cost = Costs.SHA256_BASE_COST;
