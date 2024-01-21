@@ -47,12 +47,8 @@ namespace CLVMDotNet.Tests.CLVM.Operators
                 );
             Assert.Contains("div with 0", errorMessage.Message);
         }
-
-        /// <summary>
-        /// TODO: This test needs further clarification on how to represent signed or unsigned numbers
-        /// </summary>
-        [Fact(Skip =
-            "Skipping until it's decided how bytes will be signed i.e representing negative numbers - will it be an sbyte?")]
+        
+        [Fact()]
         public void OpDivideThrowsExceptionWithNegativeOperand1()
         {
             var errorMessage =
@@ -376,15 +372,10 @@ namespace CLVMDotNet.Tests.CLVM.Operators
                         x.SExp.To(new int[] { 1, 2, 4 })));
             Assert.Contains("ash takes exactly 2 arguments", errorMessage.Message);
         }
-        
-        //TODO: validate when integer has a leading 0
         #endregion
         
         #region OpLsh
-        /// <summary>
-        /// TODO: Review ByteOrder on Casts.IntToBytes
-        /// </summary>
-        [Fact(Skip = "seems to be an issue with byte order with large numbers")]
+        [Fact()]
         public void OpLsh()
         {
             var result = x.Operator.ApplyOperator(new byte[] { 0x17 }, x.SExp.To(new int[] { 1, 45 }));

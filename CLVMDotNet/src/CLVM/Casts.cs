@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using System.Numerics;
 
 namespace CLVMDotNet.CLVM
@@ -29,12 +30,27 @@ namespace CLVMDotNet.CLVM
         /// <returns></returns>
         public static byte[] IntToBytes(BigInteger v)
         {
+            if (v == 0)
+            {
+                byte[] emptyByteArray = new byte[0];
+                return emptyByteArray;
+            }
+            
             //v can fit into a byte 0-255 (unsigned)
             if (v >= byte.MinValue && v <= byte.MaxValue)
             {
                 var intValue = (byte)v;
-                byte[] byteArray = new[] { intValue };
-                return byteArray;
+                var b = (byte)0x00;
+                if (v < 128)
+                {
+                    byte[] byteArray = new[] { intValue };
+                    return byteArray;
+                }
+                else
+                {
+                    byte[] byteArray = new[] { b,intValue };
+                    return byteArray;
+                }
             }
 
             //v can fit into an sbyte -128 to 127 (signed)
@@ -42,7 +58,6 @@ namespace CLVMDotNet.CLVM
             {
                 sbyte sbyteValue = (sbyte)v;
                 byte byteValue = (byte)sbyteValue;
-
                 byte[] byteArray = new[] { byteValue };
                 return byteArray;
             }
@@ -59,20 +74,22 @@ namespace CLVMDotNet.CLVM
             //v can fit into a long -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807)
             if (v >= long.MinValue && v <= long.MaxValue)
             {
-                long shortValue = (long)v;
-                byte[] byteArray = BitConverter.GetBytes(shortValue);
-                Array.Reverse(byteArray);
-
-                int pos = 0;
-                while (byteArray.Length > 1 && (byteArray[0] == 0xFF || byteArray[0] == 0x00))
+                if (v == 0)
                 {
-                    if (pos != 0)
-                        byteArray = byteArray.Skip(1).ToArray();
-                    pos++;
+                    return new byte[0];
                 }
 
+                byte[] result = v.ToByteArray();
 
-                return byteArray;
+                // if (result[0] == 0x00)
+                // {
+                //     // Remove leading 0x00 byte if present
+                //     byte[] minimalResult = new byte[result.Length - 1];
+                //     Array.Copy(result, 1, minimalResult, 0, minimalResult.Length);
+                //     return minimalResult;
+                // }
+                result = result.Reverse().ToArray();
+                return result;
             }
             //python equivalent of numbers larger than a long is a bigInteger
             else
@@ -88,19 +105,7 @@ namespace CLVMDotNet.CLVM
                 {
                     byteArray = byteArray.Skip(1).ToArray();
                 }
-
-                if (!v.IsZero)
-                {
-                    if (byteArray[0] >= 0x80)
-                    {
-                        byteArray = new byte[] { 0 }.Concat(byteArray).ToArray();
-                    }
-                }
-                else
-                {
-                    byteArray = new byte[0];
-                }
-
+                
                 return byteArray;
             }
         }
