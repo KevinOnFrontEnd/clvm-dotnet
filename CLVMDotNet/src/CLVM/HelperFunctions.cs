@@ -125,7 +125,9 @@ namespace CLVMDotNet.CLVM
                         continue;
                     }
 
-                    else if (value != null && value.GetType().IsArray && value is not byte[])
+                    if (value is System.Collections.IList list &&
+                       list.GetType().IsGenericType &&
+                       list.GetType().GetGenericTypeDefinition() == typeof(List<>))
                     {
                         target = stack.Count;
                         stack.Add(new CLVMObject(nullBytes));
@@ -204,6 +206,10 @@ namespace CLVMDotNet.CLVM
             if (v is string str)
             {
                 return Encoding.UTF8.GetBytes(str);
+            }
+            if (v is string[] strarray && strarray.Length == 1)
+            {
+                return Encoding.UTF8.GetBytes(strarray[0]);
             }
 
             if (v is int intValue)

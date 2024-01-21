@@ -20,6 +20,7 @@ namespace CLVMDotNet.CLVM
         {
             int cost = Costs.SHA256_BASE_COST;
             int argLen = 0;
+            byte[] result = Array.Empty<byte>();
             using (SHA256 sha256 = SHA256.Create())
             {
                 foreach (SExp arg in args.AsIter())
@@ -31,15 +32,13 @@ namespace CLVMDotNet.CLVM
                     }
 
                     argLen += atom.Length;
-                    cost += Costs.SHA256_COST_PER_ARG;
-                    sha256.TransformBlock(atom, 0, atom.Length, null, 0);
+                    cost += Costs.SHA256_COST_PER_ARG; 
+                    result = sha256.ComputeHash(atom);
+                    cost += argLen * Costs.SHA256_COST_PER_BYTE;
                 }
 
-                sha256.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
-                byte[] result = sha256.Hash!;
-                cost += argLen * Costs.SHA256_COST_PER_BYTE;
-
-                return MallocCost(cost, SExp.To(result));
+                var sexp = SExp.To(result);
+                return MallocCost(cost, sexp);
             }
         }
 
@@ -552,9 +551,22 @@ namespace CLVMDotNet.CLVM
         //     return MallocCost(cost, SExp.To(result));
         // }
         
-        public static Tuple<BigInteger, SExp> OpAny(dynamic args)
+        public static Tuple<BigInteger, SExp> OpAny(SExp args)
         {
-            throw new Exception("Not implemented yet!");
+            var items = ArgsAsBools("any", args).ToList();
+            BigInteger cost = Costs.BOOL_BASE_COST + items.Count * Costs.BOOL_COST_PER_ARG;
+            SExp r = SExp.False;
+
+            foreach (var v in items)
+            {
+                var atom = v.AsAtom();
+                if (atom != null && atom.Length > 0)
+                {
+                    r = SExp.True;
+                    break;
+                }
+            }
+            return Tuple.Create(cost, r);
         }
         
         public static Tuple<BigInteger, SExp> OpAll(dynamic args)

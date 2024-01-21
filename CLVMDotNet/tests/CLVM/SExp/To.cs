@@ -11,7 +11,7 @@ namespace CLVMDotNet.Tests.CLVM.SExp
         [Fact]
         public void builds_correct_tree()
         {
-            var s = clvm.SExp.To(new dynamic[] { "+", 1, 2 });
+            var s = clvm.SExp.To(new List<dynamic> { "+", 1, 2 });
             var t = s;
             var tree = Common.PrintTree(t);
             Assert.Equal("(43 (1 (2 () )))", tree);
@@ -21,14 +21,31 @@ namespace CLVMDotNet.Tests.CLVM.SExp
         public void test_case_1()
         {
             var sexp = clvm.SExp.To(Encoding.UTF8.GetBytes("foo"));
-            var t1 = clvm.SExp.To(new dynamic[] { 1, sexp });
+            var t1 = clvm.SExp.To(new List<dynamic> { 1, sexp });
             Common.ValidateSExp(t1);
         }
 
         [Fact]
+        public void NumberAtomIsSet()
+        {
+            var a = clvm.SExp.To(1);
+            var atom = a.AsAtom();
+            Assert.Equal(new byte[] { 0x01}, atom);
+        }
+        
+        [Fact]
+        public void StringAtomIsSet()
+        {
+            var a = clvm.SExp.To("somestring");
+            var atom = a.AsAtom();
+            Assert.Equal(new byte[] { 115, 111, 109, 101, 115,116, 114, 105, 110, 103}, atom);
+        }
+        
+        
+        [Fact]
         public void TestListConversions()
         {
-            var a = clvm.SExp.To(new object[] { 1, 2, 3 });
+            var a = clvm.SExp.To(new List<int> { 1, 2, 3 });
             string expectedOutput = "(1 (2 (3 () )))";
             string result = Common.PrintTree(a);
             Assert.Equal(expectedOutput, result);

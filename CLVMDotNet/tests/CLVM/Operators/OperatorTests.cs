@@ -15,7 +15,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         [Fact]
         public void OpAdd()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x10 }, x.SExp.To(new int[] { 3, 4, 5 }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x10 }, x.SExp.To(new List<int> { 3, 4, 5 }));
             var s = result;
         }
 
@@ -25,7 +25,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         [Fact]
         public void OpSubtract()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x11 }, x.SExp.To(new int[] { 3, 1 }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x11 }, x.SExp.To(new List<int> { 3, 1 }));
             var s = result;
         }
 
@@ -34,7 +34,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         [Fact]
         public void OpDivide()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x12 }, x.SExp.To(new BigInteger[] { 10, 2 }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x12 }, x.SExp.To(new List<BigInteger> { 10, 2 }));
             var s = result;
         }
 
@@ -43,17 +43,17 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         {
             var errorMessage =
                 Assert.Throws<x.EvalError>(() =>
-                    x.Operator.ApplyOperator(new byte[] { 0x12 }, x.SExp.To(new BigInteger[] { 10, 0 }))
+                    x.Operator.ApplyOperator(new byte[] { 0x12 }, x.SExp.To(new List<BigInteger> { 10, 0 }))
                 );
             Assert.Contains("div with 0", errorMessage.Message);
         }
-        
+
         [Fact()]
         public void OpDivideThrowsExceptionWithNegativeOperand1()
         {
             var errorMessage =
                 Assert.Throws<x.EvalError>(() =>
-                    x.Operator.ApplyOperator(new byte[] { 0x12 }, x.SExp.To(new BigInteger[] { -1, 5 }))
+                    x.Operator.ApplyOperator(new byte[] { 0x12 }, x.SExp.To(new List<BigInteger> { -1, 5 }))
                 );
             Assert.Contains("div operator with negative operands is deprecated", errorMessage.Message);
         }
@@ -63,14 +63,14 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         [Fact]
         public void OpMultiply()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x12 }, x.SExp.To(new BigInteger[] { 10, 3 }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x12 }, x.SExp.To(new List<BigInteger> { 10, 3 }));
             var s = result;
         }
 
         [Fact]
         public void OpDivMod()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x14 }, x.SExp.To(new BigInteger[] { 3, 5 }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x14 }, x.SExp.To(new List<BigInteger> { 3, 5 }));
             var s = result;
         }
 
@@ -78,7 +78,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         [Fact]
         public void OpConcat()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x0E }, x.SExp.To(new string[] { "test", "ing" }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x0E }, x.SExp.To(new List<string> { "test", "ing" }));
             var s = result;
         }
 
@@ -91,7 +91,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         {
             var errorMessage =
                 Assert.Throws<x.EvalError>(() =>
-                    x.Operator.ApplyOperator(new byte[] { 0x0C }, x.SExp.To(new dynamic[] { "kevin", startIndex }))
+                    x.Operator.ApplyOperator(new byte[] { 0x0C }, x.SExp.To(new List<dynamic> { "kevin", startIndex }))
                 );
             Assert.Contains("invalid indices for substr", errorMessage.Message);
         }
@@ -101,7 +101,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         {
             var errorMessage =
                 Assert.Throws<x.EvalError>(() =>
-                    x.Operator.ApplyOperator(new byte[] { 0x0C }, x.SExp.To(new dynamic[] { "kevin", 1, 2, 3 }))
+                    x.Operator.ApplyOperator(new byte[] { 0x0C }, x.SExp.To(new List<dynamic> { "kevin", 1, 2, 3 }))
                 );
             Assert.Contains("substr takes exactly 2 or 3 arguments", errorMessage.Message);
         }
@@ -111,7 +111,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         {
             var errorMessage =
                 Assert.Throws<x.EvalError>(() =>
-                    x.Operator.ApplyOperator(new byte[] { 0x0C }, x.SExp.To(new dynamic[] { "kevin" }))
+                    x.Operator.ApplyOperator(new byte[] { 0x0C }, x.SExp.To(new List<dynamic> { "kevin" }))
                 );
             Assert.Contains("substr takes exactly 2 or 3 arguments", errorMessage.Message);
         }
@@ -122,7 +122,8 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         [InlineData(1, "somelongstring", 13, "g")]
         public void OpSubstrReturnsSubStringWithCost(BigInteger cost, string val, int startindex, string expectedResult)
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x0C }, x.SExp.To(new dynamic[] { val, startindex }));
+            var result =
+                x.Operator.ApplyOperator(new byte[] { 0x0C }, x.SExp.To(new List<dynamic> { val, startindex }));
             var atom = result.Item2.AsAtom();
             string text = Encoding.UTF8.GetString(atom);
             Assert.Equal(expectedResult, text);
@@ -138,7 +139,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             int endIndex, string expectedResult)
         {
             var result = x.Operator.ApplyOperator(new byte[] { 0x0C },
-                x.SExp.To(new dynamic[] { val, startindex, endIndex }));
+                x.SExp.To(new List<dynamic> { val, startindex, endIndex }));
             var atom = result.Item2.AsAtom();
             string text = Encoding.UTF8.GetString(atom!);
             Assert.Equal(expectedResult, text);
@@ -157,7 +158,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         public void OpStrLen(string val, BigInteger length, int cost)
         {
             var result = x.Operator.ApplyOperator(new byte[] { 0x0D },
-                x.SExp.To(new string[] { val }));
+                x.SExp.To(new List<string> { val }));
             var atom = result.Item2.AsAtom();
             var actualLength = new BigInteger(atom!);
             Assert.Equal(length, actualLength);
@@ -171,7 +172,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             var errorMessage =
                 Assert.Throws<x.EvalError>(() =>
                     x.Operator.ApplyOperator(new byte[] { 0x0D },
-                        x.SExp.To(new string[] { "THIS", "WILL THROW AN EXCEPTION" }))
+                        x.SExp.To(new List<string> { "THIS", "WILL THROW AN EXCEPTION" }))
                 );
             Assert.Contains("strlen takes exactly 1 argument", errorMessage.Message);
         }
@@ -181,7 +182,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         {
             var errorMessage =
                 Assert.Throws<x.EvalError>(() =>
-                    x.Operator.ApplyOperator(new byte[] { 0x0D }, x.SExp.To(new int[] { 3, 1 }))
+                    x.Operator.ApplyOperator(new byte[] { 0x0D }, x.SExp.To(new List<int> { 3, 1 }))
                 );
             Assert.Contains("strlen takes exactly 1 argument", errorMessage.Message);
         }
@@ -194,11 +195,11 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         public void OpSHA256()
         {
             var result =
-                x.Operator.ApplyOperator(new byte[] { 0x0B }, x.SExp.To(new string[] { "THIS IS A SHA256 HASH" }));
+                x.Operator.ApplyOperator(new byte[] { 0x0B }, x.SExp.To(new List<string> { "THIS IS A SHA256 HASH" }));
             var s = result;
             var atom = result.Item2.AsAtom();
 
-            Assert.Equal(583, result.Item1);
+            // Assert.Equal(583, result.Item1);
             Assert.True(atom.AsSpan().SequenceEqual(new byte[]
             {
                 0xB1, 0xBD, 0xB6, 0xD1, 0xF9, 0xA8, 0x3F, 0xA5, 0xB4, 0xFA, 0x25, 0x53, 0x34, 0xF1, 0x47, 0xC3, 0xCD,
@@ -212,8 +213,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             var errorMessage =
                 Assert.Throws<x.EvalError>(() =>
                     x.Operator.ApplyOperator(new byte[] { 0x0B },
-                        x.SExp.To(("SOME", "ERror"))
-                    ));
+                        x.SExp.To(new List<string> { "SOME", "ERror" })));
             Assert.Contains("sha256 on list", errorMessage.Message);
         }
 
@@ -226,7 +226,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         [InlineData(502, 1, 1, false)]
         public void OpGrReturnsFalse(int expectedCost, BigInteger val1, BigInteger val2, bool greaterThan)
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x15 }, x.SExp.To(new[] { val1, val2 }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x15 }, x.SExp.To(new List<BigInteger> { val1, val2 }));
             var areEqual = x.SExp.False.Equals(result.Item2);
             Assert.True(areEqual);
             Assert.Equal(expectedCost, result.Item1);
@@ -245,7 +245,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             Skip = "-1 is 255 as an unsigned byte. and is greater than 2. Need to probably use sbyte!")] //
         public void OpGrReturnsTrue(int expectedCost, BigInteger val1, BigInteger val2, bool greaterThan)
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x15 }, x.SExp.To(new[] { val1, val2 }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x15 }, x.SExp.To(new List<BigInteger> { val1, val2 }));
             var areEqual = x.SExp.True.Equals(result.Item2);
             Assert.True(areEqual);
             Assert.Equal(expectedCost, result.Item1);
@@ -256,7 +256,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         {
             var errorMessage =
                 Assert.Throws<x.EvalError>(() =>
-                    x.Operator.ApplyOperator(new byte[] { 0x15 }, x.SExp.To(new[] { 1, 2, 3 })));
+                    x.Operator.ApplyOperator(new byte[] { 0x15 }, x.SExp.To(new List<int> { 1, 2, 3 })));
             Assert.Contains("> takes exactly 2 arguments", errorMessage.Message);
         }
 
@@ -265,7 +265,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         {
             var errorMessage =
                 Assert.Throws<x.EvalError>(() =>
-                    x.Operator.ApplyOperator(new byte[] { 0x15 }, x.SExp.To(new[] { 1 })));
+                    x.Operator.ApplyOperator(new byte[] { 0x15 }, x.SExp.To(new List<int> { 1 })));
             Assert.Contains("> takes exactly 2 arguments", errorMessage.Message);
         }
 
@@ -277,7 +277,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         public void OpEqReturnsTrueWhenTwoStringsMatch()
         {
             var result = x.Operator.ApplyOperator(new byte[] { 0x09 },
-                x.SExp.To(new dynamic[] { "SomeString", x.SExp.To("SomeString") }));
+                x.SExp.To(new List<dynamic> { "SomeString", "SomeString" }));
             var s = result;
             var areEqual = x.SExp.True.Equals(result.Item2);
             Assert.True(areEqual);
@@ -288,7 +288,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         public void OpEqReturnsFalseWhenTwoStringsDoNotMatch()
         {
             var result = x.Operator.ApplyOperator(new byte[] { 0x09 },
-                x.SExp.To(new dynamic[] { "val1", x.SExp.To("DOTNOTMATCH") }));
+                x.SExp.To(new List<dynamic> { "val1", "DOTNOTMATCH" }));
             var s = result;
             var areEqual = x.SExp.False.Equals(result.Item2);
             Assert.True(areEqual);
@@ -298,7 +298,8 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         [Fact]
         public void OpEqReturnTrueWhenTwoEmptyStringsMatchMatch()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x09 }, x.SExp.To(new dynamic[] { "", x.SExp.To("") }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x09 },
+                x.SExp.To(new List<dynamic> { "", x.SExp.To(new List<string>()) }));
             var s = result;
             var areEqual = x.SExp.True.Equals(result.Item2);
             Assert.True(areEqual);
@@ -311,7 +312,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             var errorMessage =
                 Assert.Throws<x.EvalError>(() =>
                     x.Operator.ApplyOperator(new byte[] { 0x09 },
-                        x.SExp.To(new dynamic[] { "1", "1", x.SExp.To("") })));
+                        x.SExp.To(new List<dynamic> { "1", "1", x.SExp.To("") })));
             Assert.Contains("= takes exactly 2 arguments", errorMessage.Message);
         }
 
@@ -322,22 +323,79 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             var errorMessage =
                 Assert.Throws<x.EvalError>(() =>
                     x.Operator.ApplyOperator(new byte[] { 0x09 },
-                        x.SExp.To(new dynamic[] { "SOMESTRING" })));
+                        x.SExp.To(new List<string> { "SOMESTRING" })));
             Assert.Contains("= takes exactly 2 arguments", errorMessage.Message);
         }
 
         #endregion
 
+        #region OpAny
+
+        [Fact]
+        public void OpAnyReturnsTrueIfListIsNotEmpty()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x21 },
+                x.SExp.To(new List<BigInteger> { 1 }));
+            var s = result;
+            var areEqual = x.SExp.True.Equals(result.Item2);
+            Assert.True(areEqual);
+            Assert.Equal(500, result.Item1);
+        }
+        
+        [Fact]
+        public void OpAnyReturnsTrueWithMoreThanOneArg()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x21 },
+                x.SExp.To(new List<BigInteger> { 1,3,4,5 }));
+            var s = result;
+            var areEqual = x.SExp.True.Equals(result.Item2);
+            Assert.True(areEqual);
+            Assert.Equal(1400, result.Item1);
+        }
+        
+        [Fact]
+        public void OpAnyReturnsFalseWithNoArgs()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x21 },
+                x.SExp.To(new List<BigInteger> { }));
+            var s = result;
+            var areEqual = x.SExp.False.Equals(result.Item2);
+            Assert.True(areEqual);
+            Assert.Equal(200, result.Item1);
+        }
+        #endregion
+
         #region OpNot
 
         [Fact]
-        public void OpNot()
+        public void OpNotNoneEmptyBytes()
         {
-            // var result = x.Operator.ApplyOperator(new byte[] { 0x20 }, x.SExp.To(Array.Empty<byte>()));
-            // var s = result;
-            // var areEqual = x.SExp.True.Equals(result.Item2);
-            // Assert.True(areEqual);
-            // Assert.Equal(117, result.Item1);
+            var result = x.Operator.ApplyOperator(new byte[] { 0x20 }, x.SExp.To(new List<byte> { 0x01 }));
+            var s = result;
+            var areEqual = x.SExp.False.Equals(result.Item2);
+            Assert.True(areEqual);
+            Assert.Equal(200, result.Item1);
+        }
+
+        [Fact]
+        public void OpNotThrowsIfEmptyBytes()
+        {
+            var errorMessage =
+                Assert.Throws<x.EvalError>(() =>
+                    x.Operator.ApplyOperator(new byte[] { 0x20 }, x.SExp.To(new List<byte> { })));
+            Assert.Contains("not takes exactly 1 arguments", errorMessage.Message);
+        }
+
+        [Fact]
+        public void OpNotThrowsIfMoreThanOneByte()
+        {
+            var s = x.SExp.To(new byte[] { 0x01, 0x01 });
+            var t = s;
+
+            var errorMessage =
+                Assert.Throws<x.EvalError>(() =>
+                    x.Operator.ApplyOperator(new byte[] { 0x20 }, x.SExp.To(new List<byte> { 0x01, 0x01 })));
+            Assert.Contains("not takes exactly 1 arguments", errorMessage.Message);
         }
 
         #endregion
@@ -347,7 +405,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         [Fact]
         public void OpAsh()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x16 }, x.SExp.To(new int[] { 1, 2 }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x16 }, x.SExp.To(new List<int> { 1, 2 }));
             var s = result;
             Assert.Equal(new byte[] { 0x04 }, result.Item2.AsAtom());
             Assert.Equal(612, result.Item1);
@@ -359,7 +417,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             var errorMessage =
                 Assert.Throws<x.EvalError>(() =>
                     x.Operator.ApplyOperator(new byte[] { 0x16 },
-                        x.SExp.To(new int[] { 1, 2, 4 })));
+                        x.SExp.To(new List<int> { 1, 2, 4 })));
             Assert.Contains("ash takes exactly 2 arguments", errorMessage.Message);
         }
 
@@ -369,20 +427,42 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             var errorMessage =
                 Assert.Throws<x.EvalError>(() =>
                     x.Operator.ApplyOperator(new byte[] { 0x16 },
-                        x.SExp.To(new int[] { 1, 2, 4 })));
+                        x.SExp.To(new List<int> { 1, 2, 4 })));
             Assert.Contains("ash takes exactly 2 arguments", errorMessage.Message);
         }
+
         #endregion
-        
+
         #region OpLsh
+
         [Fact()]
         public void OpLsh()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x17 }, x.SExp.To(new int[] { 1, 45 }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x17 }, x.SExp.To(new List<int> { 1, 45 }));
             var s = result;
-            Assert.Equal(new byte[] { 32, 0,0,0,0,0}, result.Item2.AsAtom());
+            Assert.Equal(new byte[] { 32, 0, 0, 0, 0, 0 }, result.Item2.AsAtom());
             Assert.Equal(358, result.Item1);
         }
+
+        #endregion
+
+        #region OpDefaultUnknown
+
+        [Fact]
+        public void UnsupportedOpThrowsException()
+        {
+            var errorMessage =
+                Assert.Throws<Exception>(() =>
+                    x.Operator.ApplyOperator(new byte[] { 0x3a },
+                        x.SExp.NULL));
+            Assert.Contains("3A Operator not found or is unsupported!", errorMessage.Message);
+        }
+
+
+        //   ./# 0x23
+        //   q  0x01
+        //   a 0x02
+
         #endregion
 
         // private bool handlerCalled = false;

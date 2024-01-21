@@ -16,7 +16,13 @@ namespace CLVMDotNet.Tests.CLVM.SExp
         // [InlineData(new byte[] { 8, 9 }, new List<int>  {2048,248,2048,2048,2048})]  
         public void sexp_AsBinIsCorrectOrder(byte[] expected, dynamic sexp_list)
         {
-            var v = x.SExp.To(sexp_list);
+            var lst = new List<int>();
+            foreach (var item in sexp_list)
+            {
+                lst.Add(item);
+            }
+            
+            var v = x.SExp.To(lst);
             var bytes = v.AsBin();
             Assert.Equal(expected, bytes);
         }

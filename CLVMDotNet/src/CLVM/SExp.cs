@@ -110,7 +110,8 @@ namespace CLVMDotNet.CLVM
                 return new SExp(v);
             }
 
-            var sexp = new SExp(HelperFunctions.ToSexpType(v));
+            var type = HelperFunctions.ToSexpType(v);
+            var sexp = new SExp(type);
             return sexp;
         }
 
@@ -200,38 +201,6 @@ namespace CLVMDotNet.CLVM
             {
                 return false;
             }
-        }
-        
-        public static byte[] ConvertAtomToBytes(object v)
-        {
-            if (v is byte[] byteArray)
-            {
-                return byteArray;
-            }
-            else if (v is string str)
-            {
-                return Encoding.UTF8.GetBytes(str);
-            }
-            else if (v is int intValue)
-            {
-                return BitConverter.GetBytes(intValue);
-            }
-            else if (v is null)
-            {
-                return new byte[0];
-            }
-            else if (v is List<object> list)
-            {
-                var result = new List<byte>();
-                foreach (var item in list)
-                {
-                    result.AddRange(ConvertAtomToBytes(item));
-                }
-
-                return result.ToArray();
-            }
-
-            throw new ArgumentException($"Can't cast {v.GetType()} ({v}) to bytes");
         }
     }
 }

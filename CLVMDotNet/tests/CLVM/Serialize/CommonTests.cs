@@ -6,7 +6,7 @@ namespace CLVMDotNet.Tests.Serialize
     [Trait("Serialize", "Common")]
     public class CommonTests
     {
-        public static void CheckSerde(int[] s)
+        public static void CheckSerde(List<int> s)
         {
             var v = x.SExp.To(s);
             var b = v.AsBin();
@@ -26,7 +26,7 @@ namespace CLVMDotNet.Tests.Serialize
         [Fact]
         public void EmptyString()
         {
-            CheckSerde(Array.Empty<int>());
+            CheckSerde(new List<int>());
         }
 
         // [Fact]
