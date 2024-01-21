@@ -15,33 +15,113 @@ namespace CLVMDotNet.CLVM
             return new BigInteger(blob, isBigEndian: true);
         }
 
+        /// <summary>
+        /// In python integers are dynamically sized, so working out the number of bytes required in
+        /// c# needs to first see if the number will fit into a number of datatypes.
+        ///
+        /// 0-255 (byte)
+        /// 
+        ///
+        /// This is required to see if the biginteger parameter is able to fit into a smaller
+        /// datatype and converting them to bytes.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
         public static byte[] IntToBytes(BigInteger v)
         {
-            byte[] byteArray = v.ToByteArray();
-
-            if (BitConverter.IsLittleEndian)
+            //v can fit into a byte 0-255 (unsigned)
+            if (v >= byte.MinValue && v <= byte.MaxValue)
             {
-                byteArray = byteArray.Reverse().ToArray();
+                var intValue = (byte)v;
+                byte[] byteArray = new[] { intValue };
+                return byteArray;
             }
 
-            while (byteArray.Length > 1 && (byteArray[0] == 0xFF || byteArray[0] == 0x00))
+            //v can fit into an sbyte -128 to 127 (signed)
+            if (v >= sbyte.MinValue && v <= sbyte.MaxValue)
             {
-                byteArray = byteArray.Skip(1).ToArray();
+                sbyte sbyteValue = (sbyte)v;
+                byte byteValue = (byte) sbyteValue;
+                
+                byte[] byteArray = new[] { byteValue };
+                return byteArray;
             }
 
-            if (!v.IsZero)
+            //v can fit into a short -32,768 to 32,767 (signed)
+            if (v >= short.MinValue && v <= short.MaxValue)
             {
-                if (byteArray[0] >= 0x80)
+                short shortValue = (short)v; 
+                byte[] byteArray = BitConverter.GetBytes(shortValue);
+                Array.Reverse(byteArray);
+                return byteArray;
+            }
+            
+            if (v >= long.MinValue && v <= long.MaxValue)
+            {
+                long shortValue = (long)v; 
+                byte[] byteArray = BitConverter.GetBytes(shortValue);
+                Array.Reverse(byteArray);
+
+                int pos = 0;
+                while (byteArray.Length > 1 && (byteArray[0] == 0xFF || byteArray[0] == 0x00))
                 {
-                    byteArray = new byte[] { 0 }.Concat(byteArray).ToArray();
+                    if(pos != 0)
+                        byteArray = byteArray.Skip(1).ToArray();
+                    pos++;
                 }
+
+
+                return byteArray;
+            }
+            
+
+            //v can fit into an int
+            if (v >= int.MinValue && v <= int.MaxValue)
+            {
+                var intValue = (int)v;
+
+                byte[] byteArray = BitConverter.GetBytes(intValue);
+
+                if (BitConverter.IsLittleEndian)
+                {
+                    Array.Reverse(byteArray);
+                }
+
+                if (BitConverter.IsLittleEndian)
+                {
+                    Array.Reverse(byteArray);
+                }
+
+                return byteArray;
             }
             else
             {
-                byteArray = new byte[0];
-            }
+                byte[] byteArray = v.ToByteArray();
 
-            return byteArray;
+                if (BitConverter.IsLittleEndian)
+                {
+                    byteArray = byteArray.Reverse().ToArray();
+                }
+
+                while (byteArray.Length > 1 && (byteArray[0] == 0xFF || byteArray[0] == 0x00))
+                {
+                    byteArray = byteArray.Skip(1).ToArray();
+                }
+
+                if (!v.IsZero)
+                {
+                    if (byteArray[0] >= 0x80)
+                    {
+                        byteArray = new byte[] { 0 }.Concat(byteArray).ToArray();
+                    }
+                }
+                else
+                {
+                    byteArray = new byte[0];
+                }
+
+                return byteArray;
+            }
         }
 
         public static int LimbsForInt(BigInteger v)
