@@ -36,7 +36,7 @@ namespace CLVMDotNet.CLVM
                 }
 
                 sha256.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
-                byte[] result = sha256.Hash;
+                byte[] result = sha256.Hash!;
                 cost += argLen * Costs.SHA256_COST_PER_BYTE;
 
                 return MallocCost(cost, SExp.To(result));
@@ -53,7 +53,7 @@ namespace CLVMDotNet.CLVM
                 }
 
                 BigInteger intValue = arg.AsInt();
-                int atomLength = arg.AsAtom().Length;
+                int atomLength = arg.AsAtom()!.Length;
 
                 yield return (intValue, atomLength);
             }
@@ -479,25 +479,30 @@ namespace CLVMDotNet.CLVM
          }
 
          // We actually want i0 to be an unsigned int
-         var a0 = args.First().AsAtom();
-         var i0Bytes = a0.Reverse().ToArray(); // Reverse bytes for little-endian representation
-         var i = new BigInteger(i0Bytes);
-
-         BigInteger r;
+         byte[] a0 = args.First().AsAtom();
+         var i0Bytes = a0;
+         if (BitConverter.IsLittleEndian)
+         {
+             // Reverse the byte array for big-endian interpretation
+             Array.Reverse(i0Bytes);
+         }
+         i0 = new BigInteger(i0Bytes);
+         
+         BigInteger r = 0;
 
          if (i1 >= 0)
          {
-             r = i0 << (int)i1;
+             r = i0 << (int)i1; 
          }
          else
          {
-             r = i0 >> (int)-i1;
+             r = (int)i0 >> (int)-i1;
          }
 
          BigInteger cost = Costs.LSHIFT_BASE_COST;
          cost += (l0 + Casts.LimbsForInt(r)) * Costs.LSHIFT_COST_PER_BYTE;
 
-         return Tuple.Create(cost, SExp.To(r));
+         return MallocCost(cost, SExp.To(r));
      }
 
         public static Tuple<BigInteger, SExp> BinopReduction(string opName, BigInteger initialValue, SExp args,

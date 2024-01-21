@@ -21,7 +21,7 @@ namespace CLVMDotNet.Tools.IR
             return val;
         }
 
-        public static string IrAsSymbol(SExp irSexp)
+        public static string? IrAsSymbol(SExp irSexp)
         {
             if (irSexp.Listp() && IrType(irSexp) == IRType.SYMBOL)
             {

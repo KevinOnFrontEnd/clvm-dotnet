@@ -46,7 +46,7 @@ namespace CLVMDotNet.Tests
 
             var ret = "(";
             var pairs = tree.AsPair();
-            var list = new List<clvm.SExp>() { pairs.Item1, pairs.Item2 };
+            var list = new List<clvm.SExp>() { pairs!.Item1, pairs.Item2 };
             if (pairs != null)
             {
                 foreach (var i in list)

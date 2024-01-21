@@ -144,7 +144,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             var result = x.Operator.ApplyOperator(new byte[] { 0x0C },
                 x.SExp.To(new dynamic[] { val, startindex, endIndex }));
             var atom = result.Item2.AsAtom();
-            string text = Encoding.UTF8.GetString(atom);
+            string text = Encoding.UTF8.GetString(atom!);
             Assert.Equal(expectedResult, text);
             Assert.Equal(cost, result.Item1);
         }
@@ -163,7 +163,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             var result = x.Operator.ApplyOperator(new byte[] { 0x0D },
                 x.SExp.To(new string[] { val }));
             var atom = result.Item2.AsAtom();
-            var actualLength = new BigInteger(atom);
+            var actualLength = new BigInteger(atom!);
             Assert.Equal(length, actualLength);
             Assert.Equal(cost, result.Item1);
         }
@@ -378,6 +378,20 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         }
         
         //TODO: validate when integer has a leading 0
+        #endregion
+        
+        #region OpLsh
+        /// <summary>
+        /// TODO: Review ByteOrder on Casts.IntToBytes
+        /// </summary>
+        [Fact(Skip = "seems to be an issue with byte order with large numbers")]
+        public void OpLsh()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x17 }, x.SExp.To(new int[] { 1, 45 }));
+            var s = result;
+            Assert.Equal(new byte[] { 32, 0,0,0,0,0}, result.Item2.AsAtom());
+            Assert.Equal(358, result.Item1);
+        }
         #endregion
 
         // private bool handlerCalled = false;

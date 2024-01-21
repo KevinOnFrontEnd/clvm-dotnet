@@ -96,7 +96,7 @@ namespace CLVMDotNet.CLVM
             byte[] b1 = a1.AsAtom();
 
             BigInteger cost = Costs.EQ_BASE_COST;
-            cost += (b0.Length + b1.Length) * Costs.EQ_COST_PER_BYTE;
+            cost += (b0!.Length + b1!.Length) * Costs.EQ_COST_PER_BYTE;
 
             return Tuple.Create(cost, b0.SequenceEqual(b1) ? SExp.True : SExp.False);
         }
