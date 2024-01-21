@@ -20,7 +20,7 @@ namespace CLVMDotNet.CLVM
     {
         public static SExp True { get; } = new SExp(new CLVMObject { Atom = new byte[] { 0x01 } });
         public static SExp False { get; } = new SExp(new CLVMObject());
-        public static CLVMObject NULL { get; } = null;
+        public static SExp NULL { get; } = new SExp();
         public byte[]? Atom { get; set; }
         public Tuple<dynamic, dynamic>? Pair { get; set; }
 

@@ -27,18 +27,18 @@ namespace CLVMDotNet.CLVM
             if (atom.AsSpan().SequenceEqual(new byte[] { 0x23  }))
             {
                 //. (#)
-                return CoreOps.OpDefaultUnknwon(args);
+                return CoreOps.OpDefaultUnknwon(atom,args);
             }
             else if (atom.AsSpan().SequenceEqual(new byte[] { 0x01 }))
             {
                 //q
-                return CoreOps.OpDefaultUnknwon(args);
+                return CoreOps.OpDefaultUnknwon(atom,args);
             }
             else if (atom.AsSpan().SequenceEqual(new byte[] { 0x02 }))
             {
                 //a
                 //default_unknown_op (not wrote yet)
-                return CoreOps.OpDefaultUnknwon(args);
+                return CoreOps.OpDefaultUnknwon(atom, args);
             }
 
             else if (atom.AsSpan().SequenceEqual(new byte[] { 0x03 }))
