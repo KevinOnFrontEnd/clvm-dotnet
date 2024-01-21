@@ -569,11 +569,26 @@ namespace CLVMDotNet.CLVM
             return Tuple.Create(cost, r);
         }
         
-        public static Tuple<BigInteger, SExp> OpAll(dynamic args)
+        
+        public static Tuple<BigInteger, SExp> OpAll(SExp args)
         {
-            throw new Exception("Not implemented yet!");
-        }
+            var items = ArgsAsBools("all", args).ToArray();
+            BigInteger cost = Costs.BOOL_BASE_COST + items.Length * Costs.BOOL_COST_PER_ARG;
+            var r = SExp.True;
 
+            foreach (var v in items)
+            {
+                var atom = v.AsAtom();
+                if (atom != null && atom.Length == 0 || atom is null)
+                {
+                    r = SExp.False;
+                    break;
+                }
+            }
+            return Tuple.Create(cost, r);
+        }
+        
+        
         public static Tuple<BigInteger, SExp> OpLogNot(dynamic args)
         {
             throw new Exception("Not implemented yet!");

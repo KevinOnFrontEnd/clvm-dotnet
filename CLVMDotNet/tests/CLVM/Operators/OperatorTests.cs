@@ -365,6 +365,38 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         }
         #endregion
 
+        #region OpAll
+        [Fact]
+        public void OpAllAtomsReturnsTrue()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x22 }, x.SExp.To(new List<int> { 1,2,3 }));
+            var s = result;
+            var areEqual = x.SExp.True.Equals(result.Item2);
+            Assert.True(areEqual);
+            Assert.Equal(1100, result.Item1);
+        }
+        
+        [Fact]
+        public void OpAllWithEmptyAtomsReturnsTrue()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x22 }, x.SExp.To(new List<int> { }));
+            var s = result;
+            var areEqual = x.SExp.True.Equals(result.Item2);
+            Assert.True(areEqual);
+            Assert.Equal(200, result.Item1);
+        }
+        
+        [Fact]
+        public void OpAllWithPairReturnsFalse()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x22 }, x.SExp.To(new List<dynamic>{"+", 1, 2}));
+            var s = result;
+            var areEqual = x.SExp.True.Equals(result.Item2);
+            Assert.True(areEqual);
+            Assert.Equal(1100, result.Item1);
+        }
+        #endregion
+        
         #region OpNot
 
         [Fact]
