@@ -41,8 +41,8 @@ namespace CLVMDotNet.CLVM
             if (v >= sbyte.MinValue && v <= sbyte.MaxValue)
             {
                 sbyte sbyteValue = (sbyte)v;
-                byte byteValue = (byte) sbyteValue;
-                
+                byte byteValue = (byte)sbyteValue;
+
                 byte[] byteArray = new[] { byteValue };
                 return byteArray;
             }
@@ -50,22 +50,23 @@ namespace CLVMDotNet.CLVM
             //v can fit into a short -32,768 to 32,767 (signed)
             if (v >= short.MinValue && v <= short.MaxValue)
             {
-                short shortValue = (short)v; 
+                short shortValue = (short)v;
                 byte[] byteArray = BitConverter.GetBytes(shortValue);
                 Array.Reverse(byteArray);
                 return byteArray;
             }
-            
+
+            //v can fit into a long -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807)
             if (v >= long.MinValue && v <= long.MaxValue)
             {
-                long shortValue = (long)v; 
+                long shortValue = (long)v;
                 byte[] byteArray = BitConverter.GetBytes(shortValue);
                 Array.Reverse(byteArray);
 
                 int pos = 0;
                 while (byteArray.Length > 1 && (byteArray[0] == 0xFF || byteArray[0] == 0x00))
                 {
-                    if(pos != 0)
+                    if (pos != 0)
                         byteArray = byteArray.Skip(1).ToArray();
                     pos++;
                 }
@@ -73,27 +74,7 @@ namespace CLVMDotNet.CLVM
 
                 return byteArray;
             }
-            
-
-            //v can fit into an int
-            if (v >= int.MinValue && v <= int.MaxValue)
-            {
-                var intValue = (int)v;
-
-                byte[] byteArray = BitConverter.GetBytes(intValue);
-
-                if (BitConverter.IsLittleEndian)
-                {
-                    Array.Reverse(byteArray);
-                }
-
-                if (BitConverter.IsLittleEndian)
-                {
-                    Array.Reverse(byteArray);
-                }
-
-                return byteArray;
-            }
+            //python equivalent of numbers larger than a long is a bigInteger
             else
             {
                 byte[] byteArray = v.ToByteArray();
@@ -123,6 +104,7 @@ namespace CLVMDotNet.CLVM
                 return byteArray;
             }
         }
+
 
         public static int LimbsForInt(BigInteger v)
         {
