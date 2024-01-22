@@ -320,30 +320,31 @@ namespace CLVMDotNet.CLVM
         }
 
 
-     // public (BigInteger, SExp) OpPointAdd(dynamic items)
-     // {
-     //     BigInteger cost = Costs.POINT_ADD_BASE_COST;
-     //     var g1 = new JacobianPoint();
-     //
-     //     foreach (var item in items.AsEnumerable())
-     //     {
-     //         if (item.IsPair)
-     //         {
-     //             throw new EvalError("point_add on list", item);
-     //         }
-     //         try
-     //         {
-     //             p += G1.FromBytes(item.AsAtom());
-     //             cost += Costs.POINT_ADD_COST_PER_ARG;
-     //         }
-     //         catch (Exception ex)
-     //         {
-     //             throw new EvalError($"point_add expects blob, got {item}: {ex}", items);
-     //         }
-     //     }
-     //     return MallocCost(cost, items.To(p.ToBytes()));
-     // }
-//
+     public static Tuple<BigInteger, SExp> OpPointAdd(dynamic items)
+     {
+         throw new Exception("Not implemented Exception");
+         // BigInteger cost = Costs.POINT_ADD_BASE_COST;
+         // var g1 = new JacobianPoint();
+         //
+         // foreach (var item in items.AsEnumerable())
+         // {
+         //     if (item.IsPair)
+         //     {
+         //         throw new EvalError("point_add on list", item);
+         //     }
+         //     try
+         //     {
+         //         p += G1.FromBytes(item.AsAtom());
+         //         cost += Costs.POINT_ADD_COST_PER_ARG;
+         //     }
+         //     catch (Exception ex)
+         //     {
+         //         throw new EvalError($"point_add expects blob, got {item}: {ex}", items);
+         //     }
+         // }
+         // return MallocCost(cost, items.To(p.ToBytes()));
+     }
+
         public static Tuple<BigInteger, SExp> OpStrlen(SExp args)
         {
             if (args.ListLength() != 1)

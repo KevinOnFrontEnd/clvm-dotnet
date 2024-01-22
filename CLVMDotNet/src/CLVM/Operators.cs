@@ -186,7 +186,7 @@ namespace CLVMDotNet.CLVM
             if (atom.AsSpan().SequenceEqual(new byte[] { 0x1D }))
             {
                 //point_add
-                throw new ArgumentException("Op Not Implemented!");
+                return MoreOps.OpPointAdd(args);
             }
             else if (atom.AsSpan().SequenceEqual(new byte[] { 0x1E }))
             {

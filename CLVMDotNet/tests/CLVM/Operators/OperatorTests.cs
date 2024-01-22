@@ -218,6 +218,42 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         }
 
         #endregion
+        
+        #region GrBytes
+        [Theory]
+        [InlineData(119, "a", "b")]
+        [InlineData(131, "testing", "testing")]
+        public void OpGrBytesReturnsFalse(int expectedCost, string val1, string val2)
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x0A }, x.SExp.To(new List<string> { val1, val2 }));
+            var areEqual = x.SExp.False.Equals(result.Item2);
+            Assert.True(areEqual);
+            Assert.Equal(expectedCost, result.Item1);
+        }
+        
+        [Theory]
+        [InlineData(119, "b", "a")]
+        public void OpGrBytesReturnsTrue(int expectedCost, string val1, string val2)
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x0A }, x.SExp.To(new List<string> { val1, val2 }));
+            var areEqual = x.SExp.True.Equals(result.Item2);
+            Assert.True(areEqual);
+            Assert.Equal(expectedCost, result.Item1);
+        }
+        
+        [Fact]
+        public void OpGrBytesThrowsWithMoreThanTwoParameters()
+        {
+            var errorMessage =
+                Assert.Throws<x.EvalError>(() =>
+                    x.Operator.ApplyOperator(new byte[] { 0x0A },
+                        x.SExp.To(new List<String> { "val1", "val", "val3" })));
+            Assert.Contains(">s takes exactly 2 arguments", errorMessage.Message);
+        }
+        
+        //TODO: Add test to throw when OpGrBytes is called on a pair
+        #endregion
+        
 
         #region OpGr
 
@@ -231,14 +267,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             Assert.True(areEqual);
             Assert.Equal(expectedCost, result.Item1);
         }
-
-        /// <summary>
-        /// TODO: decide how signed bytes are dealt with when comparing bytes with negative numbers.
-        /// </summary>
-        /// <param name="expectedCost"></param>
-        /// <param name="val1"></param>
-        /// <param name="val2"></param>
-        /// <param name="greaterThan"></param>
+        
         [Theory]
         [InlineData(502, 4, 2, true)]
         [InlineData(502, -1, 2, true,
