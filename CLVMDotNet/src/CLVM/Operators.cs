@@ -191,7 +191,7 @@ namespace CLVMDotNet.CLVM
             else if (atom.AsSpan().SequenceEqual(new byte[] { 0x1E }))
             {
                 //pubkey_for_exp
-                throw new ArgumentException("Op Not Implemented!");
+                return MoreOps.OpPubkeyForExp(args);
             }
             else if (atom.AsSpan().SequenceEqual(new byte[] { 0x1F }))
             {

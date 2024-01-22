@@ -1,6 +1,8 @@
 using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
+using chia.dotnet.bls;
+using dotnetstandard_bip39;
 
 namespace CLVMDotNet.CLVM
 {
@@ -32,7 +34,7 @@ namespace CLVMDotNet.CLVM
                     }
 
                     argLen += atom.Length;
-                    cost += Costs.SHA256_COST_PER_ARG; 
+                    cost += Costs.SHA256_COST_PER_ARG;
                     result = sha256.ComputeHash(atom);
                     cost += argLen * Costs.SHA256_COST_PER_BYTE;
                 }
@@ -248,48 +250,67 @@ namespace CLVMDotNet.CLVM
             return Tuple.Create(cost, SExp.False);
         }
 
-     
-     public static Tuple<BigInteger, SExp> OpGrBytes(SExp args)
-     {
-         var argList = args.AsIter().ToList();
-         if (argList.Count != 2)
-         {
-             throw new EvalError(">s takes exactly 2 arguments", args);
-         }
-         var a0 = argList[0];
-         var a1 = argList[1];
-         if (a0.Pair != null || a1.Pair != null)
-         {
-             throw new EvalError(">s on list", a0.Pair != null ? a0 : a1);
-         }
-         var b0 = a0.AsAtom();
-         var b1 = a1.AsAtom();
-         BigInteger cost = Costs.GRS_BASE_COST;
-         cost += (b0.Length + b1.Length) * Costs.GRS_COST_PER_BYTE;
-         
-         int comparisonResult = b0.AsSpan().SequenceCompareTo(b1.AsSpan());
 
-         return Tuple.Create(cost, comparisonResult > 0 ? SExp.True : SExp.False);
-     }
-//
-//     public (BigInteger, SExp) OpPubkeyForExp(SExp args)
-//     {
-//         var (i0, l0) = ArgsAsIntList("pubkey_for_exp", args, 1)[0];
-//         i0 %= BigInteger.Parse("0x73EDA753299D7D483339D80809A1D80553BDA402FFFE5BFEFFFFFFFF00000001");
-//         Exponent exponent = PrivateKey.FromBytes(i0.ToByteArray());
-//         try
-//         {
-//             G1.Generator.ToBytes();
-//             SExp r = args.To(exponent.GetG1().ToByteArray());
-//             BigInteger cost = Costs.PUBKEY_BASE_COST;
-//             cost += l0 * Costs.PUBKEY_COST_PER_BYTE;
-//             return MallocCost(cost, r);
-//         }
-//         catch (Exception ex)
-//         {
-//             throw new EvalError($"problem in op_pubkey_for_exp: {ex}", args);
-//         }
-//     }
+        public static Tuple<BigInteger, SExp> OpGrBytes(SExp args)
+        {
+            var argList = args.AsIter().ToList();
+            if (argList.Count != 2)
+            {
+                throw new EvalError(">s takes exactly 2 arguments", args);
+            }
+
+            var a0 = argList[0];
+            var a1 = argList[1];
+            if (a0.Pair != null || a1.Pair != null)
+            {
+                throw new EvalError(">s on list", a0.Pair != null ? a0 : a1);
+            }
+
+            var b0 = a0.AsAtom();
+            var b1 = a1.AsAtom();
+            BigInteger cost = Costs.GRS_BASE_COST;
+            cost += (b0.Length + b1.Length) * Costs.GRS_COST_PER_BYTE;
+
+            int comparisonResult = b0.AsSpan().SequenceCompareTo(b1.AsSpan());
+
+            return Tuple.Create(cost, comparisonResult > 0 ? SExp.True : SExp.False);
+        }
+
+        public static Tuple<BigInteger, SExp> OpPubkeyForExp(SExp args)
+        {
+            var (i0, l0) = ArgsAsIntList("pubkey_for_exp", args, 1)[0];
+            var bip39 = new BIP39();
+
+
+            string hexValue = "73EDA753299D7D483339D80809A1D80553BDA402FFFE5BFEFFFFFFFF00000001";
+            BigInteger largeNumber = BigInteger.Parse(hexValue, System.Globalization.NumberStyles.HexNumber);
+            // Ensure i0 is positive
+            if (i0 < 0)
+            {
+                i0 += largeNumber; // Add largeNumber to make it positive
+            }
+
+            i0 %= largeNumber;
+
+
+            var keyBytes = Casts.IntToBytes(i0);
+            var sk = PrivateKey.FromBytes(keyBytes);
+            var exponent = PrivateKey.FromBytes(i0.ToByteArray());
+            try
+            {
+                var signature = sk.Sign("");
+                var g1 = exponent.GetG1().ToBytes();
+                SExp r = SExp.To(g1);
+                BigInteger cost = Costs.PUBKEY_BASE_COST;
+                cost += l0 * Costs.PUBKEY_COST_PER_BYTE;
+                return MallocCost(cost, r);
+            }
+            catch (Exception ex)
+            {
+                throw new EvalError($"problem in op_pubkey_for_exp: {ex}", args);
+            }
+        }
+
 //
 //     public (BigInteger, SExp) OpPointAdd(dynamic items)
 //     {
@@ -423,27 +444,27 @@ namespace CLVMDotNet.CLVM
             return MallocCost(cost, SExp.To(r));
         }
 
-        public static  Tuple<BigInteger, SExp> OpAsh(SExp args)
+        public static Tuple<BigInteger, SExp> OpAsh(SExp args)
         {
             var list = ArgsAsIntList("ash", args, 2).ToArray();
             var i0 = list[0].Item1;
             var l0 = list[0].Item2;
-            
+
             var i1 = list[1].Item1;
             var l1 = list[1].Item2;
-        
+
             if (l1 > 4)
             {
                 throw new EvalError("ash requires int32 args (with no leading zeros)", args.Rest().First());
             }
-        
+
             if (i1 > 65535)
             {
                 throw new EvalError("shift too large", SExp.To(i1));
             }
-        
+
             BigInteger r;
-        
+
             if (i1 >= 0)
             {
                 r = i0 << (int)i1;
@@ -452,57 +473,58 @@ namespace CLVMDotNet.CLVM
             {
                 r = i0 >> (int)-i1;
             }
-        
+
             BigInteger cost = Costs.ASHIFT_BASE_COST;
             cost += (l0 + Casts.LimbsForInt(r)) * Costs.ASHIFT_COST_PER_BYTE;
-        
+
             return MallocCost(cost, SExp.To(r));
         }
 
-     public static Tuple<BigInteger, SExp> OpLsh(SExp args)
-     {
-         var list = ArgsAsIntList("lsh", args, 2).ToArray();
-         var i0 = list[0].Item1;
-         var l0 = list[0].Item2;
-         var i1 = list[1].Item1;
-         var l1 = list[1].Item2;
+        public static Tuple<BigInteger, SExp> OpLsh(SExp args)
+        {
+            var list = ArgsAsIntList("lsh", args, 2).ToArray();
+            var i0 = list[0].Item1;
+            var l0 = list[0].Item2;
+            var i1 = list[1].Item1;
+            var l1 = list[1].Item2;
 
-         if (l1 > 4)
-         {
-             throw new EvalError("lsh requires int32 args (with no leading zeros)", args.Rest().First());
-         }
+            if (l1 > 4)
+            {
+                throw new EvalError("lsh requires int32 args (with no leading zeros)", args.Rest().First());
+            }
 
-         if (i1 > 65535)
-         {
-             throw new EvalError("shift too large", SExp.To(i1));
-         }
+            if (i1 > 65535)
+            {
+                throw new EvalError("shift too large", SExp.To(i1));
+            }
 
-         // We actually want i0 to be an unsigned int
-         byte[] a0 = args.First().AsAtom();
-         var i0Bytes = a0;
-         if (BitConverter.IsLittleEndian)
-         {
-             // Reverse the byte array for big-endian interpretation
-             Array.Reverse(i0Bytes);
-         }
-         i0 = new BigInteger(i0Bytes);
-         
-         BigInteger r = 0;
+            // We actually want i0 to be an unsigned int
+            byte[] a0 = args.First().AsAtom();
+            var i0Bytes = a0;
+            if (BitConverter.IsLittleEndian)
+            {
+                // Reverse the byte array for big-endian interpretation
+                Array.Reverse(i0Bytes);
+            }
 
-         if (i1 >= 0)
-         {
-             r = i0 << (int)i1; 
-         }
-         else
-         {
-             r = (int)i0 >> (int)-i1;
-         }
+            i0 = new BigInteger(i0Bytes);
 
-         BigInteger cost = Costs.LSHIFT_BASE_COST;
-         cost += (l0 + Casts.LimbsForInt(r)) * Costs.LSHIFT_COST_PER_BYTE;
+            BigInteger r = 0;
 
-         return MallocCost(cost, SExp.To(r));
-     }
+            if (i1 >= 0)
+            {
+                r = i0 << (int)i1;
+            }
+            else
+            {
+                r = (int)i0 >> (int)-i1;
+            }
+
+            BigInteger cost = Costs.LSHIFT_BASE_COST;
+            cost += (l0 + Casts.LimbsForInt(r)) * Costs.LSHIFT_COST_PER_BYTE;
+
+            return MallocCost(cost, SExp.To(r));
+        }
 
         public static Tuple<BigInteger, SExp> BinopReduction(string opName, BigInteger initialValue, SExp args,
             Func<BigInteger, BigInteger, BigInteger> opF)
@@ -543,14 +565,6 @@ namespace CLVMDotNet.CLVM
             return BinopReduction("logxor", 0, args, Binop);
         }
 
-        // public static Tuple<BigInteger, SExp> OpLognot(SExp args)
-        // {
-        //     var (i0, l0) = ArgsAsIntList("lognot", args, 1);
-        //     BigInteger result = ~i0;
-        //     int cost = Costs.LOGNOT_BASE_COST + l0 * Costs.LOGNOT_COST_PER_BYTE;
-        //     return MallocCost(cost, SExp.To(result));
-        // }
-        
         public static Tuple<BigInteger, SExp> OpAny(SExp args)
         {
             var items = ArgsAsBools("any", args).ToList();
@@ -566,10 +580,11 @@ namespace CLVMDotNet.CLVM
                     break;
                 }
             }
+
             return Tuple.Create(cost, r);
         }
-        
-        
+
+
         public static Tuple<BigInteger, SExp> OpAll(SExp args)
         {
             var items = ArgsAsBools("all", args).ToArray();
@@ -585,9 +600,10 @@ namespace CLVMDotNet.CLVM
                     break;
                 }
             }
+
             return Tuple.Create(cost, r);
         }
-        
+
         public static Tuple<BigInteger, SExp> OpLogNot(dynamic args)
         {
             var list = ArgsAsIntList("lognot", args, 1);
@@ -596,35 +612,18 @@ namespace CLVMDotNet.CLVM
             var inverted = -s - 1;
             return MallocCost(cost, SExp.To(inverted));
         }
-        
+
         public static Tuple<BigInteger, SExp> OpNot(dynamic args)
         {
             var boolList = ArgsAsBoolList("not", args, 1);
             SExp i0 = boolList[0];
             int cost = Costs.BOOL_BASE_COST;
 
-            if(i0.AsAtom() is null || i0.AsAtom().SequenceEqual(Array.Empty<byte>()))
+            if (i0.AsAtom() is null || i0.AsAtom().SequenceEqual(Array.Empty<byte>()))
                 return MallocCost(cost, SExp.True);
-            
+
             return MallocCost(cost, SExp.False);
         }
-//     
-//     public (int, SExp) OpAny(dynamic args)
-//     {
-//         List<bool> boolList = ArgsAsBoolList("any", args, 1);
-//         int cost = Costs.BOOL_BASE_COST + boolList.Count * Costs.BOOL_COST_PER_ARG;
-//         bool result = boolList.Any(v => v);
-//         return (cost, args.To(result ? args.True : args.False));
-//     }
-//
-        // public (int, SExp) OpAll(dynamic args)
-        // {
-        //     List<bool> boolList = ArgsAsBoolList("all", args, 1);
-        //     int cost = Costs.BOOL_BASE_COST + boolList.Count * Costs.BOOL_COST_PER_ARG;
-        //     bool result = boolList.All(v => v);
-        //     return (cost, args.To(result ? args.True : args.False));
-        // }
-
 
         public static Tuple<BigInteger, SExp> OpSoftfork(SExp args)
         {

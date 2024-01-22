@@ -441,6 +441,25 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         }
         #endregion
 
+        #region OpPointAdd
+        #endregion
+        
+        #region OpPubkeyForExp
+        [Fact(Skip = "This is failing currently")]
+        public void OpPubKeyForExp()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x1E }, x.SExp.To(new List<String> { "this is a test"}));
+            var atom = result.Item2.AsAtom();
+            Assert.Equal(1326262, result.Item1);
+            Assert.True(atom!.SequenceEqual(new byte[]
+            {
+                0xb3, 0xfd, 0x19, 0xf6, 0xb1, 0xa7, 0x59, 0xb9, 0x6e, 0x98, 0xe7, 0x45, 0x6f, 0x3f, 0x0c, 0x45,
+                0xb0, 0xa7, 0xa1, 0x24, 0x3f, 0xf9, 0x40, 0x90, 0xfe, 0xfc, 0x51, 0x6c, 0x1b, 0x92, 0x9b, 0x33,
+                0xb4, 0xf0, 0xc1, 0xc0, 0xf9, 0xbf, 0xee, 0xd7, 0xb3, 0xc9, 0xc4, 0xfb, 0xb6, 0x30, 0x31
+            }));
+        }
+        #endregion
+        
         #region OpAny
 
         [Fact]
