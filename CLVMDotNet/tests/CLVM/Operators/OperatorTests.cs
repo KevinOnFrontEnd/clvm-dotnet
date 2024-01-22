@@ -359,7 +359,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         [Fact]
         public void OpLogior()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x1A }, x.SExp.To(new List<int> { }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x19 }, x.SExp.To(new List<int> { }));
             var atom = result.Item2.AsAtom();
             Assert.Equal(100, result.Item1);
             Assert.True(atom!.SequenceEqual(new byte[]
@@ -381,6 +381,28 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         #endregion
 
         #region OpLogxor
+        [Fact]
+        public void OpLogxor()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x1A }, x.SExp.To(new List<int> { }));
+            var atom = result.Item2.AsAtom();
+            Assert.Equal(100, result.Item1);
+            Assert.True(atom!.SequenceEqual(new byte[]
+            {
+            }));
+        }
+        
+        [Fact]
+        public void OpLogxorInt()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x1A }, x.SExp.To(new List<BigInteger> { 111111,67452345657}));
+            var atom = result.Item2.AsAtom();
+            Assert.Equal(702, result.Item1);
+            Assert.True(atom!.SequenceEqual(new byte[]
+            {
+                0x0f, 0xb4, (byte)'x', 0xaf, (byte)'>'
+            }));
+        }
         #endregion
         
         #region OpLogNot
