@@ -328,6 +328,41 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         }
 
         #endregion
+        
+        #region OpLogand
+        [Fact]
+        public void OpLogAndInt()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x18 }, x.SExp.To(new List<int> { 15,244 }));
+            var atom = result.Item2.AsAtom();
+            Assert.Equal(647, result.Item1);
+            Assert.True(atom!.SequenceEqual(new byte[]
+            {
+                0x04
+            }));
+        }
+        
+        [Fact]
+        public void OpLogEmptyList()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x18 }, x.SExp.To(new List<int> {  }));
+            var atom = result.Item2.AsAtom();
+            Assert.Equal(110, result.Item1);
+            Assert.True(atom!.SequenceEqual(new byte[]
+            {
+                0xFF
+            }));
+        }
+        #endregion
+        
+        #region OpLogior
+        #endregion
+
+        #region OpLogxor
+        #endregion
+        
+        #region OpLogNot
+        #endregion
 
         #region OpAny
 
