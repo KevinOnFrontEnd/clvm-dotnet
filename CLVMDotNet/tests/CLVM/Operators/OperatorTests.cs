@@ -406,6 +406,39 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         #endregion
         
         #region OpLogNot
+        [Fact]
+        public void OpLogNot()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x1B }, x.SExp.To(new List<int> { 1}));
+            var atom = result.Item2.AsAtom();
+            Assert.Equal(344, result.Item1);
+            Assert.True(atom!.SequenceEqual(new byte[]
+            {
+                0xFE
+            }));
+        }
+        
+        [Fact]
+        public void OpLogNotNegativeNumbers()
+        {
+            var result = x.Operator.ApplyOperator(new byte[] { 0x1B }, x.SExp.To(new List<BigInteger> { -1111}));
+            var atom = result.Item2.AsAtom();
+            Assert.Equal(357, result.Item1);
+            Assert.True(atom!.SequenceEqual(new byte[]
+            {
+                0x04, 0x56 
+            }));
+        }
+        
+        [Fact]
+        public void OpLogNotThrowsWithNoParameters()
+        {
+            var errorMessage =
+                Assert.Throws<x.EvalError>(() =>
+                    x.Operator.ApplyOperator(new byte[] { 0x1B },
+                        x.SExp.To(new List<int> { })));
+            Assert.Contains("lognot takes exactly 1 arguments", errorMessage.Message);
+        }
         #endregion
 
         #region OpAny

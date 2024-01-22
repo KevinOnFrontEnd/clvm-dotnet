@@ -588,10 +588,13 @@ namespace CLVMDotNet.CLVM
             return Tuple.Create(cost, r);
         }
         
-        
         public static Tuple<BigInteger, SExp> OpLogNot(dynamic args)
         {
-            throw new Exception("Not implemented yet!");
+            var list = ArgsAsIntList("lognot", args, 1);
+            BigInteger cost = Costs.LOGNOT_BASE_COST + list[0].Item2 * Costs.LOGNOT_COST_PER_BYTE;
+            BigInteger s = list[0].Item1;
+            var inverted = -s - 1;
+            return MallocCost(cost, SExp.To(inverted));
         }
         
         public static Tuple<BigInteger, SExp> OpNot(dynamic args)
