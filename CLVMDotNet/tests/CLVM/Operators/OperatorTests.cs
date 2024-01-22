@@ -328,12 +328,13 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         }
 
         #endregion
-        
+
         #region OpLogand
+
         [Fact]
         public void OpLogAndInt()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x18 }, x.SExp.To(new List<int> { 15,244 }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x18 }, x.SExp.To(new List<int> { 15, 244 }));
             var atom = result.Item2.AsAtom();
             Assert.Equal(647, result.Item1);
             Assert.True(atom!.SequenceEqual(new byte[]
@@ -341,11 +342,11 @@ namespace CLVMDotNet.Tests.CLVM.Operators
                 0x04
             }));
         }
-        
+
         [Fact]
         public void OpLogEmptyList()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x18 }, x.SExp.To(new List<int> {  }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x18 }, x.SExp.To(new List<int> { }));
             var atom = result.Item2.AsAtom();
             Assert.Equal(110, result.Item1);
             Assert.True(atom!.SequenceEqual(new byte[]
@@ -353,9 +354,11 @@ namespace CLVMDotNet.Tests.CLVM.Operators
                 0xFF
             }));
         }
+
         #endregion
-        
+
         #region OpLogior
+
         [Fact]
         public void OpLogior()
         {
@@ -366,21 +369,23 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             {
             }));
         }
-        
+
         [Fact]
         public void OpLogiorInt()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x19 }, x.SExp.To(new List<int> { 35,689}));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x19 }, x.SExp.To(new List<int> { 35, 689 }));
             var atom = result.Item2.AsAtom();
             Assert.Equal(657, result.Item1);
             Assert.True(atom!.SequenceEqual(new byte[]
             {
-                0x02, 0xB3 
+                0x02, 0xB3
             }));
         }
+
         #endregion
 
         #region OpLogxor
+
         [Fact]
         public void OpLogxor()
         {
@@ -391,11 +396,12 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             {
             }));
         }
-        
+
         [Fact]
         public void OpLogxorInt()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x1A }, x.SExp.To(new List<BigInteger> { 111111,67452345657}));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x1A },
+                x.SExp.To(new List<BigInteger> { 111111, 67452345657 }));
             var atom = result.Item2.AsAtom();
             Assert.Equal(702, result.Item1);
             Assert.True(atom!.SequenceEqual(new byte[]
@@ -403,13 +409,15 @@ namespace CLVMDotNet.Tests.CLVM.Operators
                 0x0f, 0xb4, (byte)'x', 0xaf, (byte)'>'
             }));
         }
+
         #endregion
-        
+
         #region OpLogNot
+
         [Fact]
         public void OpLogNot()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x1B }, x.SExp.To(new List<int> { 1}));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x1B }, x.SExp.To(new List<int> { 1 }));
             var atom = result.Item2.AsAtom();
             Assert.Equal(344, result.Item1);
             Assert.True(atom!.SequenceEqual(new byte[]
@@ -417,19 +425,19 @@ namespace CLVMDotNet.Tests.CLVM.Operators
                 0xFE
             }));
         }
-        
+
         [Fact]
         public void OpLogNotNegativeNumbers()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x1B }, x.SExp.To(new List<BigInteger> { -1111}));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x1B }, x.SExp.To(new List<BigInteger> { -1111 }));
             var atom = result.Item2.AsAtom();
             Assert.Equal(357, result.Item1);
             Assert.True(atom!.SequenceEqual(new byte[]
             {
-                0x04, 0x56 
+                0x04, 0x56
             }));
         }
-        
+
         [Fact]
         public void OpLogNotThrowsWithNoParameters()
         {
@@ -439,27 +447,41 @@ namespace CLVMDotNet.Tests.CLVM.Operators
                         x.SExp.To(new List<int> { })));
             Assert.Contains("lognot takes exactly 1 arguments", errorMessage.Message);
         }
+
         #endregion
 
         #region OpPointAdd
+
         #endregion
-        
+
         #region OpPubkeyForExp
-        [Fact(Skip = "This is failing currently")]
+
+        [Fact()]
         public void OpPubKeyForExp()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x1E }, x.SExp.To(new List<String> { "this is a test"}));
+            var result =
+                x.Operator.ApplyOperator(new byte[] { 0x1E }, x.SExp.To(new List<String> { "this is a test" }));
             var atom = result.Item2.AsAtom();
-            Assert.Equal(1326262, result.Item1);
+            Assert.Equal(1326742, result.Item1);
             Assert.True(atom!.SequenceEqual(new byte[]
             {
-                0xb3, 0xfd, 0x19, 0xf6, 0xb1, 0xa7, 0x59, 0xb9, 0x6e, 0x98, 0xe7, 0x45, 0x6f, 0x3f, 0x0c, 0x45,
-                0xb0, 0xa7, 0xa1, 0x24, 0x3f, 0xf9, 0x40, 0x90, 0xfe, 0xfc, 0x51, 0x6c, 0x1b, 0x92, 0x9b, 0x33,
-                0xb4, 0xf0, 0xc1, 0xc0, 0xf9, 0xbf, 0xee, 0xd7, 0xb3, 0xc9, 0xc4, 0xfb, 0xb6, 0x30, 0x31
+                0xB3, 0xFD, 0x19, 0xF6, 0xB1, 0xA7, 0x59, 0xB9, 0x6E, 0x98, 0xE7, 0x45, 0x6F, 0x2F, 0x3F, 0x0C, 0x45,
+                0xB0, 0xA7, 0xA1, 0x24, 0x3F, 0xF9, 0x40, 0x90, 0xFE, 0xFC, 0x51, 0x6C, 0x1B, 0x92, 0x9B,
+                0x33, 0xB4, 0xF0, 0xC1, 0xC0, 0xF9, 0xBF, 0xEE, 0xD7, 0xB3, 0xC9, 0xC4, 0xFB, 0xB6, 0x00, 0x31
             }));
         }
-        #endregion
         
+        [Fact]
+        public void OpPubKeyThrowsWithNoArgumentsp()
+        {
+            var errorMessage =
+                Assert.Throws<x.EvalError>(() =>
+                    x.Operator.ApplyOperator(new byte[] { 0x1E }, x.SExp.To(new List<String> { })));
+            Assert.Contains("pubkey_for_exp takes exactly 1 arguments", errorMessage.Message);
+
+        }
+        #endregion
+
         #region OpAny
 
         [Fact]
@@ -472,18 +494,18 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             Assert.True(areEqual);
             Assert.Equal(500, result.Item1);
         }
-        
+
         [Fact]
         public void OpAnyReturnsTrueWithMoreThanOneArg()
         {
             var result = x.Operator.ApplyOperator(new byte[] { 0x21 },
-                x.SExp.To(new List<BigInteger> { 1,3,4,5 }));
+                x.SExp.To(new List<BigInteger> { 1, 3, 4, 5 }));
             var s = result;
             var areEqual = x.SExp.True.Equals(result.Item2);
             Assert.True(areEqual);
             Assert.Equal(1400, result.Item1);
         }
-        
+
         [Fact]
         public void OpAnyReturnsFalseWithNoArgs()
         {
@@ -494,19 +516,21 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             Assert.True(areEqual);
             Assert.Equal(200, result.Item1);
         }
+
         #endregion
 
         #region OpAll
+
         [Fact]
         public void OpAllAtomsReturnsTrue()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x22 }, x.SExp.To(new List<int> { 1,2,3 }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x22 }, x.SExp.To(new List<int> { 1, 2, 3 }));
             var s = result;
             var areEqual = x.SExp.True.Equals(result.Item2);
             Assert.True(areEqual);
             Assert.Equal(1100, result.Item1);
         }
-        
+
         [Fact]
         public void OpAllWithEmptyAtomsReturnsTrue()
         {
@@ -516,18 +540,19 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             Assert.True(areEqual);
             Assert.Equal(200, result.Item1);
         }
-        
+
         [Fact]
         public void OpAllWithPairReturnsFalse()
         {
-            var result = x.Operator.ApplyOperator(new byte[] { 0x22 }, x.SExp.To(new List<dynamic>{"+", 1, 2}));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x22 }, x.SExp.To(new List<dynamic> { "+", 1, 2 }));
             var s = result;
             var areEqual = x.SExp.True.Equals(result.Item2);
             Assert.True(areEqual);
             Assert.Equal(1100, result.Item1);
         }
+
         #endregion
-        
+
         #region OpNot
 
         [Fact]

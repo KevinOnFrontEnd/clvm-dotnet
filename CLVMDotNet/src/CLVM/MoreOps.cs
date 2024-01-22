@@ -279,27 +279,21 @@ namespace CLVMDotNet.CLVM
         public static Tuple<BigInteger, SExp> OpPubkeyForExp(SExp args)
         {
             var (i0, l0) = ArgsAsIntList("pubkey_for_exp", args, 1)[0];
-            var bip39 = new BIP39();
-
-
             string hexValue = "73EDA753299D7D483339D80809A1D80553BDA402FFFE5BFEFFFFFFFF00000001";
             BigInteger largeNumber = BigInteger.Parse(hexValue, System.Globalization.NumberStyles.HexNumber);
+            
             // Ensure i0 is positive
             if (i0 < 0)
             {
                 i0 += largeNumber; // Add largeNumber to make it positive
             }
-
             i0 %= largeNumber;
-
-
-            var keyBytes = Casts.IntToBytes(i0);
+            
+            var keyBytes = BigIntegerToBytesWithLittleEndian(i0);
             var sk = PrivateKey.FromBytes(keyBytes);
-            var exponent = PrivateKey.FromBytes(i0.ToByteArray());
             try
             {
-                var signature = sk.Sign("");
-                var g1 = exponent.GetG1().ToBytes();
+                var g1 = sk.GetG1().ToBytes();
                 SExp r = SExp.To(g1);
                 BigInteger cost = Costs.PUBKEY_BASE_COST;
                 cost += l0 * Costs.PUBKEY_COST_PER_BYTE;
@@ -309,32 +303,46 @@ namespace CLVMDotNet.CLVM
             {
                 throw new EvalError($"problem in op_pubkey_for_exp: {ex}", args);
             }
+            
+            static byte[] BigIntegerToBytesWithLittleEndian(BigInteger v)
+            {
+                byte[] byteArray = v.ToByteArray();
+                byteArray = byteArray.Reverse().ToArray();
+                if (byteArray.Length < 32)
+                {
+                    byte[] paddedArray = new byte[32];
+                    Array.Copy(byteArray, 0, paddedArray, 32 - byteArray.Length, byteArray.Length);
+                    byteArray = paddedArray;
+                }
+
+                return byteArray;
+            }
         }
 
-//
-//     public (BigInteger, SExp) OpPointAdd(dynamic items)
-//     {
-//         BigInteger cost = Costs.POINT_ADD_BASE_COST;
-//         G1 p = new G1();
-//
-//         foreach (var item in items.AsEnumerable())
-//         {
-//             if (item.IsPair)
-//             {
-//                 throw new EvalError("point_add on list", item);
-//             }
-//             try
-//             {
-//                 p += G1.FromBytes(item.AsAtom());
-//                 cost += Costs.POINT_ADD_COST_PER_ARG;
-//             }
-//             catch (Exception ex)
-//             {
-//                 throw new EvalError($"point_add expects blob, got {item}: {ex}", items);
-//             }
-//         }
-//         return MallocCost(cost, items.To(p.ToBytes()));
-//     }
+
+     // public (BigInteger, SExp) OpPointAdd(dynamic items)
+     // {
+     //     BigInteger cost = Costs.POINT_ADD_BASE_COST;
+     //     var g1 = new JacobianPoint();
+     //
+     //     foreach (var item in items.AsEnumerable())
+     //     {
+     //         if (item.IsPair)
+     //         {
+     //             throw new EvalError("point_add on list", item);
+     //         }
+     //         try
+     //         {
+     //             p += G1.FromBytes(item.AsAtom());
+     //             cost += Costs.POINT_ADD_COST_PER_ARG;
+     //         }
+     //         catch (Exception ex)
+     //         {
+     //             throw new EvalError($"point_add expects blob, got {item}: {ex}", items);
+     //         }
+     //     }
+     //     return MallocCost(cost, items.To(p.ToBytes()));
+     // }
 //
         public static Tuple<BigInteger, SExp> OpStrlen(SExp args)
         {
