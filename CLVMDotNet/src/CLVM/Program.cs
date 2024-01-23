@@ -163,7 +163,7 @@ public static class Program
 
             valueStack.Push(newProgram.Cons(newArgs));
             opStack.Push(stack => EvalOp(opStack, valueStack));
-            return Costs.APPLY_COST; // Assuming APPLY_COST is defined elsewhere.
+            return Costs.APPLY_COST;
         }
 
         var result = Operator.ApplyOperator(op, operandList);

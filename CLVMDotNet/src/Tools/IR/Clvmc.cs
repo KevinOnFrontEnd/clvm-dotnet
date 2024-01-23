@@ -7,14 +7,26 @@ namespace CLVMDotNet.Tools.IR
         public static SExp CompileCLVMText(string text, string[] searchPaths)
         {
             var ir_src = IRReader.ReadIR(text);
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
             var assembled_sexp = BinUtils.AssembleFromIR(ir_src);
             var input_sexp = SExp.To((assembled_sexp, Array.Empty<dynamic>()));
-            
-            
-            //run_program_for_search_paths
-            //run_program
-            
-            return null;
+
+            var result = Program.RunProgram(null, input_sexp);
+            return result.Item2;
         }
 
         public static void CompileCLVM(string inputPath, string outputPath, string[] searchPaths)

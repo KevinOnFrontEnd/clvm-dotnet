@@ -117,13 +117,6 @@ namespace CLVMDotNet.Tools.IR
             int offset = -1;
 
             stream.MoveNext();
-            // foreach (var item in stream.)
-            // {
-            //     token = item.Item1;
-            //     offset = item.Item2;
-            //     break;
-            // }
-
             token = stream.Current.Item1;
             offset = stream.Current.Item2;
 
@@ -185,7 +178,8 @@ namespace CLVMDotNet.Tools.IR
                 var (t, o) = NextConsToken(stream);
                 token = t;
                 offset = o;
-                return TokenizeCons(token, offset, stream);
+                var cons = TokenizeCons(token, offset, stream);
+                return cons;
             }
 
             var result = TokenizeInt(token, offset);
@@ -295,7 +289,7 @@ namespace CLVMDotNet.Tools.IR
                 }
 
                 char c = s[offset];
-                if (c == '(' || c == ')')
+                if ("(.)".Contains(c))
                 {
                     yield return (c.ToString(), offset);
                     offset++;
@@ -340,7 +334,8 @@ namespace CLVMDotNet.Tools.IR
             {
                 var item = enumerator.Current;
                 var ts = TokenizeSexp(item.token, item.offset, enumerator);
-                return SExp.To(ts);
+                var sexp = SExp.To(ts);
+                return sexp;
             }
 
             throw new ArgumentException("unexpected end of stream");

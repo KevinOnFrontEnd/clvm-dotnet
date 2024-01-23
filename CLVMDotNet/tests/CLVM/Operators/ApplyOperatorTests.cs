@@ -45,7 +45,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             // Arrange
             
             // Act
-            var result = x.Operator.ApplyOperator(new byte[] { 0x12 }, x.SExp.To(new List<BigInteger> { 10, 2 }));
+            var result = x.Operator.ApplyOperator(new byte[] { 0x13}, x.SExp.To(new List<BigInteger> { 10, 2 }));
 
             // Assert
         }
@@ -58,7 +58,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             // Act
             var errorMessage =
                 Assert.Throws<x.EvalError>(() =>
-                    x.Operator.ApplyOperator(new byte[] { 0x12 }, x.SExp.To(new List<BigInteger> { 10, 0 }))
+                    x.Operator.ApplyOperator(new byte[] { 0x13 }, x.SExp.To(new List<BigInteger> { 10, 0 }))
                 );
             
             // Assert
@@ -73,7 +73,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
             // Act
             var errorMessage =
                 Assert.Throws<x.EvalError>(() =>
-                    x.Operator.ApplyOperator(new byte[] { 0x12 }, x.SExp.To(new List<BigInteger> { -1, 5 }))
+                    x.Operator.ApplyOperator(new byte[] { 0x13 }, x.SExp.To(new List<BigInteger> { -1, 5 }))
                 );
             
             // Assert

@@ -24,5 +24,7 @@ namespace CLVMDotNet.Tests.Tools.IRReader
             // Assert
             Assert.Equal(lengthOfStream, count);
         }
+        
+        
     }
 }
