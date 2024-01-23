@@ -20,7 +20,7 @@ namespace CLVMDotNet.CLVM
     {
         public static SExp True { get; } = new SExp(new CLVMObject { Atom = new byte[] { 0x01 } });
         public static SExp False { get; } = new SExp(new CLVMObject());
-        public static CLVMObject NULL { get; } = null;
+        public static SExp NULL { get; } = new SExp();
         public byte[]? Atom { get; set; }
         public Tuple<dynamic, dynamic>? Pair { get; set; }
 
@@ -50,7 +50,7 @@ namespace CLVMDotNet.CLVM
         }
 
         public byte[]? AsAtom()
-        {
+        { 
             return Atom;
         }
 
@@ -110,7 +110,8 @@ namespace CLVMDotNet.CLVM
                 return new SExp(v);
             }
 
-            var sexp = new SExp(HelperFunctions.ToSexpType(v));
+            var type = HelperFunctions.ToSexpType(v);
+            var sexp = new SExp(type);
             return sexp;
         }
 
@@ -184,7 +185,11 @@ namespace CLVMDotNet.CLVM
                             return false;
                         }
                     }
-                    else if (s2.AsPair() != null || !s1.AsAtom().SequenceEqual(s2.AsAtom()))
+                    else if (s2.AsPair() != null || s1.AsAtom() != null && s2.AsAtom() is null || s1.AsAtom() is null && s2.AsAtom() is not null) 
+                    {
+                        return false;
+                    }
+                    else if (s2.AsAtom() != null && s1.AsAtom() != null && !s1.AsAtom().SequenceEqual(s2.AsAtom())) //both none null
                     {
                         return false;
                     }
@@ -192,42 +197,10 @@ namespace CLVMDotNet.CLVM
 
                 return true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 return false;
             }
-        }
-        
-        public static byte[] ConvertAtomToBytes(object v)
-        {
-            if (v is byte[] byteArray)
-            {
-                return byteArray;
-            }
-            else if (v is string str)
-            {
-                return Encoding.UTF8.GetBytes(str);
-            }
-            else if (v is int intValue)
-            {
-                return BitConverter.GetBytes(intValue);
-            }
-            else if (v is null)
-            {
-                return new byte[0];
-            }
-            else if (v is List<object> list)
-            {
-                var result = new List<byte>();
-                foreach (var item in list)
-                {
-                    result.AddRange(ConvertAtomToBytes(item));
-                }
-
-                return result.ToArray();
-            }
-
-            throw new ArgumentException($"Can't cast {v.GetType()} ({v}) to bytes");
         }
     }
 }

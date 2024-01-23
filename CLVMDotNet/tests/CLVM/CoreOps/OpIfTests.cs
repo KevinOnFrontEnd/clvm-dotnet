@@ -2,8 +2,8 @@ using Xunit;
 
 namespace CLVMDotNet.Tests.CLVM.CoreOps;
 
-[Trait("CoreOps", "OpEq")]
-public class OpEq
+[Trait("CoreOps", "OpFirst")]
+public class OpIfTests
 {
     
 }

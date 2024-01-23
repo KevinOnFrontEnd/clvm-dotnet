@@ -1,31 +1,18 @@
-using Xunit;
-using x = CLVMDotNet.CLVM;
-using CLVM = CLVMDotNet;
+namespace CLVMDotNet.Tests.CLVM.CoreOps;
 
-namespace CLVMDotNet.Tests.Operators
+public class OpDefaultUnknownTests
 {
-    public class OperatorTests
-    {
-        // private bool handlerCalled = false;
-        // private Tuple<int, SExp> UnknownHandler(byte[] name, SExp args)
-        // {
-        //     handlerCalled = true;
-        //     Assert.Equal(new byte[] { 0xff, 0xff, (byte)(0x1337 & 0xFF) }, name);
-        //     Assert.Equal(SExp.To((Int32)1337), args);
-        //     return Tuple.Create(42, SExp.To(new byte[] { 0x66, 0x6f, 0x6f, 0x62, 0x61, 0x72 }));
-        // }
-
-        // [Fact]
-        // public void TestUnknownOp()
-        // {
-        //     Assert.Throws<EvalError>(() =>  OPERATOR_LOOKUP(new byte[] { 0xff, 0xff, 0x1337 }, SExp.To(1337)));
-        //     var od = new OperatorDict(OPERATOR_LOOKUP, unknownOpHandler: (name, args) => UnknownHandler(name, args));
-        //     var result = od(new byte[] { 0xff, 0xff, 0x1337 }, SExp.To(1337));
-        //     Assert.True(handlerCalled);
-        //     Assert.Equal(42, result.Item1);
-        //     Assert.Equal(SExp.To(new byte[] { 0x66, 0x6f, 0x6f, 0x62, 0x61, 0x72 }), result.Item2);
-        // }
-//
+//         [Fact]
+//         public void TestUnknownOp()
+//         {
+//             Assert.Throws<EvalError>(() =>  OPERATOR_LOOKUP(new byte[] { 0xff, 0xff, 0x1337 }, SExp.To(1337)));
+//             var od = new OperatorDict(OPERATOR_LOOKUP, unknownOpHandler: (name, args) => UnknownHandler(name, args));
+//             var result = od(new byte[] { 0xff, 0xff, 0x1337 }, SExp.To(1337));
+//             Assert.True(handlerCalled);
+//             Assert.Equal(42, result.Item1);
+//             Assert.Equal(SExp.To(new byte[] { 0x66, 0x6f, 0x6f, 0x62, 0x61, 0x72 }), result.Item2);
+//         }
+// //
         // [Fact]
         // public void TestPlus()
         // {
@@ -67,5 +54,4 @@ namespace CLVMDotNet.Tests.Operators
         //             Tuple.Create(61, CLVM.SExp.NULL));
         //     }
         // }
-    }
 }

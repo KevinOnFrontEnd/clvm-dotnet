@@ -4,11 +4,12 @@ namespace CLVMDotNet.Tools.IR
 {
     public class Clvmc
     {
-        public static dynamic CompileCLVMText(string text, string[] searchPaths)
+        public static SExp CompileCLVMText(string text, string[] searchPaths)
         {
             var ir_src = IRReader.ReadIR(text);
             var assembled_sexp = BinUtils.AssembleFromIR(ir_src);
-            var input_sexp = SExp.To((assembled_sexp, Array.Empty<int>()));
+            var input_sexp = SExp.To((assembled_sexp, Array.Empty<dynamic>()));
+            
             
             //run_program_for_search_paths
             //run_program
@@ -21,6 +22,9 @@ namespace CLVMDotNet.Tools.IR
             
         }
         
+        
+        ///
+        /// 
         //compile_clvm_text
         //compile_clvm
         //find_files

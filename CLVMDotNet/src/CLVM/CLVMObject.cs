@@ -31,7 +31,7 @@ namespace CLVMDotNet.CLVM
                 //to make sure if a tuple is used, it cannot have more than 2 items in it.
                 var type = v?.GetType();
                 var s = type?.GetGenericArguments();
-                if (s.Length > 2)
+                if (s?.Length > 2)
                 {
                     throw new ArgumentException("tuples must be of size 2");
                 }
