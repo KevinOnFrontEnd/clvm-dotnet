@@ -26,8 +26,13 @@ namespace CLVMDotNet.Tests.CLVM.Casts
         [InlineData("20482048204820482048", new byte[] { 0x01, 0x1C, 0x3E, 0xDA, 0x52, 0xE0, 0xC0, 0x88, 0x00 })]
         public void IntFromBytes_returns_expectedint(string expectedNumberStr, byte[] from_bytes)
         {
+            // Arrange
             BigInteger expectedNumber = BigInteger.Parse(expectedNumberStr);
+            
+            // Act
             var returnedBytes = x.Casts.IntFromBytes(from_bytes);
+            
+            // Assert
             Assert.Equal(expectedNumber, returnedBytes);
         }
     }

@@ -22,7 +22,13 @@ namespace CLVMDotNet.Tests.CLVM.HelperFunctions
         [InlineData(0x80, 0xFF)]
         public void TestMsbMask(byte expectedbyte, byte MSB)
         {
-            Assert.Equal(expectedbyte, x.HelperFunctions.MSBMask(MSB));
+            // Arrange
+            
+            // Act
+            var result = x.HelperFunctions.MSBMask(MSB);
+            
+            // Assert
+            Assert.Equal(expectedbyte, result);
         }
     }
 }

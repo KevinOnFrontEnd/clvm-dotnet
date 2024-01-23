@@ -15,8 +15,13 @@ namespace CLVMDotNet.Tests.Tools.IRReader
         [InlineData("(- 5 (- 6 (- 5 (- 5 6))))", 17)]
         public void TokenStreamReader_matches_python_stream_length(string input, int lengthOfStream)
         {
+            // Arrange
+            
+            // Act
             var stream = x.IRReader.TokenStream(input);
             var count = stream.Count();
+            
+            // Assert
             Assert.Equal(lengthOfStream, count);
         }
     }

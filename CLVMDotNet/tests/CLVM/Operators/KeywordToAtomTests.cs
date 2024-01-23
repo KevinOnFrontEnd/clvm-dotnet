@@ -24,9 +24,14 @@ public class KeywordToAtomTests
     [Fact]
     public void UnknownKeyword_ThrowsError()
     {
+        // Arrange
+        
+        // Act
         var errorMessage =
             Assert.Throws<Exception>(() =>
                 clvm.KEYWORD_TO_ATOM("SomeInvalidKeyword"));
+        
+        // Assert
         Assert.Contains("Invalid Keyword", errorMessage.Message);
     }
 }

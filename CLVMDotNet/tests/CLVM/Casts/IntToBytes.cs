@@ -41,8 +41,13 @@ namespace CLVMDotNet.Tests.CLVM.Casts
         // })]
         public void IntToBytes_returns_expectedbytes(string numberStr, byte[] expectedBytes)
         {
+            // Arrange
             BigInteger number = BigInteger.Parse(numberStr);
+            
+            // Act
             var returnedBytes = x.Casts.IntToBytes(number);
+            
+            // Assert
             Assert.Equal(expectedBytes, returnedBytes);
         }
     }

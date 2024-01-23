@@ -24,9 +24,14 @@ public class KeywordFromAtomTests
     [Fact]
     public void UnknownAtom_ThrowsError()
     {
+        // Arrange
+        
+        // Act
         var errorMessage =
             Assert.Throws<Exception>(() =>
                 x.KEYWORD_FROM_ATOM(0xaa));
+        
+        // Assert
         Assert.Contains("Invalid Atom", errorMessage.Message);
     }
 }
