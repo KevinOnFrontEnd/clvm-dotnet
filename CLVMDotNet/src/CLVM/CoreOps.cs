@@ -17,7 +17,7 @@ namespace CLVMDotNet.CLVM
             }
         }
         
-        public static Tuple<BigInteger, SExp> OpDefaultUnknwon(byte[] op, SExp args)
+        public static Tuple<BigInteger, SExp> OpDefaultUnknown(byte[] op, SExp args)
         {
             // Any opcode starting with 0xFFFF is reserved (i.e., fatal error).
             // Opcodes are not allowed to be empty.

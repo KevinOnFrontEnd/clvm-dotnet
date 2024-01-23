@@ -3,7 +3,7 @@ using Xunit;
 namespace CLVMDotNet.Tests.CLVM.CoreOps;
 
 [Trait("CoreOps", "OpFirst")]
-public class OpIf
+public class OpFirstTests
 {
     
 }
