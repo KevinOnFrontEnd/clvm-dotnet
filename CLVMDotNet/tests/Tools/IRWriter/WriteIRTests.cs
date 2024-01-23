@@ -21,11 +21,16 @@ namespace CLVMDotNet.Tests.Tool.IRWriter
         [InlineData("(a b c de f g h i . j)")]
         public void WriterTests(string sexpText)
         {
+            // Arrange
             var irSexp = x.IRReader.ReadIR(sexpText);
+            
+            // Act
             var sexpTextNormalized = x.IRWRiter.WriteIr(irSexp);
 
             var irSexp2 = x.IRReader.ReadIR(sexpText);
             var sexpTextNormalized2 = x.IRWRiter.WriteIr(irSexp2);
+            
+            // Assert
             Assert.Equal(sexpTextNormalized, sexpTextNormalized2);
         }
     }

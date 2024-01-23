@@ -21,8 +21,13 @@ namespace CLVMDotNet.Tests.CLVM.Casts
         [InlineData("20482048204820482048", 9)]
         public void LimbsForInt_returns_expectedlength(string numStr, int expectedNumberOfBytes)
         {
+            // Arrange
             BigInteger num = BigInteger.Parse(numStr);
+            
+            // Act
             var numberOfBytes = x.Casts.LimbsForInt(num);
+            
+            // Assert
             Assert.Equal(expectedNumberOfBytes, numberOfBytes);
         }
     }

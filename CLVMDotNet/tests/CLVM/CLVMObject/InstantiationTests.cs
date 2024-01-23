@@ -13,8 +13,13 @@ public class InstantiationTests
     [InlineData(0x03, 0x03)]
     public void Constructor_with_tuple_sets_pair(dynamic? left, dynamic? right)
     {
+        // Arrange
         Tuple<dynamic?, dynamic?> tuple = new Tuple<dynamic?, dynamic?>(left, right);
+        
+        // Act
         var clvmobject = new x.CLVMObject(tuple);
+        
+        // Assert
         Assert.NotNull(clvmobject.Pair);
         Assert.Null(clvmobject.Atom);
     }
@@ -25,7 +30,12 @@ public class InstantiationTests
     [InlineData(0x03)]
     public void Constructor_with_atom_sets_atom(dynamic atom)
     {
+        // Arrange
+        
+        // Act
         var clvmobject = new x.CLVMObject(atom);
+        
+        // Assert
         Assert.NotNull(clvmobject.Atom);
         Assert.Null(clvmobject.Pair);
     }
@@ -33,8 +43,13 @@ public class InstantiationTests
     [Fact]
     public void Constructor_with_sexp_sets_atom()
     {
+        // Arrange
         var sexp = x.SExp.To(0x03);
+        
+        // Act
         var clvmobject = new x.CLVMObject(sexp);
+        
+        // Assert
         Assert.NotNull(clvmobject.Atom);
         Assert.Null(clvmobject.Pair);
     }
@@ -42,22 +57,25 @@ public class InstantiationTests
     [Fact]
     public void Constructor_with_invalid_tuple_shape()
     {
+        // Arrange
+        
+        // Act
         var errorLength3 =
             Assert.Throws<ArgumentException>(() =>
                 new x.CLVMObject((1, 2, 3))
             );
-        Assert.Contains("tuples must be of size 2", errorLength3.Message);
-        
         var errorLength4 =
             Assert.Throws<ArgumentException>(() =>
                 new x.CLVMObject((1, 2, 3, 4))
             );
-        Assert.Contains("tuples must be of size 2", errorLength4.Message);
-        
         var errorLength5 =
             Assert.Throws<ArgumentException>(() =>
                 new x.CLVMObject((1, 2, 3, 4, 5))
             );
+        
+        // Assert
+        Assert.Contains("tuples must be of size 2", errorLength3.Message);
+        Assert.Contains("tuples must be of size 2", errorLength4.Message);
         Assert.Contains("tuples must be of size 2", errorLength5.Message);
     }
 }

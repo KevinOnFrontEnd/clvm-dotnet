@@ -20,8 +20,14 @@ namespace CLVMDotNet.Tests.Tools
         [InlineData("1313817669", "NODE")]
         public void Convert_to_base256_matches_python(string expected, string sym)
         {
+            // Arrange
             BigInteger expectedNumber = BigInteger.Parse(expected);
-            Assert.Equal(expectedNumber, Utils.ConvertToBase256(sym));
+            
+            // Act
+            var val = Utils.ConvertToBase256(sym);
+            
+            // Assert
+            Assert.Equal(expectedNumber, val);
         }
     }
 }
