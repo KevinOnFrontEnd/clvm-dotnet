@@ -117,11 +117,12 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         }
 
         [Theory]
-        [InlineData(1, "somelongstring", 4, "longstring")]
-        [InlineData(1, "somelongstring", 0, "somelongstring")]
-        [InlineData(1, "somelongstring", 13, "g")]
-        public void OpSubstrReturnsSubStringWithCost(BigInteger cost, string val, int startindex, string expectedResult)
+        [InlineData("1", "somelongstring", 4, "longstring")]
+        [InlineData("1", "somelongstring", 0, "somelongstring")]
+        [InlineData("1", "somelongstring", 13, "g")]
+        public void OpSubstrReturnsSubStringWithCost(string stringCost, string val, int startindex, string expectedResult)
         {
+            BigInteger cost = BigInteger.Parse(stringCost);
             var result =
                 x.Operator.ApplyOperator(new byte[] { 0x0C }, x.SExp.To(new List<dynamic> { val, startindex }));
             var atom = result.Item2.AsAtom();
@@ -131,13 +132,14 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         }
 
         [Theory]
-        [InlineData(1, "somelongstring", 0, 2, "so")]
-        [InlineData(1, "somelongstring", 4, 5, "l")]
-        [InlineData(1, "somelongstring", 13, 14, "g")]
-        [InlineData(1, "somelongstring", 3, 12, "elongstri")]
-        public void OpSubstrReturnsSubStringOfNumberOfCharactersWithCost(BigInteger cost, string val, int startindex,
+        [InlineData("1", "somelongstring", 0, 2, "so")]
+        [InlineData("1", "somelongstring", 4, 5, "l")]
+        [InlineData("1", "somelongstring", 13, 14, "g")]
+        [InlineData("1", "somelongstring", 3, 12, "elongstri")]
+        public void OpSubstrReturnsSubStringOfNumberOfCharactersWithCost(string stringCost, string val, int startindex,
             int endIndex, string expectedResult)
         {
+            BigInteger cost = BigInteger.Parse(stringCost);
             var result = x.Operator.ApplyOperator(new byte[] { 0x0C },
                 x.SExp.To(new List<dynamic> { val, startindex, endIndex }));
             var atom = result.Item2.AsAtom();
@@ -155,7 +157,7 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         [InlineData("s", 1, 184)]
         [InlineData("", 0, 173)]
         [InlineData("THIS IS A LONGER SENTENCE TO CALCULATE THE COST OF.", 51, 234)]
-        public void OpStrLen(string val, BigInteger length, int cost)
+        public void OpStrLen(string val, int length, int cost)
         {
             var result = x.Operator.ApplyOperator(new byte[] { 0x0D },
                 x.SExp.To(new List<string> { val }));
@@ -258,10 +260,12 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         #region OpGr
 
         [Theory]
-        [InlineData(502, 1, 2, false)]
-        [InlineData(502, 1, 1, false)]
-        public void OpGrReturnsFalse(int expectedCost, BigInteger val1, BigInteger val2, bool greaterThan)
+        [InlineData(502, "1", "2", false)]
+        [InlineData(502, "1", "1", false)]
+        public void OpGrReturnsFalse(int expectedCost, string strVal1, string strVal2, bool greaterThan)
         {
+            BigInteger val1 = BigInteger.Parse(strVal1);
+            BigInteger val2 = BigInteger.Parse(strVal2);
             var result = x.Operator.ApplyOperator(new byte[] { 0x15 }, x.SExp.To(new List<BigInteger> { val1, val2 }));
             var areEqual = x.SExp.False.Equals(result.Item2);
             Assert.True(areEqual);
@@ -269,11 +273,13 @@ namespace CLVMDotNet.Tests.CLVM.Operators
         }
         
         [Theory]
-        [InlineData(502, 4, 2, true)]
-        [InlineData(502, -1, 2, true,
+        [InlineData(502, "4", "2", true)]
+        [InlineData(502, "-1", "2", true,
             Skip = "-1 is 255 as an unsigned byte. and is greater than 2. Need to probably use sbyte!")] //
-        public void OpGrReturnsTrue(int expectedCost, BigInteger val1, BigInteger val2, bool greaterThan)
+        public void OpGrReturnsTrue(int expectedCost, string strVal1, string strVal2, bool greaterThan)
         {
+            BigInteger val1 = BigInteger.Parse(strVal1);
+            BigInteger val2 = BigInteger.Parse(strVal2);
             var result = x.Operator.ApplyOperator(new byte[] { 0x15 }, x.SExp.To(new List<BigInteger> { val1, val2 }));
             var areEqual = x.SExp.True.Equals(result.Item2);
             Assert.True(areEqual);
