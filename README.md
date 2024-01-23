@@ -5,10 +5,13 @@ This repository is a dotnet port of Chia-Networks CLVM located at https://github
 **This repo is not fully complete and requires further porting**
 
 # Progress
+The bulk of the work has been completed in getting the CLVM working. Internally it has the binary tree has been represented and can do operations on the tree. The remaining work is wiring up what the compile command does by iterating over the source and building the tree.
+
 | python class | Comment   |
 | :---:   | :---: |
 | clvmc | Assebles the binary tree (SExp object) and runs the program (WIP) |
-| curry   | currys parameters intot he program |
+| curry   | currys parameters into the program |
+| uncurry   | uncurrys parameters into the program |
 
 
 # Installation instructions
