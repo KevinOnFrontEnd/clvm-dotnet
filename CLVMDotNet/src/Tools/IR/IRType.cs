@@ -3,7 +3,7 @@ using CLVMDotNet.CLVM;
 
 namespace CLVMDotNet.Tools.IR
 {
-    public class IRType
+    public static class IRType
     {
         public static BigInteger CONS = Utils.ConvertToBase256("CONS"); // Equivalent to b"CONS"
         public static BigInteger NULL = Utils.ConvertToBase256("NULL"); // Equivalent to b"NULL"
@@ -23,7 +23,7 @@ namespace CLVMDotNet.Tools.IR
             return false;
         }
 
-        public byte[] AsAtom(BigInteger val)
+        public static byte[] AsAtom(BigInteger val)
         {
             return Casts.IntToBytes(val);
         }

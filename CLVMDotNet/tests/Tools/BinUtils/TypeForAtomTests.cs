@@ -10,15 +10,40 @@ namespace CLVMDotNet.Tests.Tools.BinUtils
     [Trait("BinUtils", "TypeForAtom")]
     public class TypeForAtomTests
     {
-        // [Theory]
-        // [InlineData(4736344, "abdde")] //Quote
-        // [InlineData(4736344, "134567")] //Hex
-        // [InlineData(4736344,"23456")] //Int
-        // public void TestTypeForAtomReturnsCorrectType(BigInteger type, string value)
-        // {
-        //     byte[] bytes  = Encoding.UTF8.GetBytes(value);
-        //     var t = x.BinUtils.TypeForAtom(bytes);
-        //     Assert.Equal(type, t);
-        // }
+        [Theory]
+        [InlineData("this is a test")]
+        [InlineData("178884")]
+        [InlineData("aaaa")]
+        [InlineData("100")]
+        [InlineData("126")]
+        public void TypeForAtomReturnsQuote(string value)
+        {
+            // Arrange
+            byte[] bytes  = Encoding.UTF8.GetBytes(value);
+            
+            // Act
+            var t = x.BinUtils.TypeForAtom(bytes);
+            
+            // Assert
+            Assert.Equal(IRType.QUOTES, t);
+        }
+        
+        [Theory]
+        [InlineData("1")]
+        [InlineData("4")]
+        [InlineData("99")]
+        public void TypeForAtomReturnsInt(string value)
+        {
+            // Arrange
+            byte[] bytes  = Encoding.UTF8.GetBytes(value);
+            
+            // Act
+            var t = x.BinUtils.TypeForAtom(bytes);
+            
+            // Assert
+            Assert.Equal(IRType.INT, t);
+        }
+        
+        //TODO: ADD Test to check that IRType.HEX is returned
     }
 }

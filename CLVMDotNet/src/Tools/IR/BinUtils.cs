@@ -82,7 +82,8 @@ namespace CLVMDotNet.Tools.IR
                 return IRType.HEX;
             }
 
-            if (BitConverter.ToUInt32(atom, 0) == BitConverter.ToUInt32(atom, 0))
+ 
+            if(x.Casts.IntToBytes(x.Casts.IntFromBytes(atom)).SequenceEqual(atom))
             {
                 return IRType.INT;
             }
