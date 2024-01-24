@@ -128,7 +128,7 @@ namespace CLVMDotNet.Tools.IR
             return (token, offset);
         }
 
-        public static dynamic? TokenizeCons(string token, int offset, IEnumerator<(string, int)> stream)
+        public static SExp? TokenizeCons(string token, int offset, IEnumerator<(string, int)> stream)
         {
             if (token == ")")
             {
@@ -224,7 +224,7 @@ namespace CLVMDotNet.Tools.IR
                 }
                 else
                 {
-                    throw new SyntaxException("invalid hex at " + offset + ": 0x" + token);
+                    throw new SyntaxException($"invalid hex at {offset}:{token}");
                 }
             }
 
