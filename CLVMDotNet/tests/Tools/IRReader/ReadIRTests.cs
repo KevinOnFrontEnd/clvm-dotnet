@@ -52,12 +52,12 @@ namespace CLVMDotNet.Tests.Tools.IRReader
             var s = sexp;
         }
 
-        [Fact (Skip= "Skipping for now!")]
+        [Fact]
 
         public void ConsList1()
         {
             // Arrange
-            string sexp_source = "(c (quote 100) (c (quote \"foo\") (quote ())))";
+            string sexp_source = "(/ 10 2)";
 
             // Act
             var sexp = x.IRReader.ReadIR(sexp_source);

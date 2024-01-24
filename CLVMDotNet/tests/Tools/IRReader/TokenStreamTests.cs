@@ -13,6 +13,7 @@ namespace CLVMDotNet.Tests.Tools.IRReader
         [InlineData("(equal 7 (+ 5 (+ 1 5)))", 13)]
         [InlineData("(- 5 4)", 5)]
         [InlineData("(- 5 (- 6 (- 5 (- 5 6))))", 17)]
+        [InlineData("(/ 10 2)", 5)]
         public void TokenStreamReader_matches_python_stream_length(string input, int lengthOfStream)
         {
             // Arrange
@@ -24,7 +25,5 @@ namespace CLVMDotNet.Tests.Tools.IRReader
             // Assert
             Assert.Equal(lengthOfStream, count);
         }
-        
-        
     }
 }

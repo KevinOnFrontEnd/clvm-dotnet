@@ -11,10 +11,6 @@ public class CompileCLVMText
     {
         var result = CLVMDotNet.Tools.IR.Clvmc.CompileCLVMText("(/ 10 2)", Array.Empty<string>());
 
-
-        var sexp = SExp.To(new List<dynamic> { "+", 1, 2 });
-        var json = sexp.ConvertToJSON();
-        
         var rs = result;
     }
 }

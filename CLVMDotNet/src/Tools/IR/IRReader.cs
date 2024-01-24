@@ -200,7 +200,7 @@ namespace CLVMDotNet.Tools.IR
 
         public static SExp? TokenizeInt(string token, int offset)
         {
-            if (int.TryParse(token, out int result))
+            if (BigInteger.TryParse(token, out BigInteger result))
             {
                 return Utils.IrNew(IRType.INT, result, offset);
             }
