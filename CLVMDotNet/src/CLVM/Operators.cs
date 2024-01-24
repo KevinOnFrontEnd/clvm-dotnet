@@ -220,34 +220,6 @@ namespace CLVMDotNet.CLVM
 
             throw new Exception($"{BitConverter.ToString(atom).Replace("-", "")} Operator not found or is unsupported!");
         }
-
-        public static string KEYWORD_FROM_ATOM(byte atom) => atom switch
-        {
-            0x23 => ".",
-            0x02 => "a",
-            0x01 => "q",
-            0x03 => "i",
-            0x04 => "c",
-            0x05 => "f",
-            0x06 => "r",
-            0x07 => "l",
-            0x08 => "x",
-            _ => throw new Exception("Invalid Atom")
-        };
-
-        public static byte KEYWORD_TO_ATOM(string keyword) => keyword switch
-        {
-            "." => 0x23,
-            "a" => 0x02,
-            "q" => 0x01,
-            "i" => 0x03,
-            "c" => 0x04,
-            "f" => 0x05,
-            "r" => 0x06,
-            "l" => 0x07,
-            "x" => 0x08,
-            _ => throw new Exception("Invalid Keyword")
-        };
     }
 
    

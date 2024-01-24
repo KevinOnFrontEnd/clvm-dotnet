@@ -62,7 +62,6 @@ namespace CLVMDotNet.CLVM
         private static Dictionary<byte, string> InitializeKeywordFromAtom()
         {
             var keywordFromAtom = new Dictionary<byte, string>();
-            keywordFromAtom.Add(0x00, ".");
             keywordFromAtom.Add(0x01, "q");
             keywordFromAtom.Add(0x02, "a");
             keywordFromAtom.Add(0x03, "i");
