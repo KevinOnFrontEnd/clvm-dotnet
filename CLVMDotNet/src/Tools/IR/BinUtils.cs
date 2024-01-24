@@ -21,7 +21,7 @@ namespace CLVMDotNet.Tools.IR
                     keyword = keyword.Substring(1);
                 }
 
-                var atom = x.Keywords.KEYWORD_TO_ATOM.ContainsKey(keyword) ? x.Keywords.KEYWORD_TO_ATOM[keyword] : null;
+                var atom = x.Keywords.KEYWORD_TO_ATOM[keyword];
                 if (atom != null)
                 {
                     return SExp.To(atom);
