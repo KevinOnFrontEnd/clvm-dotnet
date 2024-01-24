@@ -272,9 +272,10 @@ namespace CLVMDotNet.Tools.IR
             return null;
         }
 
-        public static Tuple<(BigInteger, int), string>? TokenizeSymbol(string token, int offset)
+        public static Tuple<(BigInteger, int), byte[]>? TokenizeSymbol(string token, int offset)
         {
-            return Tuple.Create((IRType.SYMBOL, offset), token);
+            var tokenAsBytes = Encoding.UTF8.GetBytes(token);
+            return Tuple.Create((IRType.SYMBOL, offset), tokenAsBytes);
         }
 
         public static IEnumerable<(string token, int offset)> TokenStream(string s)
