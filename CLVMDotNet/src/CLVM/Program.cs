@@ -10,7 +10,7 @@ public static class Program
         Stack<Func<Stack<SExp>, BigInteger>> opStack = new Stack<Func<Stack<SExp>, BigInteger>>();
 
         var valueStack = new Stack<SExp>();
-        valueStack.Push(args);
+        valueStack.Push(prog.Cons(args));
         opStack.Push(stack => EvalOp(opStack, valueStack));
 
         BigInteger cost = 0;

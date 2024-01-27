@@ -45,8 +45,8 @@ namespace CLVMDotNet.Tools.IR
 
             // handle "q"
             var first = Utils.IrFirst(ir_sexp);
-            var keyword2 = Utils.IrAsSymbol(first) as string;
-            if (keyword2 == "q")
+            keyword = Utils.IrAsSymbol(first) as string;
+            if (keyword == "q")
             {
                 // TODO: note that any symbol is legal after this point
             }
