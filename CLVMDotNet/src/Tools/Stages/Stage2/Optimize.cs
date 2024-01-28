@@ -34,4 +34,23 @@ public static class Optimize
             return true;
         return false;
     }
+    
+    //DoRead
+    //DoWrite
+    //RunProgramForSearchPaths
+    //SeemsConstant
+    //ConstantOptimizer
+    //IsArgsCall
+    //ConsF
+    //ConsR
+    //PathFromArgs
+    //SubArgs
+    //var_change_optimizer_cons_eval
+    //children_optimizer
+    //cons_optimizer
+    //path_optimizer
+    //def quote_null_optimizer(r, eval)
+    //apply_null_optimizer
+    //optimize_sexp
+    //make_do_opt
 }
