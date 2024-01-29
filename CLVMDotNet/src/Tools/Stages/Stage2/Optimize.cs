@@ -64,6 +64,71 @@ public static class Optimize
         return sexp.Rest().AsIter().All(childSexp => SeemsConstant(childSexp));
     }
     
+    public static SExp PathFromArgs(SExp sexp, dynamic newArgs)
+    {
+        var v = sexp.AsInt();
+        if (v <= 1)
+        {
+            return newArgs;
+        }
+        sexp = SExp.To(v >> 1);
+        if ((v & 1) == 1)
+        {
+            return PathFromArgs(sexp, ConsR(newArgs)); 
+        }
+        return PathFromArgs(sexp, ConsF(newArgs)); 
+    }
+    
+    public static SExp ConsF(SExp args)
+    {
+        Dictionary<string, SExp> t = PatternMatch.Match(CONS_PATTERN, args); 
+
+        if (t != null && t.ContainsKey("first"))
+        {
+            return t["first"];
+        }
+        return SExp.To(new List<dynamic> { FIRST_ATOM, args}); 
+    }
+    
+    public static SExp ConsR(SExp args)
+    {
+        Dictionary<string, SExp> t = PatternMatch.Match(CONS_PATTERN, args); 
+
+        if (t != null && t.ContainsKey("rest"))
+        {
+            return t["rest"];
+        }
+        return SExp.To(new List<dynamic>{ REST_ATOM, args}); 
+    }
+    
+    public static SExp SubArgs(SExp sexp, List<dynamic> newArgs)
+    {
+        if (sexp.Nullp() || !sexp.Listp())
+        {
+            return PathFromArgs(sexp, newArgs);
+        }
+
+        var first = sexp.First();
+        if (first.Listp())
+        {
+            first = SubArgs(first, newArgs);
+        }
+        else
+        {
+            object op = first.AsAtom();
+
+            if (op.Equals(QUOTE_ATOM))
+            {
+                return sexp;
+            }
+        }
+
+        List<object> newSexp = new List<object> { first };
+        newSexp.AddRange(sexp.Rest().AsIter().Select(_ => SubArgs(_, newArgs)));
+
+        return SExp.To(newSexp);
+    }
+    
     
     //DoRead
     //DoWrite
@@ -71,8 +136,6 @@ public static class Optimize
     //SeemsConstant
     //ConstantOptimizer
     //IsArgsCall
-    //ConsF
-    //ConsR
     //PathFromArgs
     //SubArgs
     //var_change_optimizer_cons_eval
