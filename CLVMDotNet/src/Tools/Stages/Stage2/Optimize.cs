@@ -22,6 +22,23 @@ public static class Optimize
     public static SExp QUOTE_PATTERN_1 = BinUtils.Assemble("(q . 0)");
     public static SExp APPLY_NULL_PATTERN_1 = BinUtils.Assemble("(a 0 . (: . rest))");
     
+    /// <summary>
+    /// This applies the transform `(a 0 ARGS)` => `0`
+    /// </summary>
+    /// <param name="r"></param>
+    /// <param name="eval"></param>
+    /// <returns></returns>
+    public static SExp ApplyNullOptimizer(SExp r, Func<SExp, SExp, Tuple<int, SExp>> eval)
+    {
+        Dictionary<string, SExp> t1 = PatternMatch.Match(APPLY_NULL_PATTERN_1, r); // Define Match method accordingly
+
+        if (t1 != null)
+        {
+            return SExp.To(0);
+        }
+        return r;
+    }
+    
     
     public static bool NonNil(SExp sexp)
     {
@@ -83,9 +100,9 @@ public static class Optimize
     {
         Dictionary<string, SExp> t = PatternMatch.Match(CONS_PATTERN, args); 
 
-        if (t != null && t.ContainsKey("first"))
+        if (t != null && t.TryGetValue("first", out var f))
         {
-            return t["first"];
+            return f;
         }
         return SExp.To(new List<dynamic> { FIRST_ATOM, args}); 
     }
@@ -94,9 +111,9 @@ public static class Optimize
     {
         Dictionary<string, SExp> t = PatternMatch.Match(CONS_PATTERN, args); 
 
-        if (t != null && t.ContainsKey("rest"))
+        if (t != null && t.TryGetValue("rest", out var r))
         {
-            return t["rest"];
+            return r;
         }
         return SExp.To(new List<dynamic>{ REST_ATOM, args}); 
     }
@@ -115,17 +132,15 @@ public static class Optimize
         }
         else
         {
-            object op = first.AsAtom();
+            var op = first.AsAtom();
 
             if (op.Equals(QUOTE_ATOM))
             {
                 return sexp;
             }
         }
-
-        List<object> newSexp = new List<object> { first };
+        List<SExp> newSexp = new List<SExp> { first };
         newSexp.AddRange(sexp.Rest().AsIter().Select(_ => SubArgs(_, newArgs)));
-
         return SExp.To(newSexp);
     }
     
