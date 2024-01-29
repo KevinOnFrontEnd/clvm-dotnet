@@ -11,6 +11,12 @@ public static class Helpers
     {
         return Tuple.Create(QUOTE_ATOM, sexp);
     }
+
+    public static SExp Eval(SExp prog, dynamic args)
+    {
+        var eval = SExp.To(new List<dynamic>() { APPLY_ATOM, prog, args });
+        return eval;
+    }
     
     //Run
     //Brun
