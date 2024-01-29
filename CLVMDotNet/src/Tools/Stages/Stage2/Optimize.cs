@@ -35,6 +35,36 @@ public static class Optimize
         return false;
     }
     
+    public static bool SeemsConstant(SExp sexp)
+    {
+        if (!sexp.Listp())
+        {
+            // note that `0` is a constant
+            return !NonNil(sexp);
+        }
+        var operatorSexp = sexp.First();
+        if (!operatorSexp.Listp())
+        {
+            //TODO: test that a byte array can be compared to a byte
+            var asAtom = operatorSexp.AsAtom();
+            if (asAtom.Equals(QUOTE_ATOM))
+            {
+                return true;
+            }
+
+            if (asAtom.Equals(RAISE_ATOM))
+            {
+                return false;
+            }
+        }
+        else if (!SeemsConstant(operatorSexp))
+        {
+            return false;
+        }
+        return sexp.Rest().AsIter().All(childSexp => SeemsConstant(childSexp));
+    }
+    
+    
     //DoRead
     //DoWrite
     //RunProgramForSearchPaths
