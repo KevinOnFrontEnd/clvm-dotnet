@@ -1,3 +1,4 @@
+using System.Text;
 using CLVMDotNet.CLVM;
 using CLVMDotNet.Tools.IR;
 
@@ -21,7 +22,7 @@ public static class Optimize
     public static SExp REST_ATOM_PATTERN = BinUtils.Assemble("(r ($ . atom))");
     public static SExp QUOTE_PATTERN_1 = BinUtils.Assemble("(q . 0)");
     public static SExp APPLY_NULL_PATTERN_1 = BinUtils.Assemble("(a 0 . (: . rest))");
-    
+
     /// <summary>
     /// This applies the transform `(a 0 ARGS)` => `0`
     /// </summary>
@@ -36,10 +37,120 @@ public static class Optimize
         {
             return SExp.To(0);
         }
+
         return r;
     }
-    
-    
+
+    /// <summary>
+    /// This applies the transform
+    /// (f N) => A
+    /// and
+    /// (r N) => B
+    /// </summary>
+    /// <param name="r"></param>
+    /// <param name="eval"></param>
+    /// <returns></returns>
+    public static SExp PathOptimizer(SExp r, Func<SExp, SExp, Tuple<int, SExp>> eval)
+    {
+        Dictionary<string, SExp> t1 = PatternMatch.Match(FIRST_ATOM_PATTERN, r);
+
+        if (t1 != null && NonNil(t1["atom"]))
+        {
+            var nodeValue = t1["atom"].AsInt();
+            NodePath node = new NodePath(nodeValue);
+            node = node.Add(NodePath.Left);
+            return SExp.To(node.AsShortPath());
+        }
+
+        t1 = PatternMatch.Match(REST_ATOM_PATTERN, r);
+        if (t1 != null && NonNil(t1["atom"]))
+        {
+            var nodeValue = t1["atom"].AsInt();
+            NodePath node = new NodePath(nodeValue);
+            node = node.Add(NodePath.Right);
+            return SExp.To(node.AsShortPath());
+        }
+
+        return r;
+    }
+
+    /// <summary>
+    /// Recursively apply optimizations to all non-quoted child nodes.
+    /// </summary>
+    /// <param name="r"></param>
+    /// <param name="eval"></param>
+    /// <returns></returns>
+    public static SExp ChildrenOptimizer(SExp r, Func<SExp, SExp, Tuple<int, SExp>> eval)
+    {
+        if (!r.Listp())
+        {
+            return r;
+        }
+        var operatorSexp = r.First();
+        if (!operatorSexp.Listp())
+        {
+            var op = operatorSexp.AsAtom();
+            if (op.SequenceEqual(new byte[] { QUOTE_ATOM }))
+            {
+                return r;
+            }
+        }
+
+        List<SExp> optimizedChildren = new List<SExp>();
+        foreach (SExp child in r.AsIter())
+        {
+            //TODO: Write OptimizeSexp
+            //optimizedChildren.Add(OptimizeSexp(child, eval));
+        }
+
+        return SExp.To(optimizedChildren);
+    }
+
+
+    /// <summary>
+    /// This applies the transform
+    /// (f (c A B)) => A
+    /// and
+    /// (r (c A B)) => B
+    /// </summary>
+    /// <returns></returns>
+    public static SExp ConsOptimizer(SExp r, Func<SExp, SExp, Tuple<int, SExp>> eval)
+    {
+        Dictionary<string, SExp> t1 = PatternMatch.Match(CONS_OPTIMIZER_PATTERN_FIRST, r);
+        if (t1 != null)
+        {
+            return t1["first"];
+        }
+
+        t1 = PatternMatch.Match(CONS_OPTIMIZER_PATTERN_REST, r);
+        if (t1 != null)
+        {
+            return t1["rest"];
+        }
+
+        return r;
+    }
+
+
+    /// <summary>
+    /// This applies the transform `(q . 0)` => `0`
+    /// </summary>
+    /// <param name="r"></param>
+    /// <param name="eval"></param>
+    /// <returns></returns>
+    public static SExp QuoteNullOptimizer(SExp r, Func<SExp, SExp, Tuple<int, SExp>> eval)
+    {
+        Dictionary<string, SExp> t1 = PatternMatch.Match(QUOTE_PATTERN_1, r); // Define Match method accordingly
+
+        if (t1 != null)
+        {
+            return SExp.To(0);
+        }
+
+        return r;
+    }
+
+
     public static bool NonNil(SExp sexp)
     {
         return sexp.Listp() || (sexp.AsAtom().Length > 0);
@@ -51,7 +162,7 @@ public static class Optimize
             return true;
         return false;
     }
-    
+
     public static bool SeemsConstant(SExp sexp)
     {
         if (!sexp.Listp())
@@ -59,6 +170,7 @@ public static class Optimize
             // note that `0` is a constant
             return !NonNil(sexp);
         }
+
         var operatorSexp = sexp.First();
         if (!operatorSexp.Listp())
         {
@@ -78,9 +190,10 @@ public static class Optimize
         {
             return false;
         }
+
         return sexp.Rest().AsIter().All(childSexp => SeemsConstant(childSexp));
     }
-    
+
     public static SExp PathFromArgs(SExp sexp, dynamic newArgs)
     {
         var v = sexp.AsInt();
@@ -88,36 +201,40 @@ public static class Optimize
         {
             return newArgs;
         }
+
         sexp = SExp.To(v >> 1);
         if ((v & 1) == 1)
         {
-            return PathFromArgs(sexp, ConsR(newArgs)); 
+            return PathFromArgs(sexp, ConsR(newArgs));
         }
-        return PathFromArgs(sexp, ConsF(newArgs)); 
+
+        return PathFromArgs(sexp, ConsF(newArgs));
     }
-    
+
     public static SExp ConsF(SExp args)
     {
-        Dictionary<string, SExp> t = PatternMatch.Match(CONS_PATTERN, args); 
+        Dictionary<string, SExp> t = PatternMatch.Match(CONS_PATTERN, args);
 
         if (t != null && t.TryGetValue("first", out var f))
         {
             return f;
         }
-        return SExp.To(new List<dynamic> { FIRST_ATOM, args}); 
+
+        return SExp.To(new List<dynamic> { FIRST_ATOM, args });
     }
-    
+
     public static SExp ConsR(SExp args)
     {
-        Dictionary<string, SExp> t = PatternMatch.Match(CONS_PATTERN, args); 
+        Dictionary<string, SExp> t = PatternMatch.Match(CONS_PATTERN, args);
 
         if (t != null && t.TryGetValue("rest", out var r))
         {
             return r;
         }
-        return SExp.To(new List<dynamic>{ REST_ATOM, args}); 
+
+        return SExp.To(new List<dynamic> { REST_ATOM, args });
     }
-    
+
     public static SExp SubArgs(SExp sexp, List<dynamic> newArgs)
     {
         if (sexp.Nullp() || !sexp.Listp())
@@ -139,12 +256,13 @@ public static class Optimize
                 return sexp;
             }
         }
+
         List<SExp> newSexp = new List<SExp> { first };
         newSexp.AddRange(sexp.Rest().AsIter().Select(_ => SubArgs(_, newArgs)));
         return SExp.To(newSexp);
     }
-    
-    
+
+
     //DoRead
     //DoWrite
     //RunProgramForSearchPaths
