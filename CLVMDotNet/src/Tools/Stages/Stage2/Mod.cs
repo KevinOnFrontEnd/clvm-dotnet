@@ -13,7 +13,7 @@ public static class Mod
     /// of the items, suitable for casting to an s-expression.
     /// </summary>
     /// <returns></returns>
-    public dynamic BuildTree(List<dynamic> items)
+    public static dynamic BuildTree(List<dynamic> items)
     {
         var size = items.Count;
         if (size == 0)
@@ -32,7 +32,7 @@ public static class Mod
     /// builds a binary tree of the items, suitable for casting to an s-expression.
     /// </summary>
     /// <returns></returns>
-    public List<dynamic> BuildTreeProgram(List<dynamic> items)
+    public static List<dynamic> BuildTreeProgram(List<dynamic> items)
     {
         var size = items.Count;
         if (size == 0)
@@ -46,7 +46,7 @@ public static class Mod
         return new List<dynamic> { CONS_ATOM, left, right };
     }
 
-    public List<dynamic> Flatten(SExp sexp)
+    public static List<dynamic> Flatten(SExp sexp)
     {
         if (sexp.Listp())
         {
