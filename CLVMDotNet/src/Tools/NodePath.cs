@@ -44,28 +44,14 @@ public class NodePath
     
     public static string ByteArrayToHexString(byte[] byteArray)
     {
-        return string.Concat(byteArray.Select(b => b.ToString("X2")));
+        return string.Join("", byteArray.SkipWhile(b => b == 0).Select(b => b.ToString("X2")));
     }
 
     public byte[] AsShortPath()
     {
         BigInteger index = _index;
-        int byteCount = Math.Max(1, (int)Math.Ceiling(BigInteger.Log(index, 256) / 8));
         byte[] byteArray = index.ToByteArray();
-        Array.Reverse(byteArray); // Reverse the byte array if needed
-
-        // Ensure the result has the correct byteCount
-        if (byteArray.Length > byteCount)
-        {
-            Array.Resize(ref byteArray, byteCount);
-        }
-        else if (byteArray.Length < byteCount)
-        {
-            // If the byte array is shorter than required, add leading zeros
-            byte[] paddedArray = new byte[byteCount];
-            byteArray.CopyTo(paddedArray, byteCount - byteArray.Length);
-            byteArray = paddedArray;
-        }
+        Array.Reverse(byteArray);
 
         return byteArray;
     }
