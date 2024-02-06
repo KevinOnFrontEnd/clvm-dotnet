@@ -10,7 +10,13 @@ namespace CLVMDotNet.Tools.IR
             var ir_src = IRReader.ReadIR(text);
             var assembled_sexp = BinUtils.AssembleFromIR(ir_src);
             var input_sexp = SExp.To((assembled_sexp, Array.Empty<dynamic>()));
+            
+            // everthing above here matches python
+            var tree = HelperFunctions.PrintTree(input_sexp);
             var result = Program.RunProgram(null, input_sexp);
+            
+            //Need a RunProgramForSearchPaths
+            
             return result.Item2;
         }
 

@@ -15,7 +15,7 @@ namespace CLVMDotNet.Tests.CLVM.SExp
             
             // Act
             var s = clvm.SExp.To(new List<dynamic> { "+", 1, 2 });
-            var tree = Common.PrintTree(s);
+            var tree = clvm.HelperFunctions.PrintTree(s);
             
             // Assert
             Assert.Equal("(43 (1 (2 () )))", tree);
@@ -31,7 +31,7 @@ namespace CLVMDotNet.Tests.CLVM.SExp
             var t1 = clvm.SExp.To(new List<dynamic> { 1, sexp });
             
             // Assert
-            Common.ValidateSExp(t1);
+            clvm.HelperFunctions.ValidateSExp(t1);
         }
 
         [Fact]
@@ -69,7 +69,7 @@ namespace CLVMDotNet.Tests.CLVM.SExp
             // Act
             var a = clvm.SExp.To(new List<int> { 1, 2, 3 });
             string expectedOutput = "(1 (2 (3 () )))";
-            string result = Common.PrintTree(a);
+            string result = clvm.HelperFunctions.PrintTree(a);
             
             // Assert
             Assert.Equal(expectedOutput, result);
@@ -135,10 +135,10 @@ namespace CLVMDotNet.Tests.CLVM.SExp
             var tree3 = clvm.SExp.To(gentree3);
             
             // Assert
-            Assert.Equal(Common.PrintTree(tree1),
+            Assert.Equal(clvm.HelperFunctions.PrintTree(tree1),
                 "(((((0 1 )(2 3 ))((4 5 )(6 7 )))(((8 9 )(10 11 ))((12 13 )(14 15 ))))((((16 17 )(18 19 ))((20 21 )(22 23 )))(((24 25 )(26 27 ))((28 29 )(30 31 )))))");
-            Assert.Equal(Common.PrintTree(tree2), "(((0 1 )(2 3 ))((4 5 )(6 7 )))");
-            Assert.Equal(Common.PrintTree(tree3), "(((10 11 )(12 13 ))((14 15 )(16 17 )))");
+            Assert.Equal(clvm.HelperFunctions.PrintTree(tree2), "(((0 1 )(2 3 ))((4 5 )(6 7 )))");
+            Assert.Equal(clvm.HelperFunctions.PrintTree(tree3), "(((10 11 )(12 13 ))((14 15 )(16 17 )))");
         }
     }
 }
