@@ -4,12 +4,21 @@ namespace CLVMDotNet.CLVM;
 
 public class OperatorDict
 {
-    private delegate Tuple<BigInteger, SExp> DictDelegate(SExp sexp);
+    public delegate Tuple<BigInteger, SExp> DictDelegate(byte[] op, SExp sexp);
+    public DictDelegate? UnknownOpHandler;
     private Dictionary<byte[], DictDelegate?> Dictionary = new Dictionary<byte[], DictDelegate>();
 
-    public OperatorDict(OperatorDict dict)
+    public byte[] QuoteAtom { get; set; } = new byte[0];
+    public byte[] ApplyAtom { get; set; } = new byte[0];
+    
+    public OperatorDict(OperatorDict d, Dictionary<string, byte[]> args, DictDelegate unknownOp = null)
     {
+        // Set quote_atom and apply_atom properties using kwargs or defaults from d
+        this.QuoteAtom = args.ContainsKey("quote") ? (byte[])args["quote"] : d.QuoteAtom;
+        this.ApplyAtom = args.ContainsKey("apply") ? (byte[])args["apply"] : d.ApplyAtom;
         
+        // Set unknown_op_handler property using kwargs or default
+        this.UnknownOpHandler = unknownOp ?? DefaultUnknownOp;
     }
     
     public static IEnumerable<int> ArgsLen(string op_name, SExp args)
@@ -121,7 +130,7 @@ public class OperatorDict
         var func = Dictionary[op];
         if (func != null)
         {
-            var result = func(arguments);
+            var result = func(Array.Empty<byte>(), arguments);
             return result;
         }
         else

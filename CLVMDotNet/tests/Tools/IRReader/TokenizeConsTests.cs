@@ -16,14 +16,14 @@ namespace CLVMDotNet.Tests.Tools.IRReader
             var tokenized = x.IRReader.TokenizeCons(")", 6, stream.GetEnumerator());
 
             // Assert
-            Assert.Null(tokenized.Atom);
+            Assert.Null(tokenized!.Atom);
             Assert.NotNull(tokenized.Pair);
-            Assert.NotNull(tokenized.AsPair().Item1);
-            Assert.Null(tokenized.AsPair().Item1.Atom);
-            Assert.NotNull(tokenized.AsPair().Item1.Pair);
-            Assert.NotNull(tokenized.AsPair().Item1.AsPair());
-            Assert.True(tokenized.AsPair().Item1.AsPair().Item1.Atom.SequenceEqual(new byte[] { 78, 85, 76, 76 }));
-            Assert.True(tokenized.AsPair().Item2.Atom.SequenceEqual(new byte[] { }));
+            Assert.NotNull(tokenized.AsPair()!.Item1);
+            Assert.Null(tokenized.AsPair()!.Item1.Atom);
+            Assert.NotNull(tokenized.AsPair()!.Item1.Pair);
+            Assert.NotNull(tokenized.AsPair()!.Item1.AsPair());
+            Assert.True(tokenized.AsPair()!.Item1.AsPair()!.Item1.Atom!.SequenceEqual(new byte[] { 78, 85, 76, 76 }));
+            Assert.True(tokenized.AsPair()!.Item2.Atom!.SequenceEqual(new byte[] { }));
         }
 
         // [Theory]

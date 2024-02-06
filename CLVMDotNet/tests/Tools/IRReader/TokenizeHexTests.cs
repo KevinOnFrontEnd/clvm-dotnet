@@ -46,16 +46,16 @@ public class TokenizeHexTests
         var tokenized = x.IRReader.TokenizeHex(number, 0);
     
         // Assert
-        Assert.Null(tokenized.Atom);
+        Assert.Null(tokenized!.Atom);
         Assert.NotNull(tokenized.Pair);
-        Assert.Null(tokenized.AsPair().Item1.Atom);
-        Assert.NotNull(tokenized.AsPair().Item1);
-        Assert.NotNull(tokenized.AsPair().Item1.AsPair());
+        Assert.Null(tokenized.AsPair()!.Item1.Atom);
+        Assert.NotNull(tokenized.AsPair()!.Item1);
+        Assert.NotNull(tokenized.AsPair()!.Item1.AsPair()!);
         
         //HEX as bytes
-        Assert.True(tokenized.AsPair().Item1.AsPair().Item1.Atom.SequenceEqual(new byte[] { 72, 69, 88})); // HEX
+        Assert.True(tokenized.AsPair()!.Item1.AsPair()!.Item1.Atom!.SequenceEqual(new byte[] { 72, 69, 88})); // HEX
         
         //NUMBER as bytes
-        Assert.True(tokenized.AsPair().Item2.Atom.SequenceEqual(expectedBytes)); //bytes
+        Assert.True(tokenized.AsPair()!.Item2.Atom!.SequenceEqual(expectedBytes)); //bytes
     }
 }

@@ -31,16 +31,16 @@ public class TokenizeIntTests
         var tokenized = x.IRReader.TokenizeInt(number, 0);
     
         // Assert
-        Assert.Null(tokenized.Atom);
+        Assert.Null(tokenized!.Atom);
         Assert.NotNull(tokenized.Pair);
-        Assert.Null(tokenized.AsPair().Item1.Atom);
-        Assert.NotNull(tokenized.AsPair().Item1);
-        Assert.NotNull(tokenized.AsPair().Item1.AsPair());
+        Assert.Null(tokenized.AsPair()!.Item1.Atom);
+        Assert.NotNull(tokenized.AsPair()!.Item1);
+        Assert.NotNull(tokenized.AsPair()!.Item1.AsPair());
         
         //INT as bytes
-        Assert.True(tokenized.AsPair().Item1.AsPair().Item1.Atom.SequenceEqual(new byte[] { 73, 78, 84})); // INT
+        Assert.True(tokenized.AsPair()!.Item1.AsPair()!.Item1.Atom!.SequenceEqual(new byte[] { 73, 78, 84})); // INT
         
         //NUMBER as bytes
-        Assert.True(tokenized.AsPair().Item2.Atom.SequenceEqual(expectedBytes)); // INT
+        Assert.True(tokenized.AsPair()!.Item2.Atom!.SequenceEqual(expectedBytes)); // INT
     }
 }

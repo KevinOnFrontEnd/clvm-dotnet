@@ -20,9 +20,9 @@ namespace CLVMDotNet.Tests.Tools.IRReader
             Assert.Null(result.Atom);
             Assert.NotNull(result.Pair);
             Assert.NotNull(result.Pair.Item1);
-            Assert.True(result.AsPair().Item1.AsPair().Item1.Atom.SequenceEqual(new byte[] { 73, 78, 84 }));  //INT
-            Assert.True(result.AsPair().Item1.AsPair().Item2.Atom.SequenceEqual(new byte[] { 0x01 }));  //1 (offset)
-            Assert.True(result.AsPair().Item2.Atom.SequenceEqual(new byte[] {49,48,48})); //100
+            Assert.True(result.AsPair()!.Item1.AsPair()!.Item1.Atom!.SequenceEqual(new byte[] { 73, 78, 84 }));  //INT
+            Assert.True(result.AsPair()!.Item1.AsPair()!.Item2.Atom!.SequenceEqual(new byte[] { 0x01 }));  //1 (offset)
+            Assert.True(result.AsPair()!.Item2.Atom!.SequenceEqual(new byte[] {49,48,48})); //100
         }
     }
 }
