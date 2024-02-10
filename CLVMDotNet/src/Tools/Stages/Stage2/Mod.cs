@@ -4,8 +4,8 @@ namespace CLVMDotNet.Tools.Stages.Stage2;
 
 public static class Mod
 {
-    public static byte QUOTE_ATOM => Keywords.KEYWORD_TO_ATOM["q"];
-    public static byte CONS_ATOM => Keywords.KEYWORD_TO_ATOM["c"];
+    public static byte[] QUOTE_ATOM => CLVM.Operators.KEYWORD_TO_ATOM()["q"];
+    public static byte[] CONS_ATOM => CLVM.Operators.KEYWORD_TO_ATOM()["c"];
     public static byte[] MAIN_NAME => new byte[] { };
     
     /// <summary>

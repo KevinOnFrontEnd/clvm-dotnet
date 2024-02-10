@@ -6,12 +6,11 @@ namespace CLVMDotNet.Tests.CLVM.Operators;
 public class KeywordFromAtomTests
 {
     [Theory]
-    [InlineData(0x23, ".")]
-    [InlineData(0x02, "a")]
-    [InlineData(0x01, "q")]
-    [InlineData(0x03, "i")]
-    [InlineData(0x04, "c")]
-    [InlineData(0x05, "f")]
+    [InlineData(01, "q")]
+    [InlineData(2, "a")]
+    [InlineData(3, "i")]
+    [InlineData(4, "c")]
+    [InlineData(5, "f")]
     [InlineData(0x06, "r")]
     [InlineData(0x07, "l")]
     [InlineData(0x08, "x")]
@@ -39,9 +38,11 @@ public class KeywordFromAtomTests
     [InlineData(0x20, "not")]
     [InlineData(0x21, "any")]
     [InlineData(0x22, "all")]
+    [InlineData(0x23, ".")]
     public void KeywordToAtom_Returns_correct_byte(byte atom, string expectedKeyword)
     {
-        var result = x.Keywords.KEYWORD_FROM_ATOM[atom];
+        var bytes = new byte[] { atom };
+        var result = x.Operators.KEYWORD_FROM_ATOM[bytes];
         Assert.Equal(expectedKeyword, result);
     }
     
@@ -53,9 +54,9 @@ public class KeywordFromAtomTests
         // Act
         var errorMessage =
             Assert.Throws<KeyNotFoundException>(() =>
-                x.Keywords.KEYWORD_FROM_ATOM[0xaa]);
+                x.Operators.KEYWORD_FROM_ATOM[new byte[] {0xaa}]);
         
         // Assert
-        Assert.Contains("The given key '170' was not present in the dictionary", errorMessage.Message);
+        Assert.Contains("was not present in the dictionary", errorMessage.Message);
     }
 }

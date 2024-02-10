@@ -6,20 +6,100 @@ public class OperatorDict
 {
     public delegate Tuple<BigInteger, SExp> DictDelegate(byte[] op, SExp sexp);
     public DictDelegate? UnknownOpHandler;
-    private Dictionary<byte[], DictDelegate?> Dictionary = new Dictionary<byte[], DictDelegate>();
+    private Dictionary<string, DictDelegate?> OpDictionary = new Dictionary<string, DictDelegate?>();
 
     public byte[] QuoteAtom { get; set; } = new byte[0];
     public byte[] ApplyAtom { get; set; } = new byte[0];
     
-    public OperatorDict(OperatorDict d, Dictionary<string, byte[]> args, DictDelegate unknownOp = null)
+    public OperatorDict(OperatorDict d, Dictionary<string, byte[]>? args, DictDelegate? unknownOp = null)
     {
         // Set quote_atom and apply_atom properties using kwargs or defaults from d
         this.QuoteAtom = args.ContainsKey("quote") ? (byte[])args["quote"] : d.QuoteAtom;
         this.ApplyAtom = args.ContainsKey("apply") ? (byte[])args["apply"] : d.ApplyAtom;
+        OpDictionary = d.OpDictionary;
         
         // Set unknown_op_handler property using kwargs or default
         this.UnknownOpHandler = unknownOp ?? DefaultUnknownOp;
     }
+
+    public OperatorDict()
+    {
+    }
+    
+    public static OperatorDict OPERATOR_LOOKUP()
+    {
+        Dictionary<string, DictDelegate?> ops = new Dictionary<string, DictDelegate?>();
+        var QUOTE_ATOM = Operators.KEYWORD_TO_ATOM()["q"];
+        var APPLY_ATOM = Operators.KEYWORD_TO_ATOM()["a"];
+
+
+        //core ops
+        // ops["0x01"] = (op, sexp) => CoreOps.OpIf(sexp);
+        // ops["0x02"] = (op, sexp) => CoreOps.OpIf(sexp);
+        ops["0x03"] = (op, sexp) => CoreOps.OpIf(sexp);
+        ops["0x04"] = (op, sexp) => CoreOps.OpCons(sexp);
+        ops["0x05"] = (op, sexp) => CoreOps.OpFirst(sexp);
+        ops["0x06"] = (op, sexp) => CoreOps.OpRest(sexp);
+        ops["0x07"] = (op, sexp) => CoreOps.OpListp(sexp);
+        ops["0x08"] = (op, sexp) => CoreOps.OpRaise(sexp);
+        ops["0x09"] = (op, sexp) => CoreOps.OpEq(sexp);
+        
+        //more ops
+        ops["0x10"] = (op, sexp) => MoreOps.OpAdd(sexp);
+        ops["0x11"] = (op, sexp) => MoreOps.OpSubtract(sexp);
+        ops["0x12"] = (op, sexp) => MoreOps.OpMultiply(sexp);
+        ops["0x13"] = (op, sexp) => MoreOps.OpDiv(sexp);
+        ops["0x14"] = (op, sexp) => MoreOps.OpDivmod(sexp);
+        ops["0x15"] = (op, sexp) => MoreOps.OpGr(sexp);
+        ops["0x16"] = (op, sexp) => MoreOps.OpAsh(sexp);
+        ops["0x17"] = (op, sexp) => MoreOps.OpLsh(sexp);
+        ops["0x18"] = (op, sexp) => MoreOps.OpLogand(sexp);
+        ops["0x19"] = (op, sexp) => MoreOps.OpLogior(sexp);
+        ops["0x20"] = (op, sexp) => MoreOps.OpNot(sexp);
+        ops["0x1A"] = (op, sexp) => MoreOps.OpLogxor(sexp);
+        ops["0x1B"] = (op, sexp) => MoreOps.OpLogNot(sexp);
+        ops["0x1D"] = (op, sexp) => MoreOps.OpPointAdd(sexp);
+        ops["0x1E"] = (op, sexp) => MoreOps.OpPubkeyForExp(sexp);
+        ops["0x0A"] = (op, sexp) => MoreOps.OpGrBytes(sexp);
+        ops["0x0B"] = (op, sexp) => MoreOps.OpSha256(sexp);
+        ops["0x0C"] = (op, sexp) => MoreOps.OpSubstr(sexp);
+        ops["0x0D"] = (op, sexp) => MoreOps.OpStrlen(sexp);
+        ops["0x0E"] = (op, sexp) => MoreOps.OpConcat(sexp);
+        ops["0x21"] = (op, sexp) => MoreOps.OpAny(sexp);
+        ops["0x22"] = (op, sexp) => MoreOps.OpAll(sexp);
+        ops["0x23"] = (op, sexp) => MoreOps.OpNot(sexp);
+        ops["0x24"] = (op, sexp) => MoreOps.OpSoftfork(sexp);
+
+        var d = new Dictionary<string, byte[]>
+        {
+            { "quote", QUOTE_ATOM },
+            { "apply", APPLY_ATOM }
+        };
+
+        OperatorDict p = new OperatorDict();
+        p.OpDictionary = ops;
+        
+        return new OperatorDict(p, d);
+    }
+
+
+    public Tuple<BigInteger, SExp> ApplyOperator(byte[] op, SExp args)
+    {
+        string hexString = "0x";
+        foreach (byte b in op)
+        {
+            hexString += b.ToString("X2");
+        }
+
+        var f = OpDictionary[hexString];
+        if (f is null)
+            return UnknownOpHandler(op, args);
+        else
+        {
+            return f(Array.Empty<byte>(), args);
+        }
+    }
+    
     
     public static IEnumerable<int> ArgsLen(string op_name, SExp args)
     {
@@ -123,19 +203,5 @@ public class OperatorDict
         }
 
         return Tuple.Create(cost, SExp.NULL);
-    }
-    
-    public Tuple<BigInteger, SExp> ApplyOperator(byte[] op, SExp arguments)
-    {
-        var func = Dictionary[op];
-        if (func != null)
-        {
-            var result = func(Array.Empty<byte>(), arguments);
-            return result;
-        }
-        else
-        {
-            return DefaultUnknownOp(op, arguments);
-        }
     }
 }
