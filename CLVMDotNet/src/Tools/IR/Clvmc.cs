@@ -1,4 +1,5 @@
 using CLVMDotNet.CLVM;
+using CLVMDotNet.Extensions;
 
 namespace CLVMDotNet.Tools.IR
 {
@@ -10,10 +11,13 @@ namespace CLVMDotNet.Tools.IR
             var assembled_sexp = BinUtils.AssembleFromIR(ir_src);
             var input_sexp = SExp.To((assembled_sexp, Array.Empty<dynamic>()));
             
+            // everthing above here matches python
+            var tree = HelperFunctions.PrintTree(input_sexp);
+            // var result = Program.RunProgram(null, input_sexp);
             
-            //run_program_for_search_paths
-            //run_program
+            //Need a RunProgramForSearchPaths
             
+            //return result.Item2;
             return null;
         }
 

@@ -59,7 +59,7 @@ namespace CLVMDotNet.CLVM
             return To(new Tuple<dynamic, dynamic>(this, right));
         }
 
-        public dynamic First()
+        public SExp First()
         {
             if (Pair is (_,_))
             {
@@ -69,7 +69,7 @@ namespace CLVMDotNet.CLVM
             throw new EvalError("first of non-cons", this);
         }
 
-        public dynamic Rest()
+        public SExp Rest()
         {
             if (Pair is (_,_))
             {

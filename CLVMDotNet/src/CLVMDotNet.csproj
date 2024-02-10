@@ -9,10 +9,7 @@
     <ItemGroup>
       <PackageReference Include="chia-dotnet-bls" Version="1.2.3" />
       <PackageReference Include="dotnetstandard-bip39" Version="1.0.2" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Tools\Stages\Stage2\" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
 
 </Project>

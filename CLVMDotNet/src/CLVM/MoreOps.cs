@@ -269,7 +269,7 @@ namespace CLVMDotNet.CLVM
             var b0 = a0.AsAtom();
             var b1 = a1.AsAtom();
             BigInteger cost = Costs.GRS_BASE_COST;
-            cost += (b0.Length + b1.Length) * Costs.GRS_COST_PER_BYTE;
+            cost += (b0!.Length + b1!.Length) * Costs.GRS_COST_PER_BYTE;
 
             int comparisonResult = b0.AsSpan().SequenceCompareTo(b1.AsSpan());
 
@@ -358,7 +358,7 @@ namespace CLVMDotNet.CLVM
                 throw new EvalError("strlen on list", a0);
             }
 
-            int size = a0.AsAtom().Length;
+            int size = a0.AsAtom()!.Length;
             BigInteger cost = Costs.STRLEN_BASE_COST + size * Costs.STRLEN_COST_PER_BYTE;
             return MallocCost(cost, SExp.To(size));
         }

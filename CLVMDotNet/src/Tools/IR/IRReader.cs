@@ -117,13 +117,6 @@ namespace CLVMDotNet.Tools.IR
             int offset = -1;
 
             stream.MoveNext();
-            // foreach (var item in stream.)
-            // {
-            //     token = item.Item1;
-            //     offset = item.Item2;
-            //     break;
-            // }
-
             token = stream.Current.Item1;
             offset = stream.Current.Item2;
 
@@ -135,7 +128,7 @@ namespace CLVMDotNet.Tools.IR
             return (token, offset);
         }
 
-        public static dynamic? TokenizeCons(string token, int offset, IEnumerator<(string, int)> stream)
+        public static SExp? TokenizeCons(string token, int offset, IEnumerator<(string, int)> stream)
         {
             if (token == ")")
             {
@@ -185,7 +178,8 @@ namespace CLVMDotNet.Tools.IR
                 var (t, o) = NextConsToken(stream);
                 token = t;
                 offset = o;
-                return TokenizeCons(token, offset, stream);
+                var cons = TokenizeCons(token, offset, stream);
+                return cons;
             }
 
             var result = TokenizeInt(token, offset);
@@ -206,7 +200,7 @@ namespace CLVMDotNet.Tools.IR
 
         public static SExp? TokenizeInt(string token, int offset)
         {
-            if (int.TryParse(token, out int result))
+            if (BigInteger.TryParse(token, out BigInteger result))
             {
                 return Utils.IrNew(IRType.INT, result, offset);
             }
@@ -230,7 +224,7 @@ namespace CLVMDotNet.Tools.IR
                 }
                 else
                 {
-                    throw new SyntaxException("invalid hex at " + offset + ": 0x" + token);
+                    throw new SyntaxException($"invalid hex at {offset}:{token}");
                 }
             }
 
@@ -278,9 +272,10 @@ namespace CLVMDotNet.Tools.IR
             return null;
         }
 
-        public static Tuple<(BigInteger, int), string>? TokenizeSymbol(string token, int offset)
+        public static Tuple<(BigInteger, int), byte[]>? TokenizeSymbol(string token, int offset)
         {
-            return Tuple.Create((IRType.SYMBOL, offset), token);
+            var tokenAsBytes = Encoding.UTF8.GetBytes(token);
+            return Tuple.Create((IRType.SYMBOL, offset), tokenAsBytes);
         }
 
         public static IEnumerable<(string token, int offset)> TokenStream(string s)
@@ -295,7 +290,7 @@ namespace CLVMDotNet.Tools.IR
                 }
 
                 char c = s[offset];
-                if (c == '(' || c == ')')
+                if ("(.)".Contains(c))
                 {
                     yield return (c.ToString(), offset);
                     offset++;
@@ -340,7 +335,8 @@ namespace CLVMDotNet.Tools.IR
             {
                 var item = enumerator.Current;
                 var ts = TokenizeSexp(item.token, item.offset, enumerator);
-                return SExp.To(ts);
+                var sexp = SExp.To(ts);
+                return sexp;
             }
 
             throw new ArgumentException("unexpected end of stream");

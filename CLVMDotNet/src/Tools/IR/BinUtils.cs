@@ -21,7 +21,7 @@ namespace CLVMDotNet.Tools.IR
                     keyword = keyword.Substring(1);
                 }
 
-                var atom = x.Keywords.KEYWORD_TO_ATOM.ContainsKey(keyword) ? x.Keywords.KEYWORD_TO_ATOM[keyword] : null;
+                var atom = CLVM.Operators.KEYWORD_TO_ATOM()[keyword];
                 if (atom != null)
                 {
                     return SExp.To(atom);
@@ -45,8 +45,8 @@ namespace CLVMDotNet.Tools.IR
 
             // handle "q"
             var first = Utils.IrFirst(ir_sexp);
-            var keyword2 = Utils.IrAsSymbol(first) as string;
-            if (keyword2 == "q")
+            keyword = Utils.IrAsSymbol(first) as string;
+            if (keyword == "q")
             {
                 // TODO: note that any symbol is legal after this point
             }
@@ -82,7 +82,8 @@ namespace CLVMDotNet.Tools.IR
                 return IRType.HEX;
             }
 
-            if (BitConverter.ToUInt32(atom, 0) == BitConverter.ToUInt32(atom, 0))
+ 
+            if(x.Casts.IntToBytes(x.Casts.IntFromBytes(atom)).SequenceEqual(atom))
             {
                 return IRType.INT;
             }

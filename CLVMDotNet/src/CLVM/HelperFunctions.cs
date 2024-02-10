@@ -8,16 +8,111 @@ namespace CLVMDotNet.CLVM
     public static class HelperFunctions
     {
         private static byte[] nullBytes = new byte[0];
+        
+        public static string PrintLeaves(SExp tree)
+        {
+            var a = tree.AsAtom();
+            if (a != null)
+            {
+                if (a.Length == 0)
+                    return "() ";
+
+                return $"{a[0]} ";
+            }
+
+            var ret = "";
+            var pairs = tree.AsPair();
+            var list = new List<SExp>() { pairs.Item1, pairs.Item2 };
+            if (pairs != null)
+            {
+                foreach (SExp i in list)
+                {
+                    ret += PrintLeaves(i);
+                }
+            }
+
+            return ret;
+        }
+
+        public static string PrintTree(SExp tree)
+        {
+            var a = tree.AsAtom();
+            if (a != null)
+            {
+                if (a.Length == 0)
+                {
+                    return "() ";
+                }
+
+                return $"{a[0]} ";
+            }
+
+            var ret = "(";
+            var pairs = tree.AsPair();
+            var list = new List<SExp>() { pairs!.Item1, pairs.Item2 };
+            if (pairs != null)
+            {
+                foreach (var i in list)
+                {
+                    ret += PrintTree(i);
+                }
+            }
+
+            ret += ")";
+            return ret;
+        }
+
+        public static void ValidateSExp(SExp sexp)
+        {
+            Stack<SExp> validateStack = new Stack<SExp>();
+            validateStack.Push(sexp);
+
+            while (validateStack.Count > 0)
+            {
+                dynamic v = validateStack.Pop();
+
+                if (!(v is SExp))
+                {
+                    throw new InvalidOperationException("v is not an instance of SExp");
+                }
+
+                if (v.Pair != null)
+                {
+                    if (v.Pair.GetType() != typeof(Tuple<object, object>))
+                    {
+                        throw new InvalidOperationException("v.pair is not a Tuple");
+                    }
+
+                    Tuple<dynamic, dynamic> pair = v.Pair;
+
+                    if (!HelperFunctions.LooksLikeCLVMObject(pair.Item1) ||
+                        !HelperFunctions.LooksLikeCLVMObject(pair.Item2))
+                    {
+                        throw new InvalidOperationException("One or both elements do not look like CLVM objects");
+                    }
+
+                    var sPair = v.AsPair();
+                    validateStack.Push(sPair.Item1);
+                    validateStack.Push(sPair.Item2);
+                }
+                else
+                {
+                    if (!(v.Atom is byte[]))
+                    {
+                        throw new InvalidOperationException("v.atom is not a byte array");
+                    }
+                }
+            }
+        }
 
         private static bool IsTuple(dynamic? obj)
         {
             var isTuple = false;
             Type type = obj?.GetType();
-            
-            
+
+
             if (type != null)
             {
-
                 if (!isTuple)
                     isTuple = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Tuple<,>);
 
@@ -49,6 +144,7 @@ namespace CLVMDotNet.CLVM
                     }
                 }
             }
+
             return null;
         }
 
@@ -73,6 +169,7 @@ namespace CLVMDotNet.CLVM
                     }
                 }
             }
+
             return null;
         }
 
@@ -126,8 +223,8 @@ namespace CLVMDotNet.CLVM
                     }
 
                     if (value is System.Collections.IList list &&
-                       list.GetType().IsGenericType &&
-                       list.GetType().GetGenericTypeDefinition() == typeof(List<>))
+                        list.GetType().IsGenericType &&
+                        list.GetType().GetGenericTypeDefinition() == typeof(List<>))
                     {
                         target = stack.Count;
                         stack.Add(new CLVMObject(nullBytes));
@@ -157,19 +254,18 @@ namespace CLVMDotNet.CLVM
                     var leftValue = new CLVMObject(stack[stack.Count - 1]);
                     stack.RemoveAt(stack.Count - 1);
                     var rightValue = stack[target].Pair.Item2;
-                    stack[target].Pair = Tuple.Create<dynamic,dynamic>(leftValue, rightValue);
+                    stack[target].Pair = Tuple.Create<dynamic, dynamic>(leftValue, rightValue);
                     continue;
                 }
 
                 if (op == 2) // set right
                 {
-
                     var leftValue = stack[target].Pair.Item1;
                     var right = stack[stack.Count - 1];
                     stack.RemoveAt(stack.Count - 1);
                     var rightValue = new CLVMObject(right);
 
-                    stack[target].Pair = Tuple.Create<dynamic,dynamic>(leftValue, rightValue);
+                    stack[target].Pair = Tuple.Create<dynamic, dynamic>(leftValue, rightValue);
                     continue;
                 }
 
@@ -207,6 +303,7 @@ namespace CLVMDotNet.CLVM
             {
                 return Encoding.UTF8.GetBytes(str);
             }
+
             if (v is string[] strarray && strarray.Length == 1)
             {
                 return Encoding.UTF8.GetBytes(strarray[0]);

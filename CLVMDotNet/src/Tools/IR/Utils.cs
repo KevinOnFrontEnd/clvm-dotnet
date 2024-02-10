@@ -25,7 +25,8 @@ namespace CLVMDotNet.Tools.IR
         {
             if (irSexp.Listp() && IrType(irSexp) == IRType.SYMBOL)
             {
-                return Encoding.UTF8.GetString(IrAsSexp(irSexp).AsAtom());
+                var sexp = IrAsSexp(irSexp);
+                return Encoding.UTF8.GetString(sexp.AsAtom());
             }
 
             return null;

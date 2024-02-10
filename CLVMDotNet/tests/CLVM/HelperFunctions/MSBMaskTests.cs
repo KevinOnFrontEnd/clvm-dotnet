@@ -5,7 +5,7 @@ namespace CLVMDotNet.Tests.CLVM.HelperFunctions
 {
 
     [Trait("HelperFunctions", "MSBMask")]
-    public class MSBMask
+    public class MSBMaskTests
     {
         [Theory]
         [InlineData(0x00, 0x00)]
