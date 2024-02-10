@@ -18,6 +18,15 @@ public static class Helpers
         return eval;
     }
     
-    //Run
-    //Brun
+    public static SExp Run(SExp prog, SExp macroLookup)
+    {
+        var args = NodePath.TOP.AsShortPath();
+        var mac = Quote(macroLookup);
+        return Helpers.Eval(SExp.To(new List<dynamic> { "com", prog, mac }), args);
+    }
+    
+    public static SExp Brun(SExp prog, SExp args)
+    {
+        return Helpers.Eval(SExp.To(Quote(prog)), Quote(args));
+    }
 }
